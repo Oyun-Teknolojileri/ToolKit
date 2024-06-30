@@ -97,16 +97,21 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
-    // Fits the entities into the shadow map camera frustum. As the scene gets
-    // bigger, the resolution gets lower.
-    void FitEntitiesBBoxIntoShadowFrustum(CameraPtr lightCamera, const RenderJobArray& jobs);
-
-    // Fits view frustum of the camera into shadow map camera frustum. As the
-    // view frustum gets bigger, the resolution gets lower.
-    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera, CameraPtr viewCamera, float near, float far);
+    /** Adjust the light frustum such that, it covers entire view camera frustum. */
+    void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
+                                        CameraPtr viewCamera,
+                                        float near,
+                                        float far,
+                                        bool stableFit);
 
    public:
+    /** Cascades are rendered with these cameras, due to stable fit, frustum can be larger than actual coverage. */
     CameraPtrArray m_cascadeShadowCameras;
+
+    /** Scene is culled with these tightly fit cameras to create render jobs for shadow map generation. */
+    CameraPtrArray m_cascadeCullCameras;
+
+    /** Cascade camera projection matrices to fill the light buffer. */
     Mat4Array m_shadowMapCascadeCameraProjectionViewMatrices;
   };
 

@@ -195,7 +195,7 @@ namespace ToolKit
         float resolution = light->GetShadowResVal().GetValue<float>();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
-        RenderShadowMap(light, dLight->m_cascadeShadowCameras[i]);
+        RenderShadowMap(light, dLight->m_cascadeShadowCameras[i], dLight->m_cascadeCullCameras[i]);
 
         // Depth is invalidated because, atlas has the shadow map.
         renderer->InvalidateFramebufferDepth(m_shadowFramebuffer);
@@ -220,7 +220,7 @@ namespace ToolKit
         float resolution = light->GetShadowResVal().GetValue<float>();
         renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
 
-        RenderShadowMap(light, light->m_shadowCamera);
+        RenderShadowMap(light, light->m_shadowCamera, light->m_shadowCamera);
 
         // Depth is invalidated because, atlas has the shadow map.
         renderer->InvalidateFramebufferDepth(m_shadowFramebuffer);
@@ -243,24 +243,20 @@ namespace ToolKit
       float resolution = light->GetShadowResVal().GetValue<float>();
 
       renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
-      RenderShadowMap(light, light->m_shadowCamera);
+      RenderShadowMap(light, light->m_shadowCamera, light->m_shadowCamera);
 
       // Depth is invalidated because, atlas has the shadow map.
       renderer->InvalidateFramebufferDepth(m_shadowFramebuffer);
     }
   }
 
-  void ShadowPass::RenderShadowMap(LightPtr light, CameraPtr shadowCamera)
+  void ShadowPass::RenderShadowMap(LightPtr light, CameraPtr shadowCamera, CameraPtr cullCamera)
   {
     Renderer* renderer                                = GetRenderer();
     EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
 
     // Adjust light's camera.
     renderer->SetCamera(shadowCamera, false);
-
-    float n                    = shadowCamera->Near();     // Backup near.
-    float f                    = shadowCamera->Far();      // Backup the far.
-    Vec3 pos                   = shadowCamera->Position(); // Backup pos.
 
     Light::LightType lightType = light->GetLightType();
     if (lightType == Light::LightType::Directional)
@@ -271,17 +267,17 @@ namespace ToolKit
       // The tight bounds of the shadow camera which is used to create the shadow map is preserved.
       // The casters that will fall behind the camera will still cast shadows, this is why all the fuss for.
       // In the shader, the objects that fall behind the camera is "pancaked" to shadow camera's front plane.
-
-      Vec3 dir                    = shadowCamera->Direction();
+      Vec3 dir                    = cullCamera->Direction();
       const BoundingBox& sceneBox = m_params.scene->GetSceneBoundary();
 
+      Vec3 pos                    = cullCamera->Position();
       Vec3 outerPoint             = pos - glm::normalize(dir) * glm::distance(sceneBox.min, sceneBox.max) * 0.5f;
 
       shadowCamera->m_node->SetTranslation(outerPoint); // Set the camera position.
       shadowCamera->SetNearClipVal(0.0f);
 
       // New far clip is calculated. Its the distance newly calculated outer poi
-      shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + f);
+      shadowCamera->SetFarClipVal(glm::distance(outerPoint, pos) + cullCamera->Far());
     }
 
     // Create render jobs for shadow map generation.
@@ -290,16 +286,8 @@ namespace ToolKit
 
     RenderJobArray jobs;
     RenderData renderData;
-    RenderJobProcessor::CreateRenderJobs(renderData.jobs, m_params.scene->m_bvh, nullLights, shadowCamera, nullEnv);
+    RenderJobProcessor::CreateRenderJobs(renderData.jobs, m_params.scene->m_bvh, nullLights, cullCamera, nullEnv);
     RenderJobProcessor::SeperateRenderData(renderData, true);
-
-    if (lightType == Light::LightType::Directional)
-    {
-      // Camera is set back to its original values for rendering the shadow.
-      shadowCamera->SetNearClipVal(n);
-      shadowCamera->SetFarClipVal(f);
-      shadowCamera->m_node->SetTranslation(pos);
-    }
 
     renderer->OverrideBlendState(true, BlendFunction::NONE); // Blending must be disabled for shadow map generation.
 
