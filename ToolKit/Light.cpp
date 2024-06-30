@@ -179,6 +179,8 @@ namespace ToolKit
       cam->InvalidateSpatialCaches();
       m_cascadeShadowCameras.push_back(cam);
 
+      m_cascadeCullCameras.push_back(Cast<Camera>(cam->Copy()));
+
       m_shadowAtlasLayers.push_back(-1);
       m_shadowAtlasCoords.push_back(Vec2(-1.0f));
     }
@@ -216,7 +218,13 @@ namespace ToolKit
       cameraView->SetNearClipVal(nearClip);
       cameraView->SetFarClipVal(farClip);
 
-      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i], cameraView, nearClip, farClip);
+      FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i],
+                                     cameraView,
+                                     nearClip,
+                                     farClip,
+                                     settings.Graphics.stableShadowMap);
+
+      FitViewFrustumIntoLightFrustum(m_cascadeCullCameras[i], cameraView, nearClip, farClip, false);
 
       nearClip = cascadeDists[i];
       farClip  = cascadeDists[i + 1];
@@ -247,59 +255,11 @@ namespace ToolKit
     return node;
   }
 
-  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(CameraPtr lightCamera, const RenderJobArray& jobs)
-  {
-    // Calculate all scene's bounding box
-    BoundingBox totalBBox;
-    for (const RenderJob& job : jobs)
-    {
-      if (!job.ShadowCaster)
-      {
-        continue;
-      }
-
-      totalBBox.UpdateBoundary(job.BoundingBox.max);
-      totalBBox.UpdateBoundary(job.BoundingBox.min);
-    }
-    Vec3 center = totalBBox.GetCenter();
-
-    // Set light transformation
-    lightCamera->m_node->SetTranslation(center);
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    Mat4 lightView   = lightCamera->GetViewMatrix();
-
-    // Bounding box of the scene
-    Vec3 min         = totalBBox.min;
-    Vec3 max         = totalBBox.max;
-    Vec4 vertices[8] = {Vec4(min.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, min.y, max.z, 1.0f),
-                        Vec4(min.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, max.y, max.z, 1.0f),
-                        Vec4(max.x, min.y, max.z, 1.0f),
-                        Vec4(max.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, max.y, max.z, 1.0f)};
-
-    // Calculate bounding box in light space
-    BoundingBox shadowBBox;
-    for (int i = 0; i < 8; ++i)
-    {
-      Vec4 vertex = lightView * vertices[i];
-      shadowBBox.UpdateBoundary(vertex);
-    }
-
-    lightCamera->SetLens(shadowBBox.min.x,
-                         shadowBBox.max.x,
-                         shadowBBox.min.y,
-                         shadowBBox.max.y,
-                         shadowBBox.min.z,
-                         shadowBBox.max.z);
-  }
-
   void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
                                                         CameraPtr viewCamera,
                                                         float near,
-                                                        float far)
+                                                        float far,
+                                                        bool stableFit)
   {
     // View camera has near far distances coming from i'th cascade boundaries.
     // Shadow camera is aligned with light direction, and positioned to the view camera frustum's center.
@@ -320,7 +280,7 @@ namespace ToolKit
 
     // Calculate tight shadow volume, in light's view.
     BoundingBox tightShadowVolume;
-    if (settings.Graphics.stableShadowMap)
+    if (stableFit)
     {
       // Fit a sphere around the view frustum to prevent swimming when rotating the view camera.
       // Sphere fit will prevent size / center changes of the frustum, which will yield the same shadow map
@@ -462,9 +422,9 @@ namespace ToolKit
   {
     m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
 
-    Light::UpdateShadowCamera();
-
     UpdateShadowCameraTransform();
+
+    Light::UpdateShadowCamera();
 
     // Calculate frustum.
     m_frustumCache           = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);

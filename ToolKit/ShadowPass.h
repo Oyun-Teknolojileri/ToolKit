@@ -39,7 +39,7 @@ namespace ToolKit
     void RenderShadowMaps(LightPtr light);
 
     /** Performs a single render that generates a single shadow map of a cascade, or a face of a cube etc...*/
-    void RenderShadowMap(LightPtr light, CameraPtr shadowCamera);
+    void RenderShadowMap(LightPtr light, CameraPtr shadowCamera, CameraPtr cullCamera);
 
     /**
      * Sets layer and coordinates of the shadow maps in shadow atlas.
