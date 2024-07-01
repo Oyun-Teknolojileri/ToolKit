@@ -46,8 +46,8 @@ namespace ToolKit
     void Render(Renderer* renderer) override;
 
    private:
-    void PreRender(Renderer* renderer);
-    void PostRender(Renderer* renderer);
+    void PreRender(Renderer* renderer) override;
+    void PostRender(Renderer* renderer) override;
 
     GameRendererParams m_params;
 

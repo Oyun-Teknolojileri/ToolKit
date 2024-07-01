@@ -124,7 +124,7 @@ namespace ToolKit
     }
     else
     {
-      TK_ERR("Unknown shader combination %s", key);
+      TK_ERR("Unknown shader combination %s", key.c_str());
     }
   }
 

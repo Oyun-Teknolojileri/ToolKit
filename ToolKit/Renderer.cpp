@@ -493,28 +493,45 @@ namespace ToolKit
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
   }
 
-  void Renderer::InvalidateFramebufferDepth(FramebufferPtr fb)
+  // By invalidating the frame buffers attachment, bandwith and performance saving is aimed,
+  // Nvidia driver issue makes the invalidate perform much worse. Clear will work the same in terms of bandwith saving
+  // with no performance penalty.
+#define PREFER_CLEAR_OVER_INVALIDATE 1
+
+  void Renderer::InvalidateFramebufferDepth(FramebufferPtr frameBuffer)
   {
+#if PREFER_CLEAR_OVER_INVALIDATE
+    SetFramebuffer(frameBuffer, GraphicBitFields::DepthBits);
+#else
     constexpr GLenum invalidAttachments[1] = {GL_DEPTH_ATTACHMENT};
 
-    SetFramebuffer(fb, GraphicBitFields::None);
-    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+    SetFramebuffer(frameBuffer, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(GL_FRAMEBUFFER, 1, invalidAttachments);
+#endif
   }
 
-  void Renderer::InvalidateFramebufferStencil(FramebufferPtr fb)
+  void Renderer::InvalidateFramebufferStencil(FramebufferPtr frameBuffer)
   {
+#if PREFER_CLEAR_OVER_INVALIDATE
+    SetFramebuffer(frameBuffer, GraphicBitFields::StencilBits);
+#else
     constexpr GLenum invalidAttachments[1] = {GL_STENCIL_ATTACHMENT};
 
-    SetFramebuffer(fb, GraphicBitFields::None);
-    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+    SetFramebuffer(frameBuffer, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(GL_FRAMEBUFFER, 1, invalidAttachments);
+#endif
   }
 
-  void Renderer::InvalidateFramebufferDepthStencil(FramebufferPtr fb)
+  void Renderer::InvalidateFramebufferDepthStencil(FramebufferPtr frameBuffer)
   {
+#if PREFER_CLEAR_OVER_INVALIDATE
+    SetFramebuffer(frameBuffer, GraphicBitFields::DepthStencilBits);
+#else
     constexpr GLenum invalidAttachments[2] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
 
-    SetFramebuffer(fb, GraphicBitFields::None);
-    RHI::InvalidateFramebuffer(fb->GetFboId(), 2, invalidAttachments);
+    SetFramebuffer(frameBuffer, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(GL_FRAMEBUFFER, 2, invalidAttachments);
+#endif
   }
 
   void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer, GraphicBitFields::AllBits); }

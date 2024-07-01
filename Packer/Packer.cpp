@@ -191,24 +191,30 @@ namespace ToolKit
     TK_LOG("Run toolkit compile script\n");
     Path newWorkDir(ConcatPaths({m_toolkitPath, "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
+
     int toolKitCompileResult = -1;
-    const char* scriptName   = nullptr;
+    String buildConfig;
+    String script   = "Build.bat";
+    String cmakeSrc = " ../../";
+
     if (m_publishConfig == PublishConfig::Debug)
     {
-      scriptName = "WinBuildDebug.bat";
+      buildConfig = " Debug";
     }
     else if (m_publishConfig == PublishConfig::Develop)
     {
-      scriptName = "WinBuildRelWithDebugInfo.bat";
+      buildConfig = " RelWithDebInfo";
     }
-    else // if (m_publishConfig == PublishConfig::Deploy)
+    else
     {
-      scriptName = "WinBuildRelease.bat";
+      buildConfig = " Release";
     }
-    toolKitCompileResult = std::system(scriptName);
+
+    String cmd           = script + buildConfig + cmakeSrc;
+    toolKitCompileResult = std::system(cmd.c_str());
     if (toolKitCompileResult != 0)
     {
-      returnLoggingError(scriptName, true);
+      returnLoggingError(cmd, true);
       TK_ERR("ToolKit could not be compiled\n");
       return -1;
     }
@@ -222,10 +228,12 @@ namespace ToolKit
     }
 
     int pluginCompileResult = -1;
-    pluginCompileResult     = std::system(scriptName);
+    cmakeSrc                = " ../../Codes";
+    cmd                     = script + buildConfig + cmakeSrc;
+    pluginCompileResult     = std::system(cmd.c_str());
     if (pluginCompileResult != 0)
     {
-      returnLoggingError(scriptName, true);
+      returnLoggingError(cmd, true);
       TK_ERR("Windows build has failed!\n");
       return -1;
     }
