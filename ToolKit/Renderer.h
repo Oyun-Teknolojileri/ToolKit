@@ -48,9 +48,9 @@ namespace ToolKit
     void ClearBuffer(GraphicBitFields fields, const Vec4& value = Vec4(0.0f));
     void ColorMask(bool r, bool g, bool b, bool a);
     void CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields);
-    void InvalidateFramebufferDepth(FramebufferPtr fb);
-    void InvalidateFramebufferStencil(FramebufferPtr fb);
-    void InvalidateFramebufferDepthStencil(FramebufferPtr fb);
+    void InvalidateFramebufferDepth(FramebufferPtr frameBuffer);
+    void InvalidateFramebufferStencil(FramebufferPtr frameBuffer);
+    void InvalidateFramebufferDepthStencil(FramebufferPtr frameBuffer);
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);

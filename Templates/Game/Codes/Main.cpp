@@ -145,8 +145,8 @@ namespace ToolKit
 
           // Init game
           g_game = new Game();
-          g_game->Init(g_proxy);
           g_game->SetViewport(g_viewport);
+          g_game->Init(g_proxy);
           g_game->m_currentState = PluginState::Running;
 
           g_gameRenderer         = new GameRenderer();
@@ -174,10 +174,9 @@ namespace ToolKit
             if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
             {
               GameRendererParams params;
-              params.gfx                 = scene->m_postProcessSettings;
-              params.scene               = scene;
-              params.viewport            = g_viewport;
-              params.useMobileRenderPath = g_engineSettings->Graphics.RenderSpec == RenderingSpec::Mobile;
+              params.gfx      = scene->m_postProcessSettings;
+              params.scene    = scene;
+              params.viewport = g_viewport;
               g_gameRenderer->SetParams(params);
             }
 

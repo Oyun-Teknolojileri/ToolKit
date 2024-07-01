@@ -29,7 +29,7 @@ namespace ToolKit
     String define;        //!< Name of the define exactly it appears in shader.
     StringArray variants; //!< Value combinations for the given define.
 
-    bool operator==(const ShaderDefine& other) { return define == other.define; }
+    bool operator==(const ShaderDefine& other) const { return define == other.define; }
   };
 
   typedef std::vector<ShaderDefine> ShaderDefineArray;
