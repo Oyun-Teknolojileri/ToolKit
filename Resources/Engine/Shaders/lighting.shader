@@ -13,7 +13,7 @@
 #define LIGHTING_SHADER
 
 
-#define MAX_LIGHT_COUNT 128
+#define MAX_LIGHT_COUNT 40
 
 // TODO Minimize and pack this data as much as possible
 struct _LightData

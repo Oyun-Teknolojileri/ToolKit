@@ -442,6 +442,8 @@ namespace ToolKit
   void Renderer::GetElapsedTime(float& cpu, float& gpu)
   {
     cpu = m_cpuTime;
+    gpu = 1.0f;
+#ifndef TK_ANDROID
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
       GLuint elapsedTime;
@@ -449,10 +451,7 @@ namespace ToolKit
 
       gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
     }
-    else
-    {
-      gpu = 1.0f;
-    }
+#endif
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
