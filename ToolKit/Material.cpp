@@ -319,18 +319,20 @@ namespace ToolKit
         XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
-        ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(path));
-        if (shader->m_shaderType == ShaderType::VertexShader)
+        if (ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(path)))
         {
-          m_vertexShader = shader;
-        }
-        else if (shader->m_shaderType == ShaderType::FragmentShader)
-        {
-          m_fragmentShader = shader;
-        }
-        else
-        {
-          assert(false);
+          if (shader->m_shaderType == ShaderType::VertexShader)
+          {
+            m_vertexShader = shader;
+          }
+          else if (shader->m_shaderType == ShaderType::FragmentShader)
+          {
+            m_fragmentShader = shader;
+          }
+          else
+          {
+            assert(false && "Shader type is not supported.");
+          }
         }
       }
       else if (strcmp("color", node->name()) == 0)
