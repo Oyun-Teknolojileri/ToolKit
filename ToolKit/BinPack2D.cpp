@@ -7,6 +7,8 @@
 
 #include "BinPack2D.h"
 
+#include "ToolKit.h"
+
 namespace ToolKit
 {
 

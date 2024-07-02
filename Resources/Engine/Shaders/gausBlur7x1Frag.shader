@@ -6,6 +6,7 @@
 	<!--
 		#version 300 es
 		precision highp float;
+		precision highp sampler2DArray;
 
 		uniform vec3 BlurScale;
 		uniform sampler2D s_texture0;
