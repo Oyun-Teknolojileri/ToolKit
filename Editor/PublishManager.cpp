@@ -26,7 +26,7 @@ namespace ToolKit
     {
       if (m_isBuilding)
       {
-        TK_WRN("Toolkit already building an project");
+        TK_WRN("Toolkit is already building a project.");
         return;
       }
 
@@ -41,8 +41,21 @@ namespace ToolKit
       // this will cause errors otherwise.
       GetFileManager()->CloseZipFile();
 
-      m_isBuilding           = true;
-      packerPath             = std::filesystem::absolute(ConcatPaths({"..", packerPath})).string();
+      m_isBuilding = true;
+      packerPath   = std::filesystem::absolute(ConcatPaths({"..", packerPath})).string();
+
+      if (platform == PublishPlatform::Web)
+      {
+        TK_LOG("Publishing to Web...");
+      }
+      else if (platform == PublishPlatform::Android)
+      {
+        TK_LOG("Publishing to Android...");
+      }
+      else // windows build
+      {
+        TK_LOG("Publishing to Windows...");
+      }
 
       const auto afterPackFn = [&](int res) -> void
       {
@@ -59,21 +72,48 @@ namespace ToolKit
         m_isBuilding = false;
       };
 
-      if (platform == PublishPlatform::Web)
+      g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
+    }
+
+    void PublishManager::Pack()
+    {
+      if (m_isBuilding)
       {
-        TK_LOG("Publishing to Web...");
-        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
+        TK_WRN("Toolkit is already building a project.");
+        return;
       }
-      else if (platform == PublishPlatform::Android)
+
+      // Platform and config is not important, this function will just pack the resources.
+      String publishArguments = ConstructPublishArgs(PublishPlatform::Windows, PublishConfig::Debug, true);
+
+      GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
+      g_app->m_statusMsg = "Packing..." + g_statusNoTerminate;
+
+      String packerPath  = NormalizePath("Utils/Packer/Packer.exe");
+
+      // Close zip file before running packer, because packer will use this file as well,
+      // this will cause errors otherwise.
+      GetFileManager()->CloseZipFile();
+
+      m_isBuilding           = true;
+      packerPath             = std::filesystem::absolute(ConcatPaths({"..", packerPath})).string();
+
+      const auto afterPackFn = [&](int res) -> void
       {
-        TK_LOG("Publishing to Android...");
-        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
-      }
-      else // windows build
-      {
-        TK_LOG("Publishing to Windows...");
-        g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
-      }
+        if (res != 0)
+        {
+          TK_WRN("Packing Failed.");
+          g_app->m_statusMsg = "Failed.";
+        }
+        else
+        {
+          TK_LOG("Packing Ended.");
+          g_app->m_statusMsg = "Success.";
+        }
+        m_isBuilding = false;
+      };
+
+      g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
     }
 
     String PublishManager::ConstructPublishArgs(PublishPlatform platform, PublishConfig publishConfig, bool packOnly)

@@ -32,6 +32,9 @@ namespace ToolKit
     {
      public:
       void Publish(PublishPlatform platform, PublishConfig publishConfig);
+      void Pack();
+
+     private:
       String ConstructPublishArgs(PublishPlatform platform, PublishConfig publishConfig, bool packOnly);
 
      public:

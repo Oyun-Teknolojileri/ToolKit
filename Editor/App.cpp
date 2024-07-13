@@ -1201,19 +1201,7 @@ namespace ToolKit
       }
     }
 
-    void App::PackResources()
-    {
-      String projectName = m_workspace.GetActiveProject().name;
-      if (projectName.empty())
-      {
-        TK_ERR("No project is loaded.");
-        return;
-      }
-
-      String sceneResourcesPath = ConcatPaths({m_workspace.GetActiveWorkspace(), projectName, "Resources", "Scenes"});
-
-      GetFileManager()->PackResources(sceneResourcesPath);
-    }
+    void App::PackResources() { m_publishManager->Pack(); }
 
     void App::SaveAllResources()
     {

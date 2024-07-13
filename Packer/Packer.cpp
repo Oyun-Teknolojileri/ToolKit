@@ -113,7 +113,7 @@ namespace ToolKit
     if (m_publishConfig == PublishConfig::Deploy || !std::filesystem::exists(packPath))
     {
       int packResult = PackResources();
-      if (packResult != 0)
+      if (packResult != 0 || m_onlyPack)
       {
         return packResult;
       }
