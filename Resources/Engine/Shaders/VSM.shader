@@ -147,7 +147,7 @@ float Random(vec4 seed)
 // Evsm from TheRealMJP shadow sample app.
 // https://github.com/TheRealMJP/Shadows
 
-#define SMFormat16Bit 0
+#define SMFormat16Bit 1
 #define EvsmExponents GetEVSMExponents(40.0, 5.0, 1)
 
 vec2 GetEVSMExponents(in float positiveExponent, in float negativeExponent, in int vsmFormat)
