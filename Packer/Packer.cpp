@@ -108,9 +108,13 @@ namespace ToolKit
 
   int Packer::Publish()
   {
-    String packPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    String packPath   = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
 
-    if (m_publishConfig == PublishConfig::Deploy || !std::filesystem::exists(packPath))
+    bool needPacking  = m_publishConfig == PublishConfig::Deploy;
+    needPacking      |= !std::filesystem::exists(packPath);
+    needPacking      |= m_onlyPack;
+
+    if (needPacking)
     {
       int packResult = PackResources();
       if (packResult != 0 || m_onlyPack)
