@@ -38,6 +38,12 @@ namespace ToolKit
 
 #ifdef TK_ANDROID
 
+      typedef void* (*GL_PROC_ADDR)(const char*);
+      GL_PROC_ADDR glLoader = (GL_PROC_ADDR)glGetProcAddres;
+
+      tk_glRenderbufferStorageMultisampleEXT = (TKGL_RenderbufferStorageMultisample) glLoader("glRenderbufferStorageMultisampleEXT");
+      tk_glFramebufferTexture2DMultisampleEXT = (TKGL_FramebufferTexture2DMultisample) glLoader("glFramebufferTexture2DMultisampleEXT");
+
 #endif
   }
 

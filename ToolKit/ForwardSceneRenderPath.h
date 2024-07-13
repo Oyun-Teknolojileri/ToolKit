@@ -46,6 +46,7 @@ namespace ToolKit
 
    protected:
     void SetPassParams();
+    bool RequiresForwardPreProcessPass();
 
    public:
     SceneRenderPathParams m_params;

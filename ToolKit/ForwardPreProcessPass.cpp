@@ -47,6 +47,16 @@ namespace ToolKit
     PUSH_GPU_MARKER("ForwardPreProcess::InitBuffers");
     PUSH_CPU_MARKER("ForwardPreProcess::InitBuffers");
 
+    if (m_buffersInitialized)
+    {
+      const FramebufferSettings& bufferSettings = m_framebuffer->GetSettings();
+      if (bufferSettings.width == width && height == height)
+      {
+        // Already initialized and re init is not needed.
+        return;
+      }
+    }
+
     m_framebuffer->Init({width, height, false, false});
     m_framebuffer->ReconstructIfNeeded(width, height);
     m_normalRt->ReconstructIfNeeded(width, height);
@@ -65,6 +75,8 @@ namespace ToolKit
     {
       m_framebuffer->AttachDepthTexture(depth);
     }
+
+    m_buffersInitialized = true;
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

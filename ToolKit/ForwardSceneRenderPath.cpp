@@ -13,6 +13,7 @@
 
 namespace ToolKit
 {
+
   ForwardSceneRenderPath::ForwardSceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
@@ -57,7 +58,7 @@ namespace ToolKit
     }
 
     // Forward Pre Process Pass
-    if (m_params.Gfx.SSAOEnabled || m_params.Gfx.DepthOfFieldEnabled)
+    if (RequiresForwardPreProcessPass())
     {
       m_passArray.push_back(m_forwardPreProcessPass);
     }
@@ -96,8 +97,11 @@ namespace ToolKit
 
     SetPassParams();
 
-    FramebufferSettings settings = m_params.MainFramebuffer->GetSettings();
-    m_forwardPreProcessPass->InitBuffers(settings.width, settings.height);
+    if (RequiresForwardPreProcessPass())
+    {
+      FramebufferSettings settings = m_params.MainFramebuffer->GetSettings();
+      m_forwardPreProcessPass->InitBuffers(settings.width, settings.height);
+    }
   }
 
   void ForwardSceneRenderPath::PostRender(Renderer* renderer) { RenderPath::PostRender(renderer); }
@@ -182,4 +186,10 @@ namespace ToolKit
     m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
     m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
   }
+
+  bool ForwardSceneRenderPath::RequiresForwardPreProcessPass()
+  {
+    return m_params.Gfx.SSAOEnabled || m_params.Gfx.DepthOfFieldEnabled;
+  }
+
 } // namespace ToolKit
