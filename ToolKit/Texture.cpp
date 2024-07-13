@@ -234,11 +234,7 @@ namespace ToolKit
     m_height    = height;
     m_stencil   = stencil;
 
-    // Create a default depth, depth-stencil buffer
     glGenRenderbuffers(1, &m_textureId);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
-    GLenum component = (GLenum) GetDepthFormat();
-    glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
 
     uint64 internalFormatSize = stencil ? 4 : 3;
     AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
