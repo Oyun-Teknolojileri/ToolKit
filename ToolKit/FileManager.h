@@ -11,9 +11,7 @@
 
 #include <zlib.h>
 
-#include <variant>
-
-#ifdef __ANDROID__
+#ifdef TK_ANDROID
   #include <Android/minizip/unzip.h>
   #include <Android/minizip/zip.h>
 #else

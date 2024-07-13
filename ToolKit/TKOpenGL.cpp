@@ -35,6 +35,10 @@ namespace ToolKit
   #endif
 
 #endif
+
+#ifdef TK_ANDROID
+
+#endif
   }
 
 } // namespace ToolKit

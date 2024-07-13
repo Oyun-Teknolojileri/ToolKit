@@ -5,15 +5,15 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#ifdef __ANDROID__
+#include "Types.h"
+
+#ifdef TK_ANDROID
   #include <GLES3/gl32.h>
-#elif defined(__EMSCRIPTEN__)
+#elif defined(TK_WEB)
   #include <GL/glew.h>
 #else
   #include <glad/gles2.h>
 #endif
-
-#include "Types.h"
 
 namespace ToolKit
 {

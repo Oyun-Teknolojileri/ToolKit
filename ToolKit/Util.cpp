@@ -264,11 +264,14 @@ namespace ToolKit
 
   void NormalizePathInplace(String& path)
   {
-#if _WIN32
-    UnixifyPath(path);
-#else
-    DosifyPath(path);
-#endif
+    if constexpr (TK_PLATFORM == PLATFORM::TKWindows)
+    {
+      DosifyPath(path);
+    }
+    else
+    {
+      UnixifyPath(path);
+    }
   }
 
   String NormalizePath(String path)

@@ -28,4 +28,24 @@ namespace ToolKit
   #define TK_WEB
 #endif
 
+#ifdef TK_WIN // Windows.
+  #define TK_STDCAL __stdcall
+  #ifdef TK_DLL_EXPORT // Dynamic binding.
+    #define TK_API __declspec(dllexport)
+  #elif defined(TK_DLL_IMPORT)
+    #define TK_API __declspec(dllimport)
+  #else // Static binding.
+    #define TK_API
+  #endif
+#elif defined(TK_ANDROID)
+  #define TK_API __attribute__((visibility("default")))
+  #define TK_STDCAL
+#endif
+
+#ifdef TK_WIN // Windows.
+  #define TK_PLUGIN_API __declspec(dllexport)
+#else // Other OS.
+  #define TK_PLUGIN_API
+#endif
+
 } // namespace ToolKit

@@ -12,6 +12,8 @@
  * relatled structures.
  */
 
+#include "TKPlatform.h"
+
 // GLM
 #ifndef TK_GLM
   #define GLM_FORCE_QUAT_DATA_XYZW
@@ -43,20 +45,6 @@
 #include <utility>
 #include <variant>
 #include <vector>
-
-#ifdef _WIN32 // Windows.
-  #define TK_STDCAL __stdcall
-  #ifdef TK_DLL_EXPORT // Dynamic binding.
-    #define TK_API __declspec(dllexport)
-  #elif defined(TK_DLL_IMPORT)
-    #define TK_API __declspec(dllimport)
-  #else // Static binding.
-    #define TK_API
-  #endif
-#elif defined(__clang__)
-  #define TK_API __attribute__((visibility("default")))
-  #define TK_STDCAL
-#endif
 
 #define SafeDel(ptr)                                                                                                   \
   {                                                                                                                    \
