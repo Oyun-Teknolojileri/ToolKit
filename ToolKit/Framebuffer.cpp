@@ -99,6 +99,8 @@ namespace ToolKit
 
     RHI::SetFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
+    glBindRenderbuffer(GL_RENDERBUFFER, m_depthAtch->m_textureId);
+
     GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
     if (m_settings.multiSampleFrameBuffer > 0)
@@ -107,14 +109,14 @@ namespace ToolKit
       {
         glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
                                             m_settings.multiSampleFrameBuffer,
-                                            (GLenum) dt->GetDepthFormat(),
-                                            dt->m_width,
-                                            dt->m_height);
+                                            (GLenum) m_depthAtch->GetDepthFormat(),
+                                            m_depthAtch->m_width,
+                                            m_depthAtch->m_height);
       }
     }
 
     // Attach depth buffer to FBO
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, dt->m_textureId);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_depthAtch->m_textureId);
 
     // Check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
