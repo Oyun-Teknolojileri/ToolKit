@@ -31,7 +31,8 @@ namespace ToolKit
     class PublishManager
     {
      public:
-      void Publish(PublishPlatform platform, PublishConfig publishType);
+      void Publish(PublishPlatform platform, PublishConfig publishConfig);
+      String ConstructPublishArgs(PublishPlatform platform, PublishConfig publishConfig, bool packOnly);
 
      public:
       TexturePtr m_icon = nullptr;

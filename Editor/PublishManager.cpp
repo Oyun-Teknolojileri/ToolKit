@@ -17,12 +17,11 @@
 #include <functional>
 #include <thread>
 
-
-
 namespace ToolKit
 {
   namespace Editor
   {
+
     void PublishManager::Publish(PublishPlatform platform, PublishConfig publishConfig)
     {
       if (m_isBuilding)
@@ -31,24 +30,15 @@ namespace ToolKit
         return;
       }
 
-      String publishArguments  = g_app->m_workspace.GetActiveProject().name + '\n';
-      publishArguments        += g_app->m_workspace.GetActiveWorkspace() + '\n';
-      publishArguments += m_appName.empty() ? g_app->m_workspace.GetActiveProject().name + '\n' : m_appName + '\n';
-      publishArguments += std::to_string((int) m_deployAfterBuild) + '\n';
-      publishArguments += std::to_string(m_minSdk) + '\n';
-      publishArguments += std::to_string(m_maxSdk) + '\n';
-      publishArguments += std::to_string(m_oriantation) + '\n';
-      publishArguments += std::to_string((int) platform) + '\n';
-      publishArguments += m_icon == nullptr ? TexturePath(ConcatPaths({"Icons", "app.png"}), true) : m_icon->GetFile();
-      publishArguments += '\n';
-      publishArguments += std::to_string((int) publishConfig) + '\n';
+      String publishArguments = ConstructPublishArgs(platform, publishConfig, false);
 
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
-      g_app->m_statusMsg = "Packing...";
+      g_app->m_statusMsg = "Publishing..." + g_statusNoTerminate;
 
       String packerPath  = NormalizePath("Utils/Packer/Packer.exe");
-      // close zip file before running packer, because packer will use this file as well,
-      // this will cause errors otherwise
+
+      // Close zip file before running packer, because packer will use this file as well,
+      // this will cause errors otherwise.
       GetFileManager()->CloseZipFile();
 
       m_isBuilding           = true;
@@ -58,30 +48,72 @@ namespace ToolKit
       {
         if (res != 0)
         {
-          TK_WRN("Build Failed");
+          TK_WRN("Publish Failed.");
+          g_app->m_statusMsg = "Failed.";
         }
         else
         {
-          TK_LOG("Build Ended.");
+          TK_LOG("Publish Ended.");
+          g_app->m_statusMsg = "Success.";
         }
         m_isBuilding = false;
       };
 
       if (platform == PublishPlatform::Web)
       {
-        TK_LOG("Packing to Web...");
+        TK_LOG("Publishing to Web...");
         g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
       }
       else if (platform == PublishPlatform::Android)
       {
-        TK_LOG("Packing to Android...");
+        TK_LOG("Publishing to Android...");
         g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
       }
       else // windows build
       {
-        TK_LOG("Packing to Windows...");
+        TK_LOG("Publishing to Windows...");
         g_app->ExecSysCommand(packerPath, true, true, afterPackFn);
       }
     }
+
+    String PublishManager::ConstructPublishArgs(PublishPlatform platform, PublishConfig publishConfig, bool packOnly)
+    {
+      // Project name for publishing.
+      String publishArguments  = g_app->m_workspace.GetActiveProject().name + '\n';
+
+      // Workspace for publishing resources.
+      publishArguments        += g_app->m_workspace.GetActiveWorkspace() + '\n';
+
+      // App name for publishing.
+      publishArguments += m_appName.empty() ? g_app->m_workspace.GetActiveProject().name + '\n' : m_appName + '\n';
+
+      // Try deploying the app after publishing. Try running the app.
+      publishArguments += std::to_string((int) m_deployAfterBuild) + '\n';
+
+      // Min sdk for mobile publish.
+      publishArguments += std::to_string(m_minSdk) + '\n';
+
+      // Max sdk for mobile publish.
+      publishArguments += std::to_string(m_maxSdk) + '\n';
+
+      // Mobile app orientation.
+      publishArguments += std::to_string(m_oriantation) + '\n';
+
+      // Publish platform.
+      publishArguments += std::to_string((int) platform) + '\n';
+
+      // Icon for the app.
+      publishArguments += m_icon == nullptr ? TexturePath(ConcatPaths({"Icons", "app.png"}), true) : m_icon->GetFile();
+      publishArguments += '\n';
+
+      // Debug / Release / Release With Debug Info
+      publishArguments += std::to_string((int) publishConfig) + '\n';
+
+      // Only pack the resources.
+      publishArguments += std::to_string((int) packOnly) + '\n';
+
+      return publishArguments;
+    }
+
   } // namespace Editor
 } // namespace ToolKit
