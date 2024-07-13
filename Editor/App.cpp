@@ -263,6 +263,9 @@ namespace ToolKit
 
       auto saveFn = []() -> void
       {
+        // Serialize engine settings.
+        g_app->m_workspace.SerializeEngineSettings();
+
         EditorScenePtr cScene = g_app->GetCurrentScene();
         cScene->Save(false);
 
