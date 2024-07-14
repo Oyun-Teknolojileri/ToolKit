@@ -9,6 +9,7 @@
 
 #include "BloomPass.h"
 #include "CubemapPass.h"
+#include "DofPass.h"
 #include "EngineSettings.h"
 #include "ForwardPass.h"
 #include "ForwardPreProcessPass.h"

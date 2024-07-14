@@ -8,8 +8,6 @@
 #pragma once
 
 #include "ForwardSceneRenderPath.h"
-#include "FxaaPass.h"
-#include "GammaPass.h"
 #include "GammaTonemapFxaaPass.h"
 #include "Scene.h"
 #include "UIManager.h"

@@ -54,7 +54,6 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
-    renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
     renderer->SetCamera(m_params.Cam, true);
 
     POP_CPU_MARKER();
@@ -68,7 +67,6 @@ namespace ToolKit
 
     Pass::PostRender();
     Renderer* renderer = GetRenderer();
-    renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

@@ -13,6 +13,19 @@
 namespace ToolKit
 {
 
+  enum class DoFQuality
+  {
+    Low,    // Radius Scale = 2.0f
+    Normal, // Radius Scale = 0.8f
+    High    // Radius Scale = 0.2f
+  };
+
+  enum class TonemapMethod
+  {
+    Reinhard,
+    Aces
+  };
+
   struct PostProcessPassParams
   {
     FramebufferPtr FrameBuffer = nullptr;

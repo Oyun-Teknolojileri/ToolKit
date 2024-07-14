@@ -115,12 +115,6 @@
     <ClCompile Include="FullQuadPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
-    <ClCompile Include="FxaaPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClCompile>
-    <ClCompile Include="GammaPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClCompile>
     <ClCompile Include="GlErrorReporter.cpp">
       <Filter>Render</Filter>
     </ClCompile>
@@ -189,9 +183,6 @@
     </ClCompile>
     <ClCompile Include="ToolKit.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="ToneMapPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Resources</Filter>
@@ -366,12 +357,6 @@
     <ClInclude Include="FullQuadPass.h">
       <Filter>Render\PostProcessPass</Filter>
     </ClInclude>
-    <ClInclude Include="FxaaPass.h">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClInclude>
-    <ClInclude Include="GammaPass.h">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClInclude>
     <ClInclude Include="GlErrorReporter.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -446,9 +431,6 @@
     </ClInclude>
     <ClInclude Include="ToolKit.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="ToneMapPass.h">
-      <Filter>Render\PostProcessPass</Filter>
     </ClInclude>
     <ClInclude Include="TKProfiler.h">
       <Filter>Source</Filter>

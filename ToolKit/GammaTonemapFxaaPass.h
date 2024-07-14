@@ -8,10 +8,10 @@
 #pragma once
 
 #include "PostProcessPass.h"
-#include "ToneMapPass.h"
 
 namespace ToolKit
 {
+
   struct GammaTonemapFxaaPassParams
   {
     bool enableGammaCorrection = true;
@@ -28,11 +28,12 @@ namespace ToolKit
   {
    public:
     GammaTonemapFxaaPass();
-    explicit GammaTonemapFxaaPass(const GammaTonemapFxaaPassParams& params);
+    GammaTonemapFxaaPass(const GammaTonemapFxaaPassParams& params);
 
     void PreRender();
 
    public:
     GammaTonemapFxaaPassParams m_params;
   };
+
 } // namespace ToolKit

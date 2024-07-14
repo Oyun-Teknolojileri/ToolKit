@@ -12,13 +12,6 @@
 namespace ToolKit
 {
 
-  enum class DoFQuality
-  {
-    Low,    // Radius Scale = 2.0f
-    Normal, // Radius Scale = 0.8f
-    High    // Radius Scale = 0.2f
-  };
-
   struct DoFPassParams
   {
     RenderTargetPtr ColorRt = nullptr;

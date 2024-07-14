@@ -11,6 +11,7 @@
 
 namespace ToolKit
 {
+
   GammaTonemapFxaaPass::GammaTonemapFxaaPass() : PostProcessPass()
   {
     m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("gammaTonemapFxaa.shader", true));
@@ -40,4 +41,5 @@ namespace ToolKit
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
+
 } // namespace ToolKit

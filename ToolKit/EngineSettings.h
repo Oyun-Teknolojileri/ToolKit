@@ -7,9 +7,8 @@
 
 #pragma once
 
-#include "DofPass.h"
+#include "GammaTonemapFxaaPass.h"
 #include "Serialize.h"
-#include "ToneMapPass.h"
 
 namespace ToolKit
 {
