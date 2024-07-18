@@ -46,6 +46,14 @@ namespace ToolKit
 
     renderer->SetFramebuffer(m_params.MainFramebuffer, GraphicBitFields::AllBits);
 
+    renderer->m_sky = m_sky;
+
+    // Draw sky pass
+    if (m_drawSky)
+    {
+      m_passArray.push_back(m_skyPass);
+    }
+
     // Forward pass
     m_passArray.push_back(m_forwardRenderPass);
 
@@ -67,7 +75,10 @@ namespace ToolKit
     }
   }
 
-  void ForwardSceneRenderPath::PostRender(Renderer* renderer) { RenderPath::PostRender(renderer); }
+  void ForwardSceneRenderPath::PostRender(Renderer* renderer)
+  {
+    RenderPath::PostRender(renderer);
+  }
 
   void ForwardSceneRenderPath::SetPassParams()
   {
@@ -80,12 +91,49 @@ namespace ToolKit
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::SortByMaterial(m_renderData);
 
+    // Set CubeMapPass for sky.
+    m_drawSky         = false;
+    bool couldDrawSky = false;
+    if (m_sky = m_params.Scene->GetSky())
+    {
+      m_sky->Init();
+      if (m_drawSky = m_sky->GetDrawSkyVal())
+      {
+        if (m_sky->ReadyToRender())
+        {
+          m_skyPass->m_params.ClearFramebuffer = m_params.ClearFramebuffer;
+          m_skyPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
+          m_skyPass->m_params.Cam              = m_params.Cam;
+          m_skyPass->m_params.Transform        = m_sky->m_node->GetTransform();
+          m_skyPass->m_params.Material         = m_sky->GetSkyboxMaterial();
+
+          couldDrawSky                         = true;
+        }
+        else
+        {
+          m_drawSky = false;
+        }
+      }
+    }
+
     m_forwardRenderPass->m_params.renderData  = &m_renderData;
     m_forwardRenderPass->m_params.Lights      = m_params.Lights;
     m_forwardRenderPass->m_params.Cam         = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
     m_forwardRenderPass->m_params.SsaoTexture = m_ssaoPass->m_ssaoTexture;
+
+    // If sky is being rendered, then clear the main framebuffer there. If sky pass is not rendered, clear the
+    // framebuffer here
+    if (!couldDrawSky)
+    {
+      GraphicBitFields clearBuffer = m_params.ClearFramebuffer ? GraphicBitFields::AllBits : GraphicBitFields::None;
+      m_forwardRenderPass->m_params.clearBuffer = clearBuffer;
+    }
+    else
+    {
+      m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::None;
+    }
   }
 
   bool ForwardSceneRenderPath::RequiresForwardPreProcessPass()

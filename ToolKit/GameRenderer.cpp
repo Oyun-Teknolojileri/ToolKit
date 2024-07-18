@@ -98,11 +98,11 @@ namespace ToolKit
     SceneRenderPathPtr sceneRenderer = m_sceneRenderPath;
     sceneRenderer->Render(renderer);
 
-    // UI render pass
-    m_passArray.push_back(m_uiPass);
+    //// UI render pass
+    //m_passArray.push_back(m_uiPass);
 
-    RenderPath::Render(renderer);
-    m_passArray.clear();
+    //RenderPath::Render(renderer);
+    //m_passArray.clear();
 
     //// Post processings
     //if (m_params.gfx.FXAAEnabled || m_params.gfx.GammaCorrectionEnabled || m_params.gfx.TonemappingEnabled)

@@ -87,9 +87,9 @@ namespace ToolKit
         if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
             m_gammaTonemapFxaaPass->m_params.enableTonemapping)
         {
-          //m_passArray.push_back(m_gammaTonemapFxaaPass);
+          m_passArray.push_back(m_gammaTonemapFxaaPass);
+          RenderPath::Render(renderer);
         }
-        RenderPath::Render(renderer);
         m_params.App->ShowGizmos();
         break;
       default:
