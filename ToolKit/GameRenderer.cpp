@@ -104,13 +104,13 @@ namespace ToolKit
     RenderPath::Render(renderer);
     m_passArray.clear();
 
-    // Post processings
-    if (m_params.gfx.FXAAEnabled || m_params.gfx.GammaCorrectionEnabled || m_params.gfx.TonemappingEnabled)
-    {
-      m_passArray.push_back(m_gammaTonemapFxaaPass);
-      RenderPath::Render(renderer);
-      m_passArray.clear();
-    }
+    //// Post processings
+    //if (m_params.gfx.FXAAEnabled || m_params.gfx.GammaCorrectionEnabled || m_params.gfx.TonemappingEnabled)
+    //{
+    //  m_passArray.push_back(m_gammaTonemapFxaaPass);
+    //  RenderPath::Render(renderer);
+    //  m_passArray.clear();
+    //}
 
     m_fullQuadPass->m_material = m_quadUnlitMaterial;
     m_fullQuadPass->SetFragmentShader(m_quadUnlitMaterial->m_fragmentShader, renderer);

@@ -140,20 +140,23 @@ namespace ToolKit
 
     GpuProgramPtr program = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
-    renderer->EnableDepthWrite(false);
-    for (RenderJobArray::iterator job = begin; job != end; job++)
+    if (begin != end)
     {
-      if (job->Material->m_isShaderMaterial)
+      renderer->EnableDepthWrite(false);
+      for (RenderJobArray::iterator job = begin; job != end; job++)
       {
-        renderer->BindProgramOfMaterial(job->Material);
+        if (job->Material->m_isShaderMaterial)
+        {
+          renderer->BindProgramOfMaterial(job->Material);
+        }
+        else
+        {
+          renderer->BindProgram(program);
+        }
+        renderFnc(*job);
       }
-      else
-      {
-        renderer->BindProgram(program);
-      }
-      renderFnc(*job);
+      renderer->EnableDepthWrite(true);
     }
-    renderer->EnableDepthWrite(true);
 
     POP_CPU_MARKER();
   }

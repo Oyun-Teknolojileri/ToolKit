@@ -33,14 +33,14 @@ namespace ToolKit
 
   void Pass::PreRender()
   {
-    Renderer* renderer = GetRenderer();
-    m_prevFrameBuffer  = renderer->GetFrameBuffer();
+    //Renderer* renderer = GetRenderer();
+    //m_prevFrameBuffer  = renderer->GetFrameBuffer();
   }
 
   void Pass::PostRender()
   {
-    Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
+    //Renderer* renderer = GetRenderer();
+    //renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
   }
 
   void Pass::RenderSubPass(const PassPtr& pass)

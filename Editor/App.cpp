@@ -147,13 +147,6 @@ namespace ToolKit
     {
       m_deltaTime = deltaTime;
 
-      PUSH_CPU_MARKER("UI Begin & Show UI");
-
-      UI::BeginUI();
-      UI::ShowUI();
-
-      POP_CPU_MARKER();
-
       PUSH_CPU_MARKER("Mod Manager Update");
 
       // Update Mods.
@@ -228,10 +221,21 @@ namespace ToolKit
       POP_CPU_MARKER();
       PUSH_CPU_MARKER("End UI");
 
-      // Render UI.
-      UI::EndUI();
+      PUSH_CPU_MARKER("UI Begin & Show UI");
+
+      UI::BeginUI();
+      UI::ShowUI();
 
       POP_CPU_MARKER();
+
+      GetRenderSystem()->AddRenderTask({[](Renderer* renderer) -> void
+                                        {
+                                          renderer->SetFramebuffer(nullptr, GraphicBitFields::AllBits);
+                                          // Render UI.
+                                          UI::EndUI();
+
+                                          POP_CPU_MARKER();
+                                        }});
 
       m_totalFrameCount = GetRenderSystem()->GetFrameCount();
     }
