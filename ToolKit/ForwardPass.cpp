@@ -50,6 +50,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("ForwardRenderPass::PreRender");
 
     Pass::PreRender();
+
     // Set self data.
     Renderer* renderer = GetRenderer();
 

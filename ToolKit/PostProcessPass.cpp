@@ -11,8 +11,6 @@
 #include "TKProfiler.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -58,26 +56,26 @@ namespace ToolKit
       const FramebufferSettings& targetFbs = m_params.FrameBuffer->GetSettings();
       fbs.width                            = targetFbs.width;
       fbs.height                           = targetFbs.height;
+
+      RenderTargetPtr renderTarget   = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+      TextureSettings targetSettings = renderTarget->Settings();
+      if (targetSettings != m_copyTexture->Settings())
+      {
+        m_copyTexture->Settings(targetSettings);
+        m_copyTexture->UnInit();
+        m_copyTexture->m_width  = fbs.width;
+        m_copyTexture->m_height = fbs.height;
+        m_copyTexture->Init();
+      }
     }
 
-    if (Viewport::GetRenderTargetSettings() != m_copyTexture->Settings())
-    {
-      m_copyTexture->Settings(Viewport::GetRenderTargetSettings());
-      m_copyTexture->UnInit();
-      m_copyTexture->m_width  = fbs.width;
-      m_copyTexture->m_height = fbs.height;
-      m_copyTexture->Init();
-    }
-    else
-    {
-      m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
-    }
+    m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
     m_copyBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_copyTexture);
 
     // Copy given buffer.
     renderer->CopyFrameBuffer(m_params.FrameBuffer, m_copyBuffer, GraphicBitFields::ColorBits);
 
-    // Set given buffer as a texture to be read in gamma pass.
+    // Set given buffer as a texture to be read in post process pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
     m_postProcessPass->SetFragmentShader(m_postProcessShader, renderer);

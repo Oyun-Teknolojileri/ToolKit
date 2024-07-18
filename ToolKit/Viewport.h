@@ -187,7 +187,7 @@ namespace ToolKit
      * Returns RenderTargetSetting of the Viewport.
      * @return RenderTargetSetting of the Viewport.
      */
-    static TextureSettings GetRenderTargetSettings();
+    TextureSettings GetRenderTargetSettings();
 
    protected:
     // Internal window handling.

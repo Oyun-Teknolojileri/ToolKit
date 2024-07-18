@@ -44,8 +44,6 @@ namespace ToolKit
 
     m_passArray.clear();
 
-    renderer->SetFramebuffer(m_params.MainFramebuffer, GraphicBitFields::AllBits);
-
     renderer->m_sky = m_sky;
 
     // Draw sky pass
@@ -68,6 +66,10 @@ namespace ToolKit
 
     SetPassParams();
 
+    // Clear main frame buffer.
+    renderer->SetFramebuffer(m_params.MainFramebuffer, GraphicBitFields::AllBits);
+
+    // Init / ReInit forward pre process.
     if (RequiresForwardPreProcessPass())
     {
       FramebufferSettings settings = m_params.MainFramebuffer->GetSettings();
@@ -75,10 +77,7 @@ namespace ToolKit
     }
   }
 
-  void ForwardSceneRenderPath::PostRender(Renderer* renderer)
-  {
-    RenderPath::PostRender(renderer);
-  }
+  void ForwardSceneRenderPath::PostRender(Renderer* renderer) { RenderPath::PostRender(renderer); }
 
   void ForwardSceneRenderPath::SetPassParams()
   {

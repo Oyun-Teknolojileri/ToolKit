@@ -27,7 +27,7 @@ namespace ToolKit
   {
    public:
     FullQuadPass();
-    explicit FullQuadPass(const FullQuadPassParams& params);
+    FullQuadPass(const FullQuadPassParams& params);
     ~FullQuadPass();
 
     void Render() override;
