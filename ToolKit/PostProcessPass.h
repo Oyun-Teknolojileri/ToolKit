@@ -36,7 +36,7 @@ namespace ToolKit
   {
    public:
     PostProcessPass();
-    explicit PostProcessPass(const PostProcessPassParams& params);
+    PostProcessPass(const PostProcessPassParams& params);
     ~PostProcessPass();
 
     void Render() override;

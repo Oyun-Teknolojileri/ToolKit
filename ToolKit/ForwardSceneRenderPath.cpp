@@ -44,9 +44,24 @@ namespace ToolKit
 
     m_passArray.clear();
 
-    renderer->m_sky = m_sky;
+    // Shadow pass
+    renderer->SetShadowAtlas(Cast<Texture>(m_shadowPass->GetShadowAtlas()));
+    m_passArray.push_back(m_shadowPass);
+
+    // Forward Pre Process Pass
+    if (RequiresForwardPreProcessPass())
+    {
+      // m_passArray.push_back(m_forwardPreProcessPass);
+    }
+
+    // SSAO pass
+    if (m_params.Gfx.SSAOEnabled)
+    {
+      // m_passArray.push_back(m_ssaoPass);
+    }
 
     // Draw sky pass
+    renderer->m_sky = m_sky;
     if (m_drawSky)
     {
       m_passArray.push_back(m_skyPass);
@@ -55,7 +70,21 @@ namespace ToolKit
     // Forward pass
     m_passArray.push_back(m_forwardRenderPass);
 
+    // Bloom pass
+    if (m_params.Gfx.BloomEnabled)
+    {
+      // m_passArray.push_back(m_bloomPass);
+    }
+
+    // Depth of field pass
+    if (m_params.Gfx.DepthOfFieldEnabled)
+    {
+      // m_passArray.push_back(m_dofPass);
+    }
+
     RenderPath::Render(renderer);
+
+    renderer->SetShadowAtlas(nullptr);
 
     PostRender(renderer);
   }
@@ -65,9 +94,6 @@ namespace ToolKit
     RenderPath::PreRender(renderer);
 
     SetPassParams();
-
-    // Clear main frame buffer.
-    renderer->SetFramebuffer(m_params.MainFramebuffer, GraphicBitFields::AllBits);
 
     // Init / ReInit forward pre process.
     if (RequiresForwardPreProcessPass())
@@ -87,6 +113,10 @@ namespace ToolKit
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes());
 
+    m_shadowPass->m_params.scene      = m_params.Scene;
+    m_shadowPass->m_params.viewCamera = m_params.Cam;
+    m_shadowPass->m_params.lights     = m_params.Lights;
+
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::SortByMaterial(m_renderData);
 
@@ -100,13 +130,10 @@ namespace ToolKit
       {
         if (m_sky->ReadyToRender())
         {
-          m_skyPass->m_params.ClearFramebuffer = m_params.ClearFramebuffer;
-          m_skyPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-          m_skyPass->m_params.Cam              = m_params.Cam;
-          m_skyPass->m_params.Transform        = m_sky->m_node->GetTransform();
-          m_skyPass->m_params.Material         = m_sky->GetSkyboxMaterial();
-
-          couldDrawSky                         = true;
+          m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+          m_skyPass->m_params.Cam         = m_params.Cam;
+          m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
+          m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
         }
         else
         {
@@ -122,17 +149,36 @@ namespace ToolKit
     m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
     m_forwardRenderPass->m_params.SsaoTexture = m_ssaoPass->m_ssaoTexture;
 
-    // If sky is being rendered, then clear the main framebuffer there. If sky pass is not rendered, clear the
-    // framebuffer here
-    if (!couldDrawSky)
-    {
-      GraphicBitFields clearBuffer = m_params.ClearFramebuffer ? GraphicBitFields::AllBits : GraphicBitFields::None;
-      m_forwardRenderPass->m_params.clearBuffer = clearBuffer;
-    }
-    else
+    // Either sky pass or forward pass will clear the main frame buffer.
+    if (m_drawSky)
     {
       m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::None;
     }
+    else
+    {
+      m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::AllBits;
+    }
+
+    // m_forwardPreProcessPass->m_params       = m_forwardRenderPass->m_params;
+
+    // m_ssaoPass->m_params.GNormalBuffer      = m_forwardPreProcessPass->m_normalRt;
+    // m_ssaoPass->m_params.GLinearDepthBuffer = m_forwardPreProcessPass->m_linearDepthRt;
+    // m_ssaoPass->m_params.Cam                = m_params.Cam;
+    // m_ssaoPass->m_params.Radius             = m_params.Gfx.SSAORadius;
+    // m_ssaoPass->m_params.spread             = m_params.Gfx.SSAOSpread;
+    // m_ssaoPass->m_params.Bias               = m_params.Gfx.SSAOBias;
+    // m_ssaoPass->m_params.KernelSize         = m_params.Gfx.SSAOKernelSize;
+
+    // m_bloomPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
+    // m_bloomPass->m_params.intensity         = m_params.Gfx.BloomIntensity;
+    // m_bloomPass->m_params.minThreshold      = m_params.Gfx.BloomThreshold;
+    // m_bloomPass->m_params.iterationCount    = m_params.Gfx.BloomIterationCount;
+
+    // m_dofPass->m_params.ColorRt    =
+    // m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0); m_dofPass->m_params.DepthRt
+    // = m_forwardPreProcessPass->m_linearDepthRt; m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
+    // m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
+    // m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
   }
 
   bool ForwardSceneRenderPath::RequiresForwardPreProcessPass()

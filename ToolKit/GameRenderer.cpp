@@ -18,6 +18,15 @@ namespace ToolKit
     m_fullQuadPass         = MakeNewPtr<FullQuadPass>();
   }
 
+  GameRenderer::~GameRenderer()
+  {
+    m_sceneRenderPath      = nullptr;
+    m_uiPass               = nullptr;
+    m_gammaTonemapFxaaPass = nullptr;
+    m_fullQuadPass         = nullptr;
+    m_quadUnlitMaterial    = nullptr;
+  }
+
   void GameRenderer::PreRender(Renderer* renderer)
   {
     // Scene pass params
@@ -92,29 +101,25 @@ namespace ToolKit
 
     PreRender(renderer);
 
-    m_passArray.clear();
-
     // Scene renderer
     SceneRenderPathPtr sceneRenderer = m_sceneRenderPath;
     sceneRenderer->Render(renderer);
 
+    m_passArray.clear();
+
     // UI render pass
     m_passArray.push_back(m_uiPass);
 
-    RenderPath::Render(renderer);
-    m_passArray.clear();
-
     // Post processings
-    if (m_params.gfx.FXAAEnabled || m_params.gfx.GammaCorrectionEnabled || m_params.gfx.TonemappingEnabled)
+    if (m_gammaTonemapFxaaPass->IsEnabled())
     {
       m_passArray.push_back(m_gammaTonemapFxaaPass);
-      RenderPath::Render(renderer);
-      m_passArray.clear();
     }
 
     m_fullQuadPass->m_material = m_quadUnlitMaterial;
     m_fullQuadPass->SetFragmentShader(m_quadUnlitMaterial->m_fragmentShader, renderer);
     m_passArray.push_back(m_fullQuadPass);
+
     RenderPath::Render(renderer);
 
     PostRender(renderer);

@@ -13,7 +13,6 @@
 #include "EditorViewport2d.h"
 #include "Gizmo.h"
 #include "LightMeshGenerator.h"
-#include "Util.h"
 
 #include <BVH.h>
 #include <Camera.h>
@@ -24,6 +23,7 @@
 #include <MaterialComponent.h>
 #include <TKProfiler.h>
 #include <UIManager.h>
+#include <Util.h>
 
 #include <DebugNew.h>
 

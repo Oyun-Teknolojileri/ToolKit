@@ -22,41 +22,30 @@ namespace ToolKit
     EngineSettings::PostProcessingSettings gfx;
   };
 
-  /**
-   * This class is being used in games to render.
-   */
+  /** This class is being used in games to render. */
   class TK_API GameRenderer : public RenderPath
   {
    public:
     GameRenderer();
-
-    virtual ~GameRenderer()
-    {
-      m_sceneRenderPath      = nullptr;
-      m_uiPass               = nullptr;
-      m_gammaTonemapFxaaPass = nullptr;
-      m_fullQuadPass         = nullptr;
-      m_quadUnlitMaterial    = nullptr;
-    }
+    virtual ~GameRenderer();
 
     void SetParams(const GameRendererParams& gameRendererParams);
-
     void Render(Renderer* renderer) override;
 
    private:
     void PreRender(Renderer* renderer) override;
     void PostRender(Renderer* renderer) override;
 
+   private:
     GameRendererParams m_params;
 
     SceneRenderPathPtr m_sceneRenderPath           = nullptr;
     ForwardRenderPassPtr m_uiPass                  = nullptr;
     GammaTonemapFxaaPassPtr m_gammaTonemapFxaaPass = nullptr;
     FullQuadPassPtr m_fullQuadPass                 = nullptr;
+    MaterialPtr m_quadUnlitMaterial                = nullptr;
 
     RenderJobArray m_uiRenderJobs;
     RenderData m_uiRenderData;
-
-    MaterialPtr m_quadUnlitMaterial = nullptr;
   };
 } // namespace ToolKit

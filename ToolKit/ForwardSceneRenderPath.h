@@ -27,7 +27,6 @@ namespace ToolKit
     ScenePtr Scene                 = nullptr;
     CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
     EngineSettings::PostProcessingSettings Gfx;
   };
 

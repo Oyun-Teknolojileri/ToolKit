@@ -26,21 +26,12 @@ namespace ToolKit
     PUSH_GPU_MARKER("CubeMapPass::Render");
     PUSH_CPU_MARKER("CubeMapPass::Render");
 
-    m_cube->m_node->SetTransform(m_params.Transform);
-
     Renderer* renderer = GetRenderer();
-
-    if (m_params.ClearFramebuffer)
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
-    }
-    else
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
-    }
+    renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs(jobs, {m_cube.get()});
+
     renderer->RenderWithProgramFromMaterial(jobs);
 
     POP_CPU_MARKER();
@@ -53,6 +44,9 @@ namespace ToolKit
     PUSH_CPU_MARKER("CubeMapPass::PreRender");
 
     Pass::PreRender();
+
+    m_cube->m_node->SetTransform(m_params.Transform);
+
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
 

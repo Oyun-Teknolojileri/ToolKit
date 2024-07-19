@@ -19,7 +19,6 @@ namespace ToolKit
     MaterialPtr Material       = nullptr;
     CompareFunctions DepthFn   = CompareFunctions::FuncLequal;
     Mat4 Transform;
-    bool ClearFramebuffer = false;
   };
 
   class TK_API CubeMapPass : public Pass

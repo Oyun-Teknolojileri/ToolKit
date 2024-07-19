@@ -17,8 +17,6 @@ namespace ToolKit
     RenderData* renderData       = nullptr;
     CameraPtr Cam                = nullptr;
     FramebufferPtr FrameBuffer   = nullptr;
-    RenderTargetPtr gNormalRt    = nullptr;
-    RenderTargetPtr gLinearRt    = nullptr;
     RenderTargetPtr SsaoTexture  = nullptr;
     GraphicBitFields clearBuffer = GraphicBitFields::AllBits;
     bool SSAOEnabled             = false;
