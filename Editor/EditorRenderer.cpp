@@ -84,8 +84,7 @@ namespace ToolKit
         m_params.App->HideGizmos();
         sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
-        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
-            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        if (m_gammaTonemapFxaaPass->IsEnabled())
         {
           m_passArray.push_back(m_gammaTonemapFxaaPass);
           RenderPath::Render(renderer);
@@ -114,14 +113,15 @@ namespace ToolKit
 
         // Draw editor objects.
         m_passArray.push_back(m_editorPass);
+
         // Clears depth buffer to draw remaining entities always on top.
         m_passArray.push_back(m_gizmoPass);
-        // Scene meshs can't block editor billboards. Desired for this case.
+
+        // Scene meshes can't block editor billboards. Desired for this case.
         m_passArray.push_back(m_billboardPass);
 
         // Post process.
-        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
-            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        if (m_gammaTonemapFxaaPass->IsEnabled())
         {
           m_passArray.push_back(m_gammaTonemapFxaaPass);
         }

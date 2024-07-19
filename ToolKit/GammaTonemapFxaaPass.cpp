@@ -42,4 +42,9 @@ namespace ToolKit
     POP_GPU_MARKER();
   }
 
+  bool GammaTonemapFxaaPass::IsEnabled()
+  {
+    return m_params.enableFxaa || m_params.enableGammaCorrection || m_params.enableTonemapping;
+  }
+
 } // namespace ToolKit

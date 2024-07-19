@@ -32,6 +32,9 @@ namespace ToolKit
 
     void PreRender();
 
+    /** Returns true if any of the sub passes (Tonemap, Fxaa, Gamma) are required. */
+    bool IsEnabled();
+
    public:
     GammaTonemapFxaaPassParams m_params;
   };
