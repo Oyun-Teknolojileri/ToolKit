@@ -33,14 +33,14 @@ namespace ToolKit
 
   void Pass::PreRender()
   {
-    //Renderer* renderer = GetRenderer();
-    //m_prevFrameBuffer  = renderer->GetFrameBuffer();
+    // Renderer* renderer = GetRenderer();
+    // m_prevFrameBuffer  = renderer->GetFrameBuffer();
   }
 
   void Pass::PostRender()
   {
-    //Renderer* renderer = GetRenderer();
-    //renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
+    // Renderer* renderer = GetRenderer();
+    // renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
   }
 
   void Pass::RenderSubPass(const PassPtr& pass)
@@ -55,6 +55,14 @@ namespace ToolKit
   Renderer* Pass::GetRenderer() { return m_renderer; }
 
   void Pass::SetRenderer(Renderer* renderer) { m_renderer = renderer; }
+
+  void Pass::UpdateUniform(const ShaderUniform& shaderUniform)
+  {
+    if (m_program != nullptr)
+    {
+      m_program->UpdateCustomUniform(shaderUniform);
+    }
+  }
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             const EntityRawPtrArray& entities,

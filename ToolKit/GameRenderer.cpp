@@ -117,7 +117,6 @@ namespace ToolKit
     }
 
     m_fullQuadPass->m_material = m_quadUnlitMaterial;
-    m_fullQuadPass->SetFragmentShader(m_quadUnlitMaterial->m_fragmentShader, renderer);
     m_passArray.push_back(m_fullQuadPass);
 
     RenderPath::Render(renderer);

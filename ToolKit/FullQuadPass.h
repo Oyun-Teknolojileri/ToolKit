@@ -39,11 +39,6 @@ namespace ToolKit
      */
     void SetFragmentShader(ShaderPtr fragmentShader, Renderer* renderer);
 
-    /**
-     * This function is used to pass custom uniforms to this pass
-     */
-    void UpdateUniform(const ShaderUniform& shaderUniform);
-
    public:
     FullQuadPassParams m_params;
     MaterialPtr m_material = nullptr;
