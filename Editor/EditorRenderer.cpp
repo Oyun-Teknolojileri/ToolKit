@@ -311,7 +311,6 @@ namespace ToolKit
       m_uiPass->m_params.clearBuffer                          = GraphicBitFields::DepthBits;
 
       // Post process pass
-
       m_gammaTonemapFxaaPass->m_params.frameBuffer            = viewport->m_framebuffer;
       m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = GetRenderSystem()->IsGammaCorrectionNeeded();
       m_gammaTonemapFxaaPass->m_params.enableFxaa             = gfx.FXAAEnabled;
