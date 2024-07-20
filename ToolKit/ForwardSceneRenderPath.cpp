@@ -51,13 +51,13 @@ namespace ToolKit
     // Forward Pre Process Pass
     if (RequiresForwardPreProcessPass())
     {
-      // m_passArray.push_back(m_forwardPreProcessPass);
+      m_passArray.push_back(m_forwardPreProcessPass);
     }
 
     // SSAO pass
     if (m_params.Gfx.SSAOEnabled)
     {
-      // m_passArray.push_back(m_ssaoPass);
+      m_passArray.push_back(m_ssaoPass);
     }
 
     // Draw sky pass
@@ -73,13 +73,13 @@ namespace ToolKit
     // Bloom pass
     if (m_params.Gfx.BloomEnabled)
     {
-      // m_passArray.push_back(m_bloomPass);
+      m_passArray.push_back(m_bloomPass);
     }
 
     // Depth of field pass
     if (m_params.Gfx.DepthOfFieldEnabled)
     {
-      // m_passArray.push_back(m_dofPass);
+      m_passArray.push_back(m_dofPass);
     }
 
     RenderPath::Render(renderer);
@@ -159,26 +159,26 @@ namespace ToolKit
       m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::AllBits;
     }
 
-    // m_forwardPreProcessPass->m_params       = m_forwardRenderPass->m_params;
+    m_forwardPreProcessPass->m_params       = m_forwardRenderPass->m_params;
 
-    // m_ssaoPass->m_params.GNormalBuffer      = m_forwardPreProcessPass->m_normalRt;
-    // m_ssaoPass->m_params.GLinearDepthBuffer = m_forwardPreProcessPass->m_linearDepthRt;
-    // m_ssaoPass->m_params.Cam                = m_params.Cam;
-    // m_ssaoPass->m_params.Radius             = m_params.Gfx.SSAORadius;
-    // m_ssaoPass->m_params.spread             = m_params.Gfx.SSAOSpread;
-    // m_ssaoPass->m_params.Bias               = m_params.Gfx.SSAOBias;
-    // m_ssaoPass->m_params.KernelSize         = m_params.Gfx.SSAOKernelSize;
+    m_ssaoPass->m_params.GNormalBuffer      = m_forwardPreProcessPass->m_normalRt;
+    m_ssaoPass->m_params.GLinearDepthBuffer = m_forwardPreProcessPass->m_linearDepthRt;
+    m_ssaoPass->m_params.Cam                = m_params.Cam;
+    m_ssaoPass->m_params.Radius             = m_params.Gfx.SSAORadius;
+    m_ssaoPass->m_params.spread             = m_params.Gfx.SSAOSpread;
+    m_ssaoPass->m_params.Bias               = m_params.Gfx.SSAOBias;
+    m_ssaoPass->m_params.KernelSize         = m_params.Gfx.SSAOKernelSize;
 
-    // m_bloomPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
-    // m_bloomPass->m_params.intensity         = m_params.Gfx.BloomIntensity;
-    // m_bloomPass->m_params.minThreshold      = m_params.Gfx.BloomThreshold;
-    // m_bloomPass->m_params.iterationCount    = m_params.Gfx.BloomIterationCount;
+    m_bloomPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
+    m_bloomPass->m_params.intensity         = m_params.Gfx.BloomIntensity;
+    m_bloomPass->m_params.minThreshold      = m_params.Gfx.BloomThreshold;
+    m_bloomPass->m_params.iterationCount    = m_params.Gfx.BloomIterationCount;
 
-    // m_dofPass->m_params.ColorRt    =
-    // m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0); m_dofPass->m_params.DepthRt
-    // = m_forwardPreProcessPass->m_linearDepthRt; m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
-    // m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
-    // m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
+    m_dofPass->m_params.ColorRt    = m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_dofPass->m_params.DepthRt    = m_forwardPreProcessPass->m_linearDepthRt;
+    m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
+    m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
+    m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
   }
 
   bool ForwardSceneRenderPath::RequiresForwardPreProcessPass()
