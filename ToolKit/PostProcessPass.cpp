@@ -40,40 +40,11 @@ namespace ToolKit
 
     Pass::PreRender();
 
+    RenderTargetPtr srcTexture = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_copyTexture->ReconstructIfNeeded(srcTexture->m_width, srcTexture->m_height, &srcTexture->Settings());
+
     Renderer* renderer = GetRenderer();
-
-    // Initiate copy buffer.
-    FramebufferSettings fbs;
-    fbs.depthStencil    = false;
-    fbs.useDefaultDepth = false;
-    if (m_params.FrameBuffer == nullptr)
-    {
-      fbs.width  = renderer->m_windowSize.x;
-      fbs.height = renderer->m_windowSize.y;
-    }
-    else
-    {
-      const FramebufferSettings& targetFbs = m_params.FrameBuffer->GetSettings();
-      fbs.width                            = targetFbs.width;
-      fbs.height                           = targetFbs.height;
-
-      RenderTargetPtr renderTarget   = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-      TextureSettings targetSettings = renderTarget->Settings();
-      if (targetSettings != m_copyTexture->Settings())
-      {
-        m_copyTexture->Settings(targetSettings);
-        m_copyTexture->UnInit();
-        m_copyTexture->m_width  = fbs.width;
-        m_copyTexture->m_height = fbs.height;
-        m_copyTexture->Init();
-      }
-    }
-
-    m_copyTexture->ReconstructIfNeeded(fbs.width, fbs.height);
-    m_copyBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_copyTexture);
-
-    // Copy given buffer.
-    renderer->CopyFrameBuffer(m_params.FrameBuffer, m_copyBuffer, GraphicBitFields::ColorBits);
+    renderer->CopyTexture(srcTexture, m_copyTexture);
 
     // Set given buffer as a texture to be read in post process pass.
     renderer->SetTexture(0, m_copyTexture->m_textureId);
