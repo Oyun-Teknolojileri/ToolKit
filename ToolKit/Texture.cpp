@@ -661,11 +661,14 @@ namespace ToolKit
     Init();
   }
 
-  void RenderTarget::ReconstructIfNeeded(int width, int height)
+  void RenderTarget::ReconstructIfNeeded(int width, int height, const TextureSettings* settings)
   {
-    if (!m_initiated || m_width != width || m_height != height)
+    bool reconstruct  = settings != nullptr ? *settings != m_settings : false;
+    reconstruct      |= !m_initiated || m_width != width || m_height != height;
+
+    if (reconstruct)
     {
-      Reconstruct(width, height, m_settings);
+      Reconstruct(width, height, settings != nullptr ? *settings : m_settings);
     }
   }
 

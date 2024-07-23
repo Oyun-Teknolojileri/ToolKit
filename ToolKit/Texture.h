@@ -179,7 +179,7 @@ namespace ToolKit
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
     void Reconstruct(int width, int height, const TextureSettings& settings);
-    void ReconstructIfNeeded(int width, int height);
+    void ReconstructIfNeeded(int width, int height, const TextureSettings* settings = nullptr);
   };
 
   // TextureManager
