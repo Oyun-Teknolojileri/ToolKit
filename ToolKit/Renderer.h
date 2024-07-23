@@ -32,25 +32,43 @@ namespace ToolKit
 
     void SetStencilOperation(StencilOperation op);
 
-    void SetFramebuffer(FramebufferPtr fb,
-                        GraphicBitFields attachmentsToClear,
-                        const Vec4& clearColor         = Vec4(0.0f),
-                        GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
-
     void StartTimerQuery();
     void EndTimerQuery();
 
     /** Returns elapsed time between start - end time query in milliseconds.*/
     void GetElapsedTime(float& cpu, float& gpu);
 
-    FramebufferPtr GetFrameBuffer();
     void ClearColorBuffer(const Vec4& color);
     void ClearBuffer(GraphicBitFields fields, const Vec4& value = Vec4(0.0f));
     void ColorMask(bool r, bool g, bool b, bool a);
-    void CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields);
+
+    // FrameBuffer Operations
+    //////////////////////////////////////////
+
+    FramebufferPtr GetFrameBuffer();
+
+    void SetFramebuffer(FramebufferPtr fb,
+                        GraphicBitFields attachmentsToClear,
+                        const Vec4& clearColor         = Vec4(0.0f),
+                        GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
+
     void InvalidateFramebufferDepth(FramebufferPtr frameBuffer);
     void InvalidateFramebufferStencil(FramebufferPtr frameBuffer);
     void InvalidateFramebufferDepthStencil(FramebufferPtr frameBuffer);
+
+    /**
+     * Sets the src and dest frame buffers and copies the given fields.
+     * After the operation sets the previous frame buffer back.
+     */
+    void CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields);
+
+    /**
+     * Copies src to dst texture using a copy frame buffer.
+     * After the operation sets the previous frame buffer back.
+     */
+    void CopyTexture(TexturePtr src, TexturePtr dst);
+
+    //////////////////////////////////////////
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -63,12 +81,8 @@ namespace ToolKit
     void SetTexture(ubyte slotIndx, uint textureId);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure = 1.0f);
-
     CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps);
-
     CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size);
-
-    void CopyTexture(TexturePtr source, TexturePtr dest);
 
     /**
      * Sets the blend state directly which causes by passing material system.
@@ -78,27 +92,21 @@ namespace ToolKit
     void OverrideBlendState(bool enableOverride, BlendFunction func);
 
     void EnableBlending(bool enable);
-
     void EnableDepthWrite(bool enable);
-
     void EnableDepthTest(bool enable);
-
     void SetDepthTestFunc(CompareFunctions func);
 
     // Giving nullptr as argument means no shadows
     void SetShadowAtlas(TexturePtr shadowAtlas);
 
     void Render(const struct RenderJob& job);
-
     void Render(const RenderJobArray& jobs);
 
     void RenderWithProgramFromMaterial(const RenderJobArray& jobs);
     void RenderWithProgramFromMaterial(const RenderJob& job);
 
     void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
-
     void ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
-
     void GenerateBRDFLutTexture();
 
     /**
@@ -110,11 +118,8 @@ namespace ToolKit
     void SetCamera(CameraPtr camera, bool setLens);
 
     int GetMaxArrayTextureLayers();
-
     void BindProgramOfMaterial(Material* material);
-
     void BindProgram(const GpuProgramPtr& program);
-
     void ResetUsedTextureSlots();
 
    private:

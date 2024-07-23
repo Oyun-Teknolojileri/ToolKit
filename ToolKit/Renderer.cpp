@@ -486,10 +486,14 @@ namespace ToolKit
 
     dest->ReconstructIfNeeded(width, height);
 
+    FramebufferPtr lastFb = m_framebuffer;
+
     RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, srcId);
     RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
+
+    SetFramebuffer(lastFb, GraphicBitFields::None);
   }
 
   // By invalidating the frame buffers attachment, bandwith and performance saving is aimed,
@@ -612,27 +616,24 @@ namespace ToolKit
     SetDepthTestFunc(lastCompareFunc);
   }
 
-  void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
+  void Renderer::CopyTexture(TexturePtr src, TexturePtr dst)
   {
     CPU_FUNC_RANGE();
 
-    assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
-           "Sizes of the textures are not the same.");
-
-    assert(source->m_initiated && dest->m_initiated && "Texture is not initialized.");
+    assert(src->m_initiated && dst->m_initiated && "Texture is not initialized.");
+    assert(src->m_width == dst->m_width && src->m_height == dst->m_height && "Sizes of the textures are not the same.");
 
     if (m_copyFb == nullptr)
     {
       m_copyFb = MakeNewPtr<Framebuffer>();
-      m_copyFb->Init({source->m_width, source->m_height, false, false});
+      m_copyFb->Init({src->m_width, src->m_height, false, false});
     }
 
-    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
+    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dst);
     m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
 
-    // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, GraphicBitFields::None);
+    SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -643,7 +644,7 @@ namespace ToolKit
     }
 
     m_copyMaterial->UnInit();
-    m_copyMaterial->m_diffuseTexture = source;
+    m_copyMaterial->m_diffuseTexture = src;
     m_copyMaterial->Init();
 
     DrawFullQuad(m_copyMaterial);
