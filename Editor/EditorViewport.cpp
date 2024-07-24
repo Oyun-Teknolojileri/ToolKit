@@ -270,9 +270,9 @@ namespace ToolKit
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
           uint texId = 0;
-          if (m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0) != nullptr)
+          if (m_framebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0) != nullptr)
           {
-            texId = m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId;
+            texId = m_framebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId;
           }
 
           // Imgui blends the alpha of the image ( in our case, render target for the scene ) with its window

@@ -174,10 +174,11 @@ namespace ToolKit
     m_bloomPass->m_params.minThreshold      = m_params.Gfx.BloomThreshold;
     m_bloomPass->m_params.iterationCount    = m_params.Gfx.BloomIterationCount;
 
-    m_dofPass->m_params.ColorRt    = m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-    m_dofPass->m_params.DepthRt    = m_forwardPreProcessPass->m_linearDepthRt;
-    m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
-    m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
+    m_dofPass->m_params.ColorRt =
+        m_params.MainFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_dofPass->m_params.DepthRt     = m_forwardPreProcessPass->m_linearDepthRt;
+    m_dofPass->m_params.focusPoint  = m_params.Gfx.FocusPoint;
+    m_dofPass->m_params.focusScale  = m_params.Gfx.FocusScale;
     m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
   }
 

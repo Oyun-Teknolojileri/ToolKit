@@ -202,10 +202,14 @@ namespace ToolKit
     return oldRt;
   }
 
-  RenderTargetPtr Framebuffer::GetAttachment(Attachment atc)
+  RenderTargetPtr Framebuffer::GetColorAttachment(Attachment atc)
   {
-    assert(atc < Attachment::DepthAttachment);
-    return m_colorAtchs[(int) atc];
+    if (atc < Attachment::DepthAttachment)
+    {
+      return m_colorAtchs[(int) atc];
+    }
+
+    return nullptr;
   }
 
   void Framebuffer::ClearAttachments()
@@ -249,6 +253,8 @@ namespace ToolKit
   }
 
   uint Framebuffer::GetFboId() { return m_fboId; }
+
+  const FramebufferSettings& Framebuffer::GetSettings() { return m_settings; }
 
   void Framebuffer::CheckFramebufferComplete()
   {

@@ -40,7 +40,7 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    RenderTargetPtr srcTexture = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    RenderTargetPtr srcTexture = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
     m_copyTexture->ReconstructIfNeeded(srcTexture->m_width, srcTexture->m_height, &srcTexture->Settings());
 
     Renderer* renderer = GetRenderer();

@@ -47,7 +47,7 @@ namespace ToolKit
       ImGui::Dummy(imageSize);
 
       ImGui::GetWindowDrawList()->AddImageRounded(
-          Convert2ImGuiTexture(m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)),
+          Convert2ImGuiTexture(m_framebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0)),
           currentCursorPos,
           currentCursorPos + imageSize,
           Vec2(0.0f, 0.0f),

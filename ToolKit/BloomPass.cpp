@@ -12,8 +12,6 @@
 #include "TKStats.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -39,7 +37,7 @@ namespace ToolKit
     PUSH_GPU_MARKER("BloomPass::Render");
     PUSH_CPU_MARKER("BloomPass::Render");
 
-    RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    RenderTargetPtr mainRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
 
     if (mainRt == nullptr || m_invalidRenderParams)
     {
@@ -59,7 +57,7 @@ namespace ToolKit
       m_pass->UpdateUniform(ShaderUniform("srcResolution", mainRes));
       m_pass->UpdateUniform(ShaderUniform("threshold", m_params.minThreshold));
 
-      TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+      TexturePtr prevRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
 
       renderer->SetTexture(0, prevRt->m_textureId);
       m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[0];
@@ -86,7 +84,7 @@ namespace ToolKit
 
         // Find previous framebuffer & RT
         FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
-        TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+        TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
 
         // Set pass' shader and parameters
 
@@ -118,7 +116,7 @@ namespace ToolKit
       {
 
         FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
-        TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+        TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
         renderer->SetTexture(0, prevRt->m_textureId);
 
         m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
@@ -134,7 +132,7 @@ namespace ToolKit
       m_pass->SetFragmentShader(m_upsampleShader, renderer);
 
       FramebufferPtr prevFramebuffer = m_tempFrameBuffers[0];
-      TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+      TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
       renderer->SetTexture(0, prevRt->m_textureId);
 
       m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
@@ -157,7 +155,7 @@ namespace ToolKit
 
     Pass::PreRender();
 
-    RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    RenderTargetPtr mainRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
     if (!mainRt)
     {
       return;

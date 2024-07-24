@@ -83,9 +83,9 @@ namespace ToolKit
       m_quadUnlitMaterial->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
     }
 
-    ViewportPtr viewport            = m_params.viewport;
-    RenderTargetPtr colorAttachment = viewport->m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-    m_quadUnlitMaterial->m_diffuseTexture = Cast<Texture>(colorAttachment);
+    ViewportPtr viewport = m_params.viewport;
+    RenderTargetPtr atc  = viewport->m_framebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_quadUnlitMaterial->m_diffuseTexture = Cast<Texture>(atc);
   }
 
   void GameRenderer::PostRender(Renderer* renderer) { renderer->ResetUsedTextureSlots(); }
