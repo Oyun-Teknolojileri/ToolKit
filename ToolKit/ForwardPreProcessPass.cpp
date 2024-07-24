@@ -64,9 +64,6 @@ namespace ToolKit
 
     using FAttachment = Framebuffer::Attachment;
 
-    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment0);
-    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment1);
-
     m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
     m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment1, m_normalRt);
 
@@ -117,8 +114,6 @@ namespace ToolKit
     m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
     renderer->BindProgram(m_program);
     renderLinearDepthAndNormalFn(begin, end);
-
-    m_linearMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();
