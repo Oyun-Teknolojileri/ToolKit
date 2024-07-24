@@ -53,7 +53,11 @@ namespace ToolKit
     if (m_settings.useDefaultDepth)
     {
       m_depthAtch = MakeNewPtr<DepthTexture>();
-      m_depthAtch->Init(m_settings.width, m_settings.height, m_settings.depthStencil);
+      m_depthAtch->Init(m_settings.width,
+                        m_settings.height,
+                        m_settings.depthStencil,
+                        m_settings.multiSampleFrameBuffer);
+
       AttachDepthTexture(m_depthAtch);
     }
 
@@ -98,22 +102,6 @@ namespace ToolKit
     m_depthAtch = dt;
 
     RHI::SetFramebuffer(GL_FRAMEBUFFER, m_fboId);
-
-    glBindRenderbuffer(GL_RENDERBUFFER, m_depthAtch->m_textureId);
-
-    if (m_settings.multiSampleFrameBuffer > 0 && glRenderbufferStorageMultisampleEXT != nullptr)
-    {
-      glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
-                                          m_settings.multiSampleFrameBuffer,
-                                          (GLenum) m_depthAtch->GetDepthFormat(),
-                                          m_depthAtch->m_width,
-                                          m_depthAtch->m_height);
-    }
-    else
-    {
-      GLenum component = (GLenum) m_depthAtch->GetDepthFormat();
-      glRenderbufferStorage(GL_RENDERBUFFER, component, m_depthAtch->m_width, m_depthAtch->m_height);
-    }
 
     // Attach depth buffer to FBO
     GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;

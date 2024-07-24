@@ -133,19 +133,7 @@ namespace ToolKit
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
-
     renderer->SetCamera(m_params.Cam, true);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
-  }
-
-  void ForwardPreProcess::PostRender()
-  {
-    PUSH_GPU_MARKER("ForwardPreProcess::PostRender");
-    PUSH_CPU_MARKER("ForwardPreProcess::PostRender");
-
-    RenderPass::PostRender();
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

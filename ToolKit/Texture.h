@@ -78,16 +78,26 @@ namespace ToolKit
 
    public:
     void Load() override;
-    void Init(int width, int height, bool stencil);
+    void Init(int width, int height, bool stencil, int multiSample = 0);
     void UnInit() override;
 
+    /** Returns depth buffer format in use. */
     GraphicTypes GetDepthFormat();
 
    protected:
     void Clear() override;
 
    public:
-    bool m_stencil;
+    /** States if the depth texture is constructed with stencil. */
+    bool m_stencil     = false;
+
+    /**
+     * States if the render target for depth is constructed.
+     * Construction occurs when the depth texture is attached to a frame buffer.
+     */
+    bool m_constructed = false;
+
+    int m_multiSample;
   };
 
   // DataTexture

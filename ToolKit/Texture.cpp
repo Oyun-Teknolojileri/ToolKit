@@ -223,18 +223,31 @@ namespace ToolKit
 
   void DepthTexture::Clear() { UnInit(); }
 
-  void DepthTexture::Init(int width, int height, bool stencil)
+  void DepthTexture::Init(int width, int height, bool stencil, int multiSample)
   {
     if (m_initiated)
     {
       return;
     }
-    m_initiated = true;
-    m_width     = width;
-    m_height    = height;
-    m_stencil   = stencil;
+
+    m_initiated   = true;
+    m_width       = width;
+    m_height      = height;
+    m_stencil     = stencil;
+    m_multiSample = multiSample;
 
     glGenRenderbuffers(1, &m_textureId);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
+
+    if (m_multiSample > 0 && glRenderbufferStorageMultisampleEXT != nullptr)
+    {
+      glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_multiSample, (GLenum) GetDepthFormat(), m_width, m_height);
+    }
+    else
+    {
+      GLenum component = (GLenum) GetDepthFormat();
+      glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+    }
 
     uint64 internalFormatSize = stencil ? 4 : 3;
     AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
@@ -252,8 +265,10 @@ namespace ToolKit
     uint64 internalFormatSize = m_stencil ? 4 : 3;
     RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
 
-    m_textureId = 0;
-    m_initiated = false;
+    m_textureId   = 0;
+    m_initiated   = false;
+    m_constructed = false;
+    m_stencil     = false;
   }
 
   GraphicTypes DepthTexture::GetDepthFormat()

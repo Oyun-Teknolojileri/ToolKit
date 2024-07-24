@@ -24,7 +24,6 @@ namespace ToolKit
     void InitBuffers(int width, int height);
     void Render() override;
     void PreRender() override;
-    void PostRender() override;
 
    private:
     void InitDefaultDepthTexture(int width, int height);
