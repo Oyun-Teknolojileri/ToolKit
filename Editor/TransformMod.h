@@ -16,7 +16,9 @@ namespace ToolKit
   namespace Editor
   {
 
-    // States.
+    // StateTransformBase
+    //////////////////////////////////////////
+
     class StateTransformBase : public State
     {
      public:
@@ -45,6 +47,9 @@ namespace ToolKit
       TransformType m_type;
     };
 
+    // StateTransformBegin
+    //////////////////////////////////////////
+
     class StateTransformBegin : public StateTransformBase
     {
      public:
@@ -59,6 +64,9 @@ namespace ToolKit
       void CalculateIntersectionPlane();
       void CalculateGrabPoint();
     };
+
+    // TransformAction
+    //////////////////////////////////////////
 
     class TransformAction : public Action
     {
@@ -76,6 +84,9 @@ namespace ToolKit
       EntityPtr m_entity;
       Mat4 m_transform;
     };
+
+    // StateTransformTo
+    //////////////////////////////////////////
 
     class StateTransformTo : public StateTransformBase
     {
@@ -102,6 +113,9 @@ namespace ToolKit
       IVec2 m_mouseInitialLoc;
     };
 
+    // StateTransformEnd
+    //////////////////////////////////////////
+
     class StateTransformEnd : public StateTransformBase
     {
      public:
@@ -111,7 +125,9 @@ namespace ToolKit
       String GetType() override;
     };
 
-    // Mod.
+    // TransformMod
+    //////////////////////////////////////////
+
     class TransformMod : public BaseMod
     {
      public:

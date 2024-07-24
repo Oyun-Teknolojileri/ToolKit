@@ -21,7 +21,7 @@ namespace ToolKit
   // GL Extensions used by ToolKit.
 
   // glFramebufferTexture2DMultisampleEXT
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   typedef void(TK_STDCAL* TKGL_FramebufferTexture2DMultisample)(GLenum target,
                                                                 GLenum attachment,
@@ -47,7 +47,7 @@ namespace ToolKit
 #define glRenderbufferStorageMultisampleEXT tk_glRenderbufferStorageMultisampleEXT
 
   // GL_EXT_texture_filter_anisotropic
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   extern int TK_GL_EXT_texture_filter_anisotropic;
 

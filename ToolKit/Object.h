@@ -16,7 +16,7 @@ namespace ToolKit
 {
 
   // String Hash Utilities.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   /**
    * 64 bit hash function for strings.
@@ -73,7 +73,7 @@ namespace ToolKit
   }
 
   // Object
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   /**
    * Base Macro that declares required fields and functions for each class that will be part of
