@@ -139,9 +139,6 @@
     <ClCompile Include="PluginManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="PostProcessPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Render</Filter>
     </ClCompile>
@@ -383,9 +380,6 @@
     </ClInclude>
     <ClInclude Include="PluginManager.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="PostProcessPass.h">
-      <Filter>Render\PostProcessPass</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>Render</Filter>

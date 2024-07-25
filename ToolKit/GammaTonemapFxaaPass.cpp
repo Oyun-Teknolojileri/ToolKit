@@ -30,7 +30,12 @@ namespace ToolKit
     Pass::PreRender();
 
     RenderTargetPtr srcTexture = m_params.frameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
-    m_quadPass->m_material->m_diffuseTexture = srcTexture;
+    m_processTexture->ReconstructIfNeeded(srcTexture->m_width, srcTexture->m_height, &srcTexture->Settings());
+
+    Renderer* renderer = GetRenderer();
+    renderer->CopyTexture(srcTexture, m_processTexture);
+
+    m_quadPass->m_material->m_diffuseTexture = m_processTexture;
     m_quadPass->m_material->m_fragmentShader = m_postProcessShader;
     m_quadPass->m_params.frameBuffer         = m_params.frameBuffer;
     m_quadPass->m_params.clearFrameBuffer    = GraphicBitFields::AllBits;
@@ -42,12 +47,6 @@ namespace ToolKit
     m_quadPass->UpdateUniform(ShaderUniform("screenSize", m_params.screenSize));
     m_quadPass->UpdateUniform(ShaderUniform("useAcesTonemapper", (uint) m_params.tonemapMethod));
     m_quadPass->UpdateUniform(ShaderUniform("gamma", m_params.gamma));
-
-    m_processTexture->ReconstructIfNeeded(srcTexture->m_width, srcTexture->m_height, &srcTexture->Settings());
-    m_params.frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_processTexture);
-
-    Renderer* renderer = GetRenderer();
-    // renderer->ClearBuffer(GraphicBitFields::AllBits);
   }
 
   void GammaTonemapFxaaPass::Render() { RenderSubPass(m_quadPass); }

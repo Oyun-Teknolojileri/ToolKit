@@ -7,10 +7,16 @@
 
 #pragma once
 
-#include "PostProcessPass.h"
+#include "FullQuadPass.h"
 
 namespace ToolKit
 {
+
+  enum class TonemapMethod
+  {
+    Reinhard,
+    Aces
+  };
 
   struct GammaTonemapFxaaPassParams
   {
