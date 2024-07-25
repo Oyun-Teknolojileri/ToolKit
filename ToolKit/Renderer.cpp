@@ -629,11 +629,11 @@ namespace ToolKit
       m_copyFb->Init({src->m_width, src->m_height, false, false});
     }
 
-    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dst);
-    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
-
     FramebufferPtr lastFb = m_framebuffer;
     SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
+
+    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dst);
+    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -643,7 +643,6 @@ namespace ToolKit
       m_copyMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("copyTextureFrag.shader", true));
     }
 
-    m_copyMaterial->UnInit();
     m_copyMaterial->m_diffuseTexture = src;
     m_copyMaterial->Init();
 

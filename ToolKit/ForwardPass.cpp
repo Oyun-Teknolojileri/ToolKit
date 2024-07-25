@@ -57,20 +57,26 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
     renderer->SetCamera(m_params.Cam, true);
 
+    if (m_params.hasForwardPrePass)
+    {
+      renderer->EnableDepthWrite(false);
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+    }
+
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::PostRender()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::PostRender");
-    PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
-
     Pass::PostRender();
     Renderer* renderer = GetRenderer();
 
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    if (m_params.hasForwardPrePass)
+    {
+      renderer->EnableDepthWrite(true);
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
+    }
   }
 
   void ForwardRenderPass::RenderOpaque(RenderData* renderData)
@@ -143,7 +149,6 @@ namespace ToolKit
 
     if (begin != end)
     {
-      renderer->EnableDepthWrite(false);
       for (RenderJobArray::iterator job = begin; job != end; job++)
       {
         if (job->Material->m_isShaderMaterial)
@@ -156,7 +161,6 @@ namespace ToolKit
         }
         renderFnc(*job);
       }
-      renderer->EnableDepthWrite(true);
     }
 
     POP_CPU_MARKER();

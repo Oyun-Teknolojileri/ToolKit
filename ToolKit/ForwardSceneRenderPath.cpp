@@ -142,33 +142,34 @@ namespace ToolKit
       }
     }
 
-    m_forwardRenderPass->m_params.renderData  = &m_renderData;
-    m_forwardRenderPass->m_params.Lights      = m_params.Lights;
-    m_forwardRenderPass->m_params.Cam         = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.SsaoTexture = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.renderData            = &m_renderData;
+    m_forwardRenderPass->m_params.Lights                = m_params.Lights;
+    m_forwardRenderPass->m_params.Cam                   = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer           = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.SsaoTexture           = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.clearBuffer           = GraphicBitFields::None;
 
-    bool forwardPreProcessExist               = RequiresForwardPreProcessPass();
+    bool forwardPreProcessExist                         = RequiresForwardPreProcessPass();
+    m_forwardRenderPass->m_params.hasForwardPrePass     = forwardPreProcessExist;
 
-    if (m_drawSky) // Sky pass will clear color buffer.
+    if (m_drawSky) // Sky pass will clear frame buffer.
     {
       if (forwardPreProcessExist) // We need to keep depth buffer for early Z pass.
       {
-        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::None;
+        m_skyPass->m_params.clearBuffer = GraphicBitFields::ColorBits;
       }
-      else // Otherwise clear the depth buffer.
+      else // Otherwise clear all.
       {
-        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::DepthBits;
+        m_skyPass->m_params.clearBuffer = GraphicBitFields::AllBits;
       }
     }
-    else
+    else // Forward pass will clear frame buffer.
     {
-      if (forwardPreProcessExist) // We need to keep depth buffer for early Z pass.
+      if (forwardPreProcessExist)
       {
         m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::ColorBits;
       }
-      else // Otherwise clear all.
+      else
       {
         m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::AllBits;
       }

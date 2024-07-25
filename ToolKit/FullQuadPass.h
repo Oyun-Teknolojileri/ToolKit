@@ -14,9 +14,9 @@ namespace ToolKit
 
   struct FullQuadPassParams
   {
-    FramebufferPtr FrameBuffer = nullptr;
-    BlendFunction BlendFunc    = BlendFunction::NONE;
-    bool ClearFrameBuffer      = true;
+    FramebufferPtr frameBuffer        = nullptr;
+    BlendFunction blendFunc           = BlendFunction::NONE;
+    GraphicBitFields clearFrameBuffer = GraphicBitFields::AllBits;
   };
 
   /**

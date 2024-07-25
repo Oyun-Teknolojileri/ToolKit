@@ -50,8 +50,8 @@ namespace ToolKit
     renderer->SetTexture(0, m_copyTexture->m_textureId);
 
     m_postProcessPass->SetFragmentShader(m_postProcessShader, renderer);
-    m_postProcessPass->m_params.FrameBuffer      = m_params.FrameBuffer;
-    m_postProcessPass->m_params.ClearFrameBuffer = false;
+    m_postProcessPass->m_params.frameBuffer      = m_params.FrameBuffer;
+    m_postProcessPass->m_params.clearFrameBuffer = GraphicBitFields::None;
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

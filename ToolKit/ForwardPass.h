@@ -19,7 +19,7 @@ namespace ToolKit
     FramebufferPtr FrameBuffer   = nullptr;
     RenderTargetPtr SsaoTexture  = nullptr;
     GraphicBitFields clearBuffer = GraphicBitFields::AllBits;
-    bool SSAOEnabled             = false;
+    bool hasForwardPrePass       = false;
     LightPtrArray Lights         = {}; //!< Updated lights.
   };
 

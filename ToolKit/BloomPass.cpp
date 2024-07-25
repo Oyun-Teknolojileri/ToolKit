@@ -60,9 +60,9 @@ namespace ToolKit
       TexturePtr prevRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
 
       renderer->SetTexture(0, prevRt->m_textureId);
-      m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[0];
-      m_pass->m_params.BlendFunc        = BlendFunction::NONE;
-      m_pass->m_params.ClearFrameBuffer = true;
+      m_pass->m_params.frameBuffer      = m_tempFrameBuffers[0];
+      m_pass->m_params.blendFunc        = BlendFunction::NONE;
+      m_pass->m_params.clearFrameBuffer = GraphicBitFields::AllBits;
 
       RenderSubPass(m_pass);
     }
@@ -96,9 +96,9 @@ namespace ToolKit
         renderer->SetTexture(0, prevRt->m_textureId);
 
         // Set pass parameters
-        m_pass->m_params.ClearFrameBuffer = true;
-        m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i + 1];
-        m_pass->m_params.BlendFunc        = BlendFunction::NONE;
+        m_pass->m_params.clearFrameBuffer = GraphicBitFields::AllBits;
+        m_pass->m_params.frameBuffer      = m_tempFrameBuffers[i + 1];
+        m_pass->m_params.blendFunc        = BlendFunction::NONE;
 
         RenderSubPass(m_pass);
       }
@@ -119,9 +119,9 @@ namespace ToolKit
         TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
         renderer->SetTexture(0, prevRt->m_textureId);
 
-        m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
-        m_pass->m_params.ClearFrameBuffer = false;
-        m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i - 1];
+        m_pass->m_params.blendFunc        = BlendFunction::ONE_TO_ONE;
+        m_pass->m_params.clearFrameBuffer = GraphicBitFields::None;
+        m_pass->m_params.frameBuffer      = m_tempFrameBuffers[i - 1];
 
         RenderSubPass(m_pass);
       }
@@ -135,9 +135,9 @@ namespace ToolKit
       TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
       renderer->SetTexture(0, prevRt->m_textureId);
 
-      m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
-      m_pass->m_params.ClearFrameBuffer = false;
-      m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
+      m_pass->m_params.blendFunc        = BlendFunction::ONE_TO_ONE;
+      m_pass->m_params.clearFrameBuffer = GraphicBitFields::None;
+      m_pass->m_params.frameBuffer      = m_params.FrameBuffer;
 
       m_pass->UpdateUniform(ShaderUniform("intensity", m_params.intensity));
 

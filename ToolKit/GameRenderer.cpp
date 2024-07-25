@@ -74,8 +74,8 @@ namespace ToolKit
     m_gammaTonemapFxaaPass->m_params.screenSize            = m_params.viewport->m_wndContentAreaSize;
 
     // Full quad pass
-    m_fullQuadPass->m_params.FrameBuffer                   = nullptr; // backbuffer
-    m_fullQuadPass->m_params.ClearFrameBuffer              = true;
+    m_fullQuadPass->m_params.frameBuffer                   = nullptr; // backbuffer
+    m_fullQuadPass->m_params.clearFrameBuffer              = GraphicBitFields::AllBits;
 
     if (m_quadUnlitMaterial == nullptr)
     {

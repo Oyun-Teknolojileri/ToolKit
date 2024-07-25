@@ -87,8 +87,8 @@ namespace ToolKit
         if (m_gammaTonemapFxaaPass->IsEnabled())
         {
           m_passArray.push_back(m_gammaTonemapFxaaPass);
-          RenderPath::Render(renderer);
         }
+        RenderPath::Render(renderer);
         m_params.App->ShowGizmos();
         break;
       default:
@@ -288,7 +288,7 @@ namespace ToolKit
       m_editorPass->m_params.clearBuffer    = GraphicBitFields::None;
 
       // Skip frame pass.
-      m_skipFramePass->m_params.FrameBuffer = viewport->m_framebuffer;
+      m_skipFramePass->m_params.frameBuffer = viewport->m_framebuffer;
       m_skipFramePass->m_material           = m_blackMaterial;
 
       // UI pass.

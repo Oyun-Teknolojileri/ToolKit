@@ -90,8 +90,8 @@ namespace ToolKit
     m_frameBuffer->Init(settings);
     m_frameBuffer->ReconstructIfNeeded(settings.width, settings.height);
     m_frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
-    m_copyStencilSubPass->m_params.FrameBuffer      = m_frameBuffer;
-    m_copyStencilSubPass->m_params.ClearFrameBuffer = false;
+    m_copyStencilSubPass->m_params.frameBuffer      = m_frameBuffer;
+    m_copyStencilSubPass->m_params.clearFrameBuffer = GraphicBitFields::None;
 
     // Allow writing on to stencil before clear operation.
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);

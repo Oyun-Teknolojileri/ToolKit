@@ -14,29 +14,39 @@ namespace ToolKit
 
   struct GammaTonemapFxaaPassParams
   {
-    bool enableGammaCorrection = true;
-    bool enableTonemapping     = true;
-    bool enableFxaa            = true;
-
-    FramebufferPtr frameBuffer = nullptr;
-    Vec2 screenSize;
+    FramebufferPtr frameBuffer  = nullptr;
+    bool enableGammaCorrection  = true;
+    bool enableTonemapping      = true;
+    bool enableFxaa             = true;
     TonemapMethod tonemapMethod = TonemapMethod::Aces;
     float gamma                 = 2.2f;
+    Vec2 screenSize;
   };
 
-  class TK_API GammaTonemapFxaaPass : public PostProcessPass
+  class TK_API GammaTonemapFxaaPass : public Pass
   {
    public:
     GammaTonemapFxaaPass();
     GammaTonemapFxaaPass(const GammaTonemapFxaaPassParams& params);
 
-    void PreRender();
+    void PreRender() override;
+    void Render() override;
 
     /** Returns true if any of the sub passes (Tonemap, Fxaa, Gamma) are required. */
     bool IsEnabled();
 
    public:
     GammaTonemapFxaaPassParams m_params;
+
+   private:
+    /** Processed result is stored in this texture. */
+    RenderTargetPtr m_processTexture;
+
+    /** Shader to be used in this post process. */
+    ShaderPtr m_postProcessShader = nullptr;
+
+    /** Full quad that applies this shader to frame buffer. */
+    FullQuadPassPtr m_quadPass    = nullptr;
   };
 
 } // namespace ToolKit

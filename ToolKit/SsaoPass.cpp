@@ -19,8 +19,6 @@
 
 #include <random>
 
-
-
 namespace ToolKit
 {
 
@@ -123,8 +121,8 @@ namespace ToolKit
     m_tempBlurRt->Settings(oneChannelSet);
     m_tempBlurRt->ReconstructIfNeeded((uint) width, (uint) height);
 
-    m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass->m_params.ClearFrameBuffer = false;
+    m_quadPass->m_params.frameBuffer      = m_ssaoFramebuffer;
+    m_quadPass->m_params.clearFrameBuffer = GraphicBitFields::None;
 
     m_quadPass->SetFragmentShader(m_ssaoShader, GetRenderer());
 
