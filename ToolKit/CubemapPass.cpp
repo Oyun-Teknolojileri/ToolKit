@@ -27,7 +27,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("CubeMapPass::Render");
 
     Renderer* renderer = GetRenderer();
-    renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
+    renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::ColorBits);
 
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs(jobs, {m_cube.get()});

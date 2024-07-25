@@ -149,14 +149,29 @@ namespace ToolKit
     m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
     m_forwardRenderPass->m_params.SsaoTexture = m_ssaoPass->m_ssaoTexture;
 
-    // Either sky pass or forward pass will clear the main frame buffer.
-    if (m_drawSky)
+    bool forwardPreProcessExist               = RequiresForwardPreProcessPass();
+
+    if (m_drawSky) // Sky pass will clear color buffer.
     {
-      m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::None;
+      if (forwardPreProcessExist) // We need to keep depth buffer for early Z pass.
+      {
+        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::None;
+      }
+      else // Otherwise clear the depth buffer.
+      {
+        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::DepthBits;
+      }
     }
     else
     {
-      m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::AllBits;
+      if (forwardPreProcessExist) // We need to keep depth buffer for early Z pass.
+      {
+        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::ColorBits;
+      }
+      else // Otherwise clear all.
+      {
+        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::AllBits;
+      }
     }
 
     m_forwardPreProcessPass->m_params       = m_forwardRenderPass->m_params;
