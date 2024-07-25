@@ -105,9 +105,10 @@ namespace ToolKit
     void RenderWithProgramFromMaterial(const RenderJobArray& jobs);
     void RenderWithProgramFromMaterial(const RenderJob& job);
 
-    void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
-    void ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
-    void GenerateBRDFLutTexture();
+    /** Apply one tap of gauss blur via setting a temporary frame buffer. Does not reset frame buffer back. */
+    void Apply7x1GaussianBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount);
+    /** Apply one tap of average blur via setting a temporary frame buffer. Does not reset frame buffer back. */
+    void ApplyAverageBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount);
 
     /**
      * Sets the camera to be used for rendering. Also calculates camera related parameters, such as view, transform,
@@ -121,6 +122,9 @@ namespace ToolKit
     void BindProgramOfMaterial(Material* material);
     void BindProgram(const GpuProgramPtr& program);
     void ResetUsedTextureSlots();
+
+    /** Initialize brdf lut textures. */
+    void GenerateBRDFLutTexture();
 
    private:
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);

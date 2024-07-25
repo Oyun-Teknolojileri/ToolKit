@@ -702,15 +702,8 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
-                                      RenderTargetPtr dest,
-                                      const Vec3& axis,
-                                      const float amount)
+  void Renderer::Apply7x1GaussianBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    CPU_FUNC_RANGE();
-
-    FramebufferPtr frmBackup = m_framebuffer;
-
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
@@ -723,27 +716,20 @@ namespace ToolKit
       m_gaussianBlurMaterial->m_vertexShader     = vert;
       m_gaussianBlurMaterial->m_fragmentShader   = frag;
       m_gaussianBlurMaterial->m_diffuseTexture   = nullptr;
+      m_gaussianBlurMaterial->Init();
     }
 
-    m_gaussianBlurMaterial->UnInit();
-    m_gaussianBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->Init();
+    m_gaussianBlurMaterial->m_diffuseTexture = src;
     m_gaussianBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
-    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dst);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_gaussianBlurMaterial);
-
-    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
-  void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
+  void Renderer::ApplyAverageBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    CPU_FUNC_RANGE();
-
-    FramebufferPtr frmBackup = m_framebuffer;
-
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
@@ -756,20 +742,16 @@ namespace ToolKit
       m_averageBlurMaterial->m_vertexShader     = vert;
       m_averageBlurMaterial->m_fragmentShader   = frag;
       m_averageBlurMaterial->m_diffuseTexture   = nullptr;
+      m_averageBlurMaterial->Init();
     }
 
-    m_averageBlurMaterial->UnInit();
-    m_averageBlurMaterial->m_diffuseTexture = source;
-    m_averageBlurMaterial->Init();
-
+    m_averageBlurMaterial->m_diffuseTexture = src;
     m_averageBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
-    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dst);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_averageBlurMaterial);
-
-    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
   void Renderer::GenerateBRDFLutTexture()
