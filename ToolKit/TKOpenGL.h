@@ -57,5 +57,14 @@ namespace ToolKit
 #undef GL_TEXTURE_MAX_ANISOTROPY_EXT
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 
-  void LoadGlFunctions(void* glGetProcAddres);
+  // GL_EXT_color_buffer_float
+  //////////////////////////////////////////
+
+  extern int TK_GL_EXT_color_buffer_float;
+
+  // GL Loader function
+  //////////////////////////////////////////
+
+  extern void LoadGlFunctions(void* glGetProcAddres);
+
 } // namespace ToolKit
