@@ -99,7 +99,7 @@ namespace ToolKit
     if (RequiresForwardPreProcessPass())
     {
       FramebufferSettings settings = m_params.MainFramebuffer->GetSettings();
-      m_forwardPreProcessPass->InitBuffers(settings.width, settings.height);
+      m_forwardPreProcessPass->InitBuffers(settings.width, settings.height, settings.multiSampleFrameBuffer);
     }
   }
 
@@ -142,15 +142,15 @@ namespace ToolKit
       }
     }
 
-    m_forwardRenderPass->m_params.renderData            = &m_renderData;
-    m_forwardRenderPass->m_params.Lights                = m_params.Lights;
-    m_forwardRenderPass->m_params.Cam                   = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer           = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SsaoTexture           = m_ssaoPass->m_ssaoTexture;
-    m_forwardRenderPass->m_params.clearBuffer           = GraphicBitFields::None;
+    m_forwardRenderPass->m_params.renderData        = &m_renderData;
+    m_forwardRenderPass->m_params.Lights            = m_params.Lights;
+    m_forwardRenderPass->m_params.Cam               = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.SsaoTexture       = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.clearBuffer       = GraphicBitFields::None;
 
-    bool forwardPreProcessExist                         = RequiresForwardPreProcessPass();
-    m_forwardRenderPass->m_params.hasForwardPrePass     = forwardPreProcessExist;
+    bool forwardPreProcessExist                     = RequiresForwardPreProcessPass();
+    m_forwardRenderPass->m_params.hasForwardPrePass = forwardPreProcessExist;
 
     if (m_drawSky) // Sky pass will clear frame buffer.
     {

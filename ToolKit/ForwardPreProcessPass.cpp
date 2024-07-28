@@ -42,41 +42,25 @@ namespace ToolKit
 
   ForwardPreProcess::~ForwardPreProcess() {}
 
-  void ForwardPreProcess::InitBuffers(int width, int height)
+  void ForwardPreProcess::InitBuffers(int width, int height, int sampleCount)
   {
-    PUSH_GPU_MARKER("ForwardPreProcess::InitBuffers");
-    PUSH_CPU_MARKER("ForwardPreProcess::InitBuffers");
+    const FramebufferSettings& fbs = m_framebuffer->GetSettings();
+    bool requiresReconstruct = fbs.width != width || fbs.height != height || fbs.multiSampleFrameBuffer != sampleCount;
 
-    if (m_buffersInitialized)
-    {
-      const FramebufferSettings& bufferSettings = m_framebuffer->GetSettings();
-      if (bufferSettings.width == width && height == height)
-      {
-        // Already initialized and re init is not needed.
-        return;
-      }
-    }
-
-    m_framebuffer->Init({width, height, false, false});
-    m_framebuffer->ReconstructIfNeeded(width, height);
+    m_framebuffer->ReconstructIfNeeded({width, height, false, false, sampleCount});
     m_normalRt->ReconstructIfNeeded(width, height);
     m_linearDepthRt->ReconstructIfNeeded(width, height);
 
-    using FAttachment = Framebuffer::Attachment;
+    if (requiresReconstruct)
+    {
+      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_linearDepthRt);
+      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment1, m_normalRt);
+    }
 
-    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
-    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment1, m_normalRt);
-
-    assert(m_params.FrameBuffer->GetDepthTexture() != nullptr);
     if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
     {
       m_framebuffer->AttachDepthTexture(depth);
     }
-
-    m_buffersInitialized = true;
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void ForwardPreProcess::Render()

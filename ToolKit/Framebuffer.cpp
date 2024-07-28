@@ -82,8 +82,6 @@ namespace ToolKit
 
   void Framebuffer::ReconstructIfNeeded(int width, int height)
   {
-    CPU_FUNC_RANGE();
-
     if (!m_initialized || m_settings.width != width || m_settings.height != height)
     {
       UnInit();
@@ -92,6 +90,15 @@ namespace ToolKit
       m_settings.height = height;
 
       Init(m_settings);
+    }
+  }
+
+  void Framebuffer::ReconstructIfNeeded(const FramebufferSettings& settings)
+  {
+    if (!m_initialized || settings != m_settings)
+    {
+      UnInit();
+      Init(settings);
     }
   }
 

@@ -21,7 +21,7 @@ namespace ToolKit
     ForwardPreProcess();
     ~ForwardPreProcess();
 
-    void InitBuffers(int width, int height);
+    void InitBuffers(int width, int height, int sampleCount);
     void Render() override;
     void PreRender() override;
 

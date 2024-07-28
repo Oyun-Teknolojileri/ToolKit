@@ -18,7 +18,7 @@ namespace ToolKit
     int width                  = 128;
     /** Width of the frame buffer. */
     int height                 = 128;
-    /** States wheter the default depth has stencil or not. */
+    /** States whether the default depth has stencil or not. */
     bool depthStencil          = false;
     /** Creates a default depth attachment. */
     bool useDefaultDepth       = true;
@@ -86,6 +86,7 @@ namespace ToolKit
     uint GetFboId();
     const FramebufferSettings& GetSettings();
     void ReconstructIfNeeded(int width, int height);
+    void ReconstructIfNeeded(const FramebufferSettings& settings);
 
    private:
     void SetDrawBuffers();
