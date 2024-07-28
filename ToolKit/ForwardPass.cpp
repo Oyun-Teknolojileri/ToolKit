@@ -32,23 +32,14 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::Render");
-    PUSH_CPU_MARKER("ForwardRenderPass::Render");
-
     RenderOpaque(m_params.renderData);
     RenderTranslucent(m_params.renderData);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::PreRender");
-    PUSH_CPU_MARKER("ForwardRenderPass::PreRender");
-
     Pass::PreRender();
 
     // Set self data.
@@ -59,12 +50,8 @@ namespace ToolKit
 
     if (m_params.hasForwardPrePass)
     {
-      renderer->EnableDepthWrite(false);
       renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
     }
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::PostRender()
@@ -74,7 +61,6 @@ namespace ToolKit
 
     if (m_params.hasForwardPrePass)
     {
-      renderer->EnableDepthWrite(true);
       renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
     }
   }
@@ -149,6 +135,7 @@ namespace ToolKit
 
     if (begin != end)
     {
+      renderer->EnableDepthWrite(false);
       for (RenderJobArray::iterator job = begin; job != end; job++)
       {
         if (job->Material->m_isShaderMaterial)
@@ -161,6 +148,7 @@ namespace ToolKit
         }
         renderFnc(*job);
       }
+      renderer->EnableDepthWrite(true);
     }
 
     POP_CPU_MARKER();
