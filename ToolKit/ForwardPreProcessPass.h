@@ -21,10 +21,9 @@ namespace ToolKit
     ForwardPreProcess();
     ~ForwardPreProcess();
 
-    void InitBuffers(int width, int height);
+    void InitBuffers(int width, int height, int sampleCount);
     void Render() override;
     void PreRender() override;
-    void PostRender() override;
 
    private:
     void InitDefaultDepthTexture(int width, int height);
@@ -37,6 +36,9 @@ namespace ToolKit
     DepthTexturePtr m_depthTexture  = nullptr; // This is used in case there is no gbuffer
     RenderTargetPtr m_normalRt      = nullptr;
     RenderTargetPtr m_linearDepthRt = nullptr;
+
+   private:
+    bool m_buffersInitialized = false;
   };
 
   typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;

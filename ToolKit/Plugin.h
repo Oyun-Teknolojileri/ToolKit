@@ -12,11 +12,6 @@
 /**
  * Plugin functions that needs to be accessible by the editor needs to export their functionality using this macro.
  */
-#ifdef _WIN32 // Windows.
-  #define TK_PLUGIN_API __declspec(dllexport)
-#else // Other OS.
-  #define TK_PLUGIN_API
-#endif
 
 namespace ToolKit
 {

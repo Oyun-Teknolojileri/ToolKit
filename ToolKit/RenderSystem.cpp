@@ -213,16 +213,13 @@ namespace ToolKit
     RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
     GLint encoding = 0;
-    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
-                                          GL_FRONT,
-                                          GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING,
-                                          &encoding);
+    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &encoding);
 
     if (encoding == GL_LINEAR)
     {
       m_backbufferFormatIsSRGB = false;
     }
-    else if (encoding == GL_SRGB)
+    else if (encoding == GL_SRGB || encoding == GL_SRGB8 || encoding == GL_SRGB8_ALPHA8)
     {
       m_backbufferFormatIsSRGB = true;
     }

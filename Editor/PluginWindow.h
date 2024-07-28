@@ -17,7 +17,7 @@ namespace ToolKit
   {
 
     // PluginSettingsWindow
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     class PluginSettingsWindow : public Window
     {
@@ -36,7 +36,7 @@ namespace ToolKit
     typedef std::shared_ptr<PluginSettingsWindow> PluginSettingsWindowPtr;
 
     // PluginWindow
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     /**
      * Window that shows all the plugins in the project and their status.

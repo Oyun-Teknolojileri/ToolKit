@@ -9,6 +9,7 @@
 
 #include "BloomPass.h"
 #include "CubemapPass.h"
+#include "DofPass.h"
 #include "EngineSettings.h"
 #include "ForwardPass.h"
 #include "ForwardPreProcessPass.h"
@@ -26,7 +27,6 @@ namespace ToolKit
     ScenePtr Scene                 = nullptr;
     CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
     EngineSettings::PostProcessingSettings Gfx;
   };
 
@@ -46,6 +46,7 @@ namespace ToolKit
 
    protected:
     void SetPassParams();
+    bool RequiresForwardPreProcessPass();
 
    public:
     SceneRenderPathParams m_params;

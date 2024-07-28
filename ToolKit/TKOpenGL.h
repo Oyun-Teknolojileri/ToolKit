@@ -5,15 +5,15 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#ifdef __ANDROID__
+#include "Types.h"
+
+#ifdef TK_ANDROID
   #include <GLES3/gl32.h>
-#elif defined(__EMSCRIPTEN__)
+#elif defined(TK_WEB)
   #include <GL/glew.h>
 #else
   #include <glad/gles2.h>
 #endif
-
-#include "Types.h"
 
 namespace ToolKit
 {
@@ -21,7 +21,7 @@ namespace ToolKit
   // GL Extensions used by ToolKit.
 
   // glFramebufferTexture2DMultisampleEXT
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   typedef void(TK_STDCAL* TKGL_FramebufferTexture2DMultisample)(GLenum target,
                                                                 GLenum attachment,
@@ -47,7 +47,7 @@ namespace ToolKit
 #define glRenderbufferStorageMultisampleEXT tk_glRenderbufferStorageMultisampleEXT
 
   // GL_EXT_texture_filter_anisotropic
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   extern int TK_GL_EXT_texture_filter_anisotropic;
 
@@ -57,5 +57,14 @@ namespace ToolKit
 #undef GL_TEXTURE_MAX_ANISOTROPY_EXT
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 
-  void LoadGlFunctions(void* glGetProcAddres);
+  // GL_EXT_color_buffer_float
+  //////////////////////////////////////////
+
+  extern int TK_GL_EXT_color_buffer_float;
+
+  // GL Loader function
+  //////////////////////////////////////////
+
+  extern void LoadGlFunctions(void* glGetProcAddres);
+
 } // namespace ToolKit

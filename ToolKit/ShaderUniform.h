@@ -97,7 +97,7 @@ namespace ToolKit
   extern const char* GetUniformName(Uniform u);
 
   // ShaderUniform
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   using UniformValue = std::variant<bool, float, int, uint, Vec2, Vec3, Vec4, Mat3, Mat4>;
 

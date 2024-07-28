@@ -152,6 +152,13 @@ namespace ToolKit
           g_app->ReInitViewports();
         }
 
+        float renderScale = engineSettings.Graphics.renderResolutionScale;
+        if (ImGui::DragFloat("Resolution Multiplier", &renderScale, 0.05f, 0.25f, 1.0f))
+        {
+          engineSettings.Graphics.renderResolutionScale = renderScale;
+          g_app->ReInitViewports();
+        }
+
         ImGui::SeparatorText("Multi Sample Anti Aliasing");
 
         auto showMsaaComboFn = [&engineSettings](std::function<void(int)>&& itemChangedFn) -> void

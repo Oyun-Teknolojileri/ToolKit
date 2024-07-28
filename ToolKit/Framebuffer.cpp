@@ -53,7 +53,11 @@ namespace ToolKit
     if (m_settings.useDefaultDepth)
     {
       m_depthAtch = MakeNewPtr<DepthTexture>();
-      m_depthAtch->Init(m_settings.width, m_settings.height, m_settings.depthStencil);
+      m_depthAtch->Init(m_settings.width,
+                        m_settings.height,
+                        m_settings.depthStencil,
+                        m_settings.multiSampleFrameBuffer);
+
       AttachDepthTexture(m_depthAtch);
     }
 
@@ -78,8 +82,6 @@ namespace ToolKit
 
   void Framebuffer::ReconstructIfNeeded(int width, int height)
   {
-    CPU_FUNC_RANGE();
-
     if (!m_initialized || m_settings.width != width || m_settings.height != height)
     {
       UnInit();
@@ -91,6 +93,15 @@ namespace ToolKit
     }
   }
 
+  void Framebuffer::ReconstructIfNeeded(const FramebufferSettings& settings)
+  {
+    if (!m_initialized || settings != m_settings)
+    {
+      UnInit();
+      Init(settings);
+    }
+  }
+
   void Framebuffer::AttachDepthTexture(DepthTexturePtr dt)
   {
     CPU_FUNC_RANGE();
@@ -99,22 +110,9 @@ namespace ToolKit
 
     RHI::SetFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
-    GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
-
-    if (m_settings.multiSampleFrameBuffer > 0)
-    {
-      if (glRenderbufferStorageMultisampleEXT != nullptr)
-      {
-        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER,
-                                            m_settings.multiSampleFrameBuffer,
-                                            (GLenum) dt->GetDepthFormat(),
-                                            dt->m_width,
-                                            dt->m_height);
-      }
-    }
-
     // Attach depth buffer to FBO
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, dt->m_textureId);
+    GLenum attachment = dt->m_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_depthAtch->m_textureId);
 
     // Check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -199,10 +197,14 @@ namespace ToolKit
     return oldRt;
   }
 
-  RenderTargetPtr Framebuffer::GetAttachment(Attachment atc)
+  RenderTargetPtr Framebuffer::GetColorAttachment(Attachment atc)
   {
-    assert(atc < Attachment::DepthAttachment);
-    return m_colorAtchs[(int) atc];
+    if (atc < Attachment::DepthAttachment)
+    {
+      return m_colorAtchs[(int) atc];
+    }
+
+    return nullptr;
   }
 
   void Framebuffer::ClearAttachments()
@@ -246,6 +248,8 @@ namespace ToolKit
   }
 
   uint Framebuffer::GetFboId() { return m_fboId; }
+
+  const FramebufferSettings& Framebuffer::GetSettings() { return m_settings; }
 
   void Framebuffer::CheckFramebufferComplete()
   {

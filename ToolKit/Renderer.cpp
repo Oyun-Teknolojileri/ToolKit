@@ -442,6 +442,8 @@ namespace ToolKit
   void Renderer::GetElapsedTime(float& cpu, float& gpu)
   {
     cpu = m_cpuTime;
+    gpu = 1.0f;
+#ifndef TK_ANDROID
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
       GLuint elapsedTime;
@@ -449,10 +451,7 @@ namespace ToolKit
 
       gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
     }
-    else
-    {
-      gpu = 1.0f;
-    }
+#endif
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
@@ -487,10 +486,14 @@ namespace ToolKit
 
     dest->ReconstructIfNeeded(width, height);
 
+    FramebufferPtr lastFb = m_framebuffer;
+
     RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, srcId);
     RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
+
+    SetFramebuffer(lastFb, GraphicBitFields::None);
   }
 
   // By invalidating the frame buffers attachment, bandwith and performance saving is aimed,
@@ -613,27 +616,24 @@ namespace ToolKit
     SetDepthTestFunc(lastCompareFunc);
   }
 
-  void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
+  void Renderer::CopyTexture(TexturePtr src, TexturePtr dst)
   {
     CPU_FUNC_RANGE();
 
-    assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
-           "Sizes of the textures are not the same.");
-
-    assert(source->m_initiated && dest->m_initiated && "Texture is not initialized.");
+    assert(src->m_initiated && dst->m_initiated && "Texture is not initialized.");
+    assert(src->m_width == dst->m_width && src->m_height == dst->m_height && "Sizes of the textures are not the same.");
 
     if (m_copyFb == nullptr)
     {
       m_copyFb = MakeNewPtr<Framebuffer>();
-      m_copyFb->Init({source->m_width, source->m_height, false, false});
+      m_copyFb->Init({src->m_width, src->m_height, false, false});
     }
 
-    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
-    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
-
-    // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, GraphicBitFields::None);
+    SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
+
+    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dst);
+    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -643,8 +643,7 @@ namespace ToolKit
       m_copyMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("copyTextureFrag.shader", true));
     }
 
-    m_copyMaterial->UnInit();
-    m_copyMaterial->m_diffuseTexture = source;
+    m_copyMaterial->m_diffuseTexture = src;
     m_copyMaterial->Init();
 
     DrawFullQuad(m_copyMaterial);
@@ -702,15 +701,8 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
-                                      RenderTargetPtr dest,
-                                      const Vec3& axis,
-                                      const float amount)
+  void Renderer::Apply7x1GaussianBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    CPU_FUNC_RANGE();
-
-    FramebufferPtr frmBackup = m_framebuffer;
-
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
@@ -723,27 +715,20 @@ namespace ToolKit
       m_gaussianBlurMaterial->m_vertexShader     = vert;
       m_gaussianBlurMaterial->m_fragmentShader   = frag;
       m_gaussianBlurMaterial->m_diffuseTexture   = nullptr;
+      m_gaussianBlurMaterial->Init();
     }
 
-    m_gaussianBlurMaterial->UnInit();
-    m_gaussianBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->Init();
+    m_gaussianBlurMaterial->m_diffuseTexture = src;
     m_gaussianBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
-    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dst);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_gaussianBlurMaterial);
-
-    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
-  void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
+  void Renderer::ApplyAverageBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    CPU_FUNC_RANGE();
-
-    FramebufferPtr frmBackup = m_framebuffer;
-
     m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
@@ -756,20 +741,16 @@ namespace ToolKit
       m_averageBlurMaterial->m_vertexShader     = vert;
       m_averageBlurMaterial->m_fragmentShader   = frag;
       m_averageBlurMaterial->m_diffuseTexture   = nullptr;
+      m_averageBlurMaterial->Init();
     }
 
-    m_averageBlurMaterial->UnInit();
-    m_averageBlurMaterial->m_diffuseTexture = source;
-    m_averageBlurMaterial->Init();
-
+    m_averageBlurMaterial->m_diffuseTexture = src;
     m_averageBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
-    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dst);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_averageBlurMaterial);
-
-    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
   void Renderer::GenerateBRDFLutTexture()

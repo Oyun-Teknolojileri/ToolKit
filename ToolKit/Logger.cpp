@@ -32,11 +32,15 @@ namespace ToolKit
 
   void Logger::Log(const String& message)
   {
-#ifdef __EMSCRIPTEN__
-    String emLog = message + "\n";
-    printf("%s", emLog.c_str());
-#endif
-    m_logFile << message << std::endl;
+    if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
+    {
+      String emLog = message + "\n";
+      printf("%s", emLog.c_str());
+    }
+    else
+    {
+      m_logFile << message << std::endl;
+    }
   }
 
   void Logger::Log(LogType logType, const char* msg, ...)

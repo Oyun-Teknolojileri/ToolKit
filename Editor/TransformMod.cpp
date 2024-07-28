@@ -20,7 +20,7 @@ namespace ToolKit
   {
 
     // StateMoveBase
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     StateTransformBase::StateTransformBase()
     {
@@ -104,7 +104,7 @@ namespace ToolKit
     bool StateTransformBase::IsPlaneMod() { return m_gizmo->GetGrabbedAxis() > AxisLabel::Z; }
 
     // StateTransformBegin
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     void StateTransformBegin::TransitionIn(State* prevState) { StateTransformBase::TransitionIn(prevState); }
 
@@ -337,7 +337,7 @@ namespace ToolKit
     }
 
     // TransformAction
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     TransformAction::TransformAction(EntityPtr ntt)
     {
@@ -359,7 +359,7 @@ namespace ToolKit
     }
 
     // StateTransformTo
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     void StateTransformTo::TransitionIn(State* prevState)
     {
@@ -725,7 +725,7 @@ namespace ToolKit
     }
 
     // StateTransformEnd
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     void StateTransformEnd::TransitionOut(State* nextState)
     {
@@ -758,7 +758,7 @@ namespace ToolKit
     String StateTransformEnd::GetType() { return StateType::StateTransformEnd; }
 
     // MoveMod
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     TransformMod::TransformMod(ModId id) : BaseMod(id) { m_gizmo = nullptr; }
 

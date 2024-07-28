@@ -122,10 +122,14 @@ namespace ToolKit
     }
 
     m_framebuffer->UnInit();
-    m_framebuffer->Init(
-        {(int) m_wndContentAreaSize.x, (int) m_wndContentAreaSize.y, false, true, engineSettings.Graphics.msaa});
 
-    m_renderTarget = MakeNewPtr<RenderTarget>((int) m_wndContentAreaSize.x, (int) m_wndContentAreaSize.y, settings);
+    float resScale = engineSettings.Graphics.renderResolutionScale;
+
+    int width      = (int) glm::round(m_wndContentAreaSize.x * resScale);
+    int height     = (int) glm::round(m_wndContentAreaSize.y * resScale);
+
+    m_framebuffer->Init({width, height, false, true, engineSettings.Graphics.msaa});
+    m_renderTarget = MakeNewPtr<RenderTarget>(width, height, settings);
     m_renderTarget->Init();
 
     if (m_renderTarget->m_initiated)

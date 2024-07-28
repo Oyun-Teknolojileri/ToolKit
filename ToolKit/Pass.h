@@ -33,6 +33,9 @@ namespace ToolKit
     Renderer* GetRenderer();
     void SetRenderer(Renderer* renderer);
 
+    /** This function is used to pass custom uniforms to this pass. */
+    void UpdateUniform(const ShaderUniform& shaderUniform);
+
    protected:
     FramebufferPtr m_prevFrameBuffer = nullptr;
     GpuProgramPtr m_program          = nullptr;

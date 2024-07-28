@@ -185,16 +185,8 @@ namespace ToolKit
 #endif
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-
-        if (settings.Graphics.msaa > 0)
-        {
-          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.Graphics.msaa);
-        }
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
 #ifdef TK_DEBUG
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -297,7 +289,6 @@ namespace ToolKit
             g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
             g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
 
-            UI::Init();
             g_app->Init();
 
             // Register update functions
@@ -314,16 +305,17 @@ namespace ToolKit
               }
 
               POP_CPU_MARKER();
-            };
-            g_proxy->RegisterPreUpdateFunction(preUpdateFn);
 
-            TKUpdateFn postUpdateFn = [](float deltaTime)
-            {
               PUSH_CPU_MARKER("App Frame");
 
               g_app->Frame(deltaTime);
 
               POP_CPU_MARKER();
+            };
+            g_proxy->RegisterPreUpdateFunction(preUpdateFn);
+
+            TKUpdateFn postUpdateFn = [](float deltaTime)
+            {
               PUSH_CPU_MARKER("Swap Window");
 
               SDL_GL_MakeCurrent(g_window, g_context);
@@ -352,7 +344,6 @@ namespace ToolKit
     {
       g_proxy->PreUninit();
 
-      UI::UnInit();
       SafeDel(g_app);
 
       g_proxy->Uninit();

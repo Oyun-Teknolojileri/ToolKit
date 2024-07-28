@@ -17,6 +17,8 @@ namespace ToolKit
 
   int TK_GL_EXT_texture_filter_anisotropic                                     = 0;
 
+  int TK_GL_EXT_color_buffer_float                                             = 0;
+
   void LoadGlFunctions(void* glGetProcAddres)
   {
 #ifdef TK_WIN
@@ -33,6 +35,37 @@ namespace ToolKit
   #ifdef GL_EXT_texture_filter_anisotropic
     TK_GL_EXT_texture_filter_anisotropic = GLAD_GL_EXT_texture_filter_anisotropic;
   #endif
+
+  #ifdef GL_EXT_color_buffer_float
+    TK_GL_EXT_color_buffer_float = GLAD_GL_EXT_color_buffer_float;
+  #endif
+
+#endif
+
+#ifdef TK_ANDROID
+
+    typedef void* (*GL_PROC_ADDR)(const char*);
+    GL_PROC_ADDR glLoader = (GL_PROC_ADDR) glGetProcAddres;
+
+    tk_glRenderbufferStorageMultisampleEXT =
+        (TKGL_RenderbufferStorageMultisample) glLoader("glRenderbufferStorageMultisampleEXT");
+    tk_glFramebufferTexture2DMultisampleEXT =
+        (TKGL_FramebufferTexture2DMultisample) glLoader("glFramebufferTexture2DMultisampleEXT");
+
+    // String Checks for Extensions.
+    PFNGLGETSTRINGPROC tk_glGetString = nullptr;
+    tk_glGetString                    = (PFNGLGETSTRINGPROC) glLoader("glGetString");
+
+    if (tk_glGetString)
+    {
+      const GLubyte* extensions = tk_glGetString(GL_EXTENSIONS);
+      if (extensions != nullptr)
+      {
+        String extensionsStr((const char*) extensions);
+        TK_GL_EXT_color_buffer_float         = extensionsStr.find("GL_EXT_color_buffer_float") != String::npos;
+        TK_GL_EXT_texture_filter_anisotropic = extensionsStr.find("GL_EXT_texture_filter_anisotropic") != String::npos;
+      }
+    }
 
 #endif
   }

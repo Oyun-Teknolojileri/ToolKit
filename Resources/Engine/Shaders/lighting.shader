@@ -13,7 +13,7 @@
 #define LIGHTING_SHADER
 
 
-#define MAX_LIGHT_COUNT 128
+#define MAX_LIGHT_COUNT 40
 
 // TODO Minimize and pack this data as much as possible
 struct _LightData
@@ -102,7 +102,7 @@ float CalculateDirectionalShadow
 	// and then offset the scaled coordinate to the beginning of the shadow map via "startCoord + shadowAtlasResRatio * projCoord.xy"
 	// which gives us the final uv coordinates in xy and the index of the layer in z
 	vec2 uvInAtlas = startCoord + shadowAtlasResRatio * projCoord.xy;
-	vec3 sampleCoord = vec3(uvInAtlas, float(shadowAtlasLayer));
+	vec3 sampleCoord = vec3(uvInAtlas, shadowAtlasLayer);
 
 	float shadow = 1.0;
 

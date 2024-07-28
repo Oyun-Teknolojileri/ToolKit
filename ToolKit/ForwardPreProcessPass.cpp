@@ -42,32 +42,25 @@ namespace ToolKit
 
   ForwardPreProcess::~ForwardPreProcess() {}
 
-  void ForwardPreProcess::InitBuffers(int width, int height)
+  void ForwardPreProcess::InitBuffers(int width, int height, int sampleCount)
   {
-    PUSH_GPU_MARKER("ForwardPreProcess::InitBuffers");
-    PUSH_CPU_MARKER("ForwardPreProcess::InitBuffers");
+    const FramebufferSettings& fbs = m_framebuffer->GetSettings();
+    bool requiresReconstruct = fbs.width != width || fbs.height != height || fbs.multiSampleFrameBuffer != sampleCount;
 
-    m_framebuffer->Init({width, height, false, false});
-    m_framebuffer->ReconstructIfNeeded(width, height);
+    m_framebuffer->ReconstructIfNeeded({width, height, false, false, sampleCount});
     m_normalRt->ReconstructIfNeeded(width, height);
     m_linearDepthRt->ReconstructIfNeeded(width, height);
 
-    using FAttachment = Framebuffer::Attachment;
+    if (requiresReconstruct)
+    {
+      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_linearDepthRt);
+      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment1, m_normalRt);
+    }
 
-    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment0);
-    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment1);
-
-    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
-    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment1, m_normalRt);
-
-    assert(m_params.FrameBuffer->GetDepthTexture() != nullptr);
     if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
     {
       m_framebuffer->AttachDepthTexture(depth);
     }
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void ForwardPreProcess::Render()
@@ -106,8 +99,6 @@ namespace ToolKit
     renderer->BindProgram(m_program);
     renderLinearDepthAndNormalFn(begin, end);
 
-    m_linearMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
-
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
@@ -121,19 +112,7 @@ namespace ToolKit
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
-
     renderer->SetCamera(m_params.Cam, true);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
-  }
-
-  void ForwardPreProcess::PostRender()
-  {
-    PUSH_GPU_MARKER("ForwardPreProcess::PostRender");
-    PUSH_CPU_MARKER("ForwardPreProcess::PostRender");
-
-    RenderPass::PostRender();
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

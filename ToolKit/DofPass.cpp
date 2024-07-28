@@ -11,15 +11,13 @@
 #include "TKProfiler.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
   DoFPass::DoFPass()
   {
     m_quadPass                       = MakeNewPtr<FullQuadPass>();
-    m_quadPass->m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
+    m_quadPass->m_params.frameBuffer = MakeNewPtr<Framebuffer>();
     m_dofShader                      = GetShaderManager()->Create<Shader>(ShaderPath("depthOfFieldFrag.shader", true));
     m_copyTexture                    = MakeNewPtr<RenderTarget>();
   }
@@ -76,11 +74,11 @@ namespace ToolKit
     m_quadPass->UpdateUniform(ShaderUniform("radiusScale", blurRadiusScale));
 
     IVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
-    m_quadPass->m_params.FrameBuffer->Init({size.x, size.y, false, false});
+    m_quadPass->m_params.frameBuffer->Init({size.x, size.y, false, false});
     m_quadPass->UpdateUniform(ShaderUniform("uPixelSize", Vec2(1.0f) / Vec2(size)));
-    m_quadPass->m_params.BlendFunc        = BlendFunction::NONE;
-    m_quadPass->m_params.ClearFrameBuffer = false;
-    m_quadPass->m_params.FrameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
+    m_quadPass->m_params.blendFunc        = BlendFunction::NONE;
+    m_quadPass->m_params.clearFrameBuffer = GraphicBitFields::None;
+    m_quadPass->m_params.frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.ColorRt);
 
     POP_CPU_MARKER();
     POP_GPU_MARKER();

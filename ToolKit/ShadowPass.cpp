@@ -483,7 +483,7 @@ namespace ToolKit
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::SampleLinear,
                                    GraphicTypes::SampleLinear,
-                                   m_useEVSM4 ? GraphicTypes::FormatRGBA32F : GraphicTypes::FormatRG32F,
+                                   m_useEVSM4 ? GraphicTypes::FormatRGBA16F : GraphicTypes::FormatRG16F,
                                    m_useEVSM4 ? GraphicTypes::FormatRGBA : GraphicTypes::FormatRG,
                                    GraphicTypes::TypeFloat,
                                    m_layerCount,

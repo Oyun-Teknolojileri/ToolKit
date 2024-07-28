@@ -18,10 +18,9 @@ namespace ToolKit
 
     PreviewViewport::PreviewViewport()
     {
-      m_previewRenderer                            = MakeNewPtr<ForwardSceneRenderPath>();
-      m_previewRenderer->m_params.Cam              = GetCamera();
-      m_previewRenderer->m_params.ClearFramebuffer = true;
-      m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
+      m_previewRenderer                           = MakeNewPtr<ForwardSceneRenderPath>();
+      m_previewRenderer->m_params.Cam             = GetCamera();
+      m_previewRenderer->m_params.MainFramebuffer = m_framebuffer;
     }
 
     PreviewViewport::~PreviewViewport() { m_previewRenderer = nullptr; }
@@ -48,7 +47,7 @@ namespace ToolKit
       ImGui::Dummy(imageSize);
 
       ImGui::GetWindowDrawList()->AddImageRounded(
-          Convert2ImGuiTexture(m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)),
+          Convert2ImGuiTexture(m_framebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0)),
           currentCursorPos,
           currentCursorPos + imageSize,
           Vec2(0.0f, 0.0f),

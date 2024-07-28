@@ -26,7 +26,7 @@ namespace ToolKit
 {
 
   // Texture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(Texture, Resource);
 
@@ -215,7 +215,7 @@ namespace ToolKit
   }
 
   // DepthTexture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(DepthTexture, Texture);
 
@@ -223,22 +223,31 @@ namespace ToolKit
 
   void DepthTexture::Clear() { UnInit(); }
 
-  void DepthTexture::Init(int width, int height, bool stencil)
+  void DepthTexture::Init(int width, int height, bool stencil, int multiSample)
   {
     if (m_initiated)
     {
       return;
     }
-    m_initiated = true;
-    m_width     = width;
-    m_height    = height;
-    m_stencil   = stencil;
 
-    // Create a default depth, depth-stencil buffer
+    m_initiated   = true;
+    m_width       = width;
+    m_height      = height;
+    m_stencil     = stencil;
+    m_multiSample = multiSample;
+
     glGenRenderbuffers(1, &m_textureId);
     glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
-    GLenum component = (GLenum) GetDepthFormat();
-    glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+
+    if (m_multiSample > 0 && glRenderbufferStorageMultisampleEXT != nullptr)
+    {
+      glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_multiSample, (GLenum) GetDepthFormat(), m_width, m_height);
+    }
+    else
+    {
+      GLenum component = (GLenum) GetDepthFormat();
+      glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+    }
 
     uint64 internalFormatSize = stencil ? 4 : 3;
     AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
@@ -256,8 +265,10 @@ namespace ToolKit
     uint64 internalFormatSize = m_stencil ? 4 : 3;
     RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
 
-    m_textureId = 0;
-    m_initiated = false;
+    m_textureId   = 0;
+    m_initiated   = false;
+    m_constructed = false;
+    m_stencil     = false;
   }
 
   GraphicTypes DepthTexture::GetDepthFormat()
@@ -266,7 +277,7 @@ namespace ToolKit
   }
 
   // DataTexture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(DataTexture, Texture);
 
@@ -318,7 +329,7 @@ namespace ToolKit
   };
 
   // CubeMap
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(CubeMap, Texture);
 
@@ -475,7 +486,7 @@ namespace ToolKit
   }
 
   // Hdri
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(Hdri, Texture);
 
@@ -572,7 +583,7 @@ namespace ToolKit
   bool Hdri::IsTextureAssigned() { return !GetFile().empty(); }
 
   // RenderTarget
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(RenderTarget, Texture);
 
@@ -665,16 +676,19 @@ namespace ToolKit
     Init();
   }
 
-  void RenderTarget::ReconstructIfNeeded(int width, int height)
+  void RenderTarget::ReconstructIfNeeded(int width, int height, const TextureSettings* settings)
   {
-    if (!m_initiated || m_width != width || m_height != height)
+    bool reconstruct  = settings != nullptr ? *settings != m_settings : false;
+    reconstruct      |= !m_initiated || m_width != width || m_height != height;
+
+    if (reconstruct)
     {
-      Reconstruct(width, height, m_settings);
+      Reconstruct(width, height, settings != nullptr ? *settings : m_settings);
     }
   }
 
   // TextureManager
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TextureManager::TextureManager() { m_baseType = Texture::StaticClass(); }
 

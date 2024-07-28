@@ -52,8 +52,8 @@ namespace ToolKit
     m_outlinePass->UpdateUniform(ShaderUniform("Color", m_params.OutlineColor));
 
     // Draw outline to the viewport.
-    m_outlinePass->m_params.FrameBuffer      = m_params.FrameBuffer;
-    m_outlinePass->m_params.ClearFrameBuffer = false;
+    m_outlinePass->m_params.frameBuffer      = m_params.FrameBuffer;
+    m_outlinePass->m_params.clearFrameBuffer = GraphicBitFields::None;
 
     RenderSubPass(m_outlinePass);
 

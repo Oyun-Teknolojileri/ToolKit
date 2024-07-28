@@ -78,8 +78,9 @@ namespace ToolKit
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-      SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+      SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
       // EGL does not support sRGB backbuffer. Need to use an extension
       // https://stackoverflow.com/questions/20396523/android-egl-srgb-default-renderbuffer
@@ -138,8 +139,7 @@ namespace ToolKit
           // Init viewport and window size
           uint width  = g_engineSettings->Window.Width;
           uint height = g_engineSettings->Window.Height;
-          g_viewport  = MakeNewPtr<GameViewport>((float) width * g_engineSettings->Graphics.renderResolutionScale,
-                                                (float) height * g_engineSettings->Graphics.renderResolutionScale);
+          g_viewport  = MakeNewPtr<GameViewport>((float) width, (float) height);
           GetUIManager()->RegisterViewport(g_viewport);
           GetRenderSystem()->SetAppWindowSize(width, height);
 

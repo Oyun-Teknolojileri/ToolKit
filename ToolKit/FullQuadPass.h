@@ -14,9 +14,9 @@ namespace ToolKit
 
   struct FullQuadPassParams
   {
-    FramebufferPtr FrameBuffer = nullptr;
-    BlendFunction BlendFunc    = BlendFunction::NONE;
-    bool ClearFrameBuffer      = true;
+    FramebufferPtr frameBuffer        = nullptr;
+    BlendFunction blendFunc           = BlendFunction::NONE;
+    GraphicBitFields clearFrameBuffer = GraphicBitFields::AllBits;
   };
 
   /**
@@ -27,7 +27,7 @@ namespace ToolKit
   {
    public:
     FullQuadPass();
-    explicit FullQuadPass(const FullQuadPassParams& params);
+    FullQuadPass(const FullQuadPassParams& params);
     ~FullQuadPass();
 
     void Render() override;
@@ -38,11 +38,6 @@ namespace ToolKit
      * This function should be called in order to create material and program of quad render
      */
     void SetFragmentShader(ShaderPtr fragmentShader, Renderer* renderer);
-
-    /**
-     * This function is used to pass custom uniforms to this pass
-     */
-    void UpdateUniform(const ShaderUniform& shaderUniform);
 
    public:
     FullQuadPassParams m_params;

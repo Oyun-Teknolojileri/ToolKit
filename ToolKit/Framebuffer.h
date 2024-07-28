@@ -18,7 +18,7 @@ namespace ToolKit
     int width                  = 128;
     /** Width of the frame buffer. */
     int height                 = 128;
-    /** States wheter the default depth has stencil or not. */
+    /** States whether the default depth has stencil or not. */
     bool depthStencil          = false;
     /** Creates a default depth attachment. */
     bool useDefaultDepth       = true;
@@ -35,9 +35,6 @@ namespace ToolKit
 
   class TK_API Framebuffer
   {
-    // NOTE: This class does not handle renderbuffer attachments, multi-sampled
-    // cubemaps.
-
    public:
     enum class Attachment
     {
@@ -78,19 +75,18 @@ namespace ToolKit
                                        int layer        = -1,
                                        CubemapFace face = CubemapFace::NONE);
 
-    DepthTexturePtr GetDepthTexture();
-    void AttachDepthTexture(DepthTexturePtr rt);
-    RenderTargetPtr GetAttachment(Attachment atc);
+    RenderTargetPtr GetColorAttachment(Attachment atc);
+    RenderTargetPtr DetachColorAttachment(Attachment atc);
     void ClearAttachments();
 
-    uint GetFboId();
-
-    inline const FramebufferSettings& GetSettings() { return m_settings; }
-
-    void ReconstructIfNeeded(int width, int height);
-
-    RenderTargetPtr DetachColorAttachment(Attachment atc);
+    DepthTexturePtr GetDepthTexture();
+    void AttachDepthTexture(DepthTexturePtr rt);
     void RemoveDepthAttachment();
+
+    uint GetFboId();
+    const FramebufferSettings& GetSettings();
+    void ReconstructIfNeeded(int width, int height);
+    void ReconstructIfNeeded(const FramebufferSettings& settings);
 
    private:
     void SetDrawBuffers();

@@ -13,6 +13,7 @@
 
 namespace ToolKit
 {
+
   ForwardSceneRenderPath::ForwardSceneRenderPath()
   {
     m_shadowPass            = MakeNewPtr<ShadowPass>();
@@ -43,21 +44,12 @@ namespace ToolKit
 
     m_passArray.clear();
 
-    renderer->m_sky = m_sky;
-
-    renderer->SetShadowAtlas(Cast<Texture>(m_shadowPass->GetShadowAtlas()));
-
     // Shadow pass
+    renderer->SetShadowAtlas(Cast<Texture>(m_shadowPass->GetShadowAtlas()));
     m_passArray.push_back(m_shadowPass);
 
-    // Draw sky pass
-    if (m_drawSky)
-    {
-      m_passArray.push_back(m_skyPass);
-    }
-
     // Forward Pre Process Pass
-    if (m_params.Gfx.SSAOEnabled || m_params.Gfx.DepthOfFieldEnabled)
+    if (RequiresForwardPreProcessPass())
     {
       m_passArray.push_back(m_forwardPreProcessPass);
     }
@@ -66,6 +58,13 @@ namespace ToolKit
     if (m_params.Gfx.SSAOEnabled)
     {
       m_passArray.push_back(m_ssaoPass);
+    }
+
+    // Draw sky pass
+    renderer->m_sky = m_sky;
+    if (m_drawSky)
+    {
+      m_passArray.push_back(m_skyPass);
     }
 
     // Forward pass
@@ -96,8 +95,12 @@ namespace ToolKit
 
     SetPassParams();
 
-    FramebufferSettings settings = m_params.MainFramebuffer->GetSettings();
-    m_forwardPreProcessPass->InitBuffers(settings.width, settings.height);
+    // Init / ReInit forward pre process.
+    if (RequiresForwardPreProcessPass())
+    {
+      FramebufferSettings settings = m_params.MainFramebuffer->GetSettings();
+      m_forwardPreProcessPass->InitBuffers(settings.width, settings.height, settings.multiSampleFrameBuffer);
+    }
   }
 
   void ForwardSceneRenderPath::PostRender(Renderer* renderer) { RenderPath::PostRender(renderer); }
@@ -127,13 +130,10 @@ namespace ToolKit
       {
         if (m_sky->ReadyToRender())
         {
-          m_skyPass->m_params.ClearFramebuffer = m_params.ClearFramebuffer;
-          m_skyPass->m_params.FrameBuffer      = m_params.MainFramebuffer;
-          m_skyPass->m_params.Cam              = m_params.Cam;
-          m_skyPass->m_params.Transform        = m_sky->m_node->GetTransform();
-          m_skyPass->m_params.Material         = m_sky->GetSkyboxMaterial();
-
-          couldDrawSky                         = true;
+          m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
+          m_skyPass->m_params.Cam         = m_params.Cam;
+          m_skyPass->m_params.Transform   = m_sky->m_node->GetTransform();
+          m_skyPass->m_params.Material    = m_sky->GetSkyboxMaterial();
         }
         else
         {
@@ -142,23 +142,37 @@ namespace ToolKit
       }
     }
 
-    m_forwardRenderPass->m_params.renderData  = &m_renderData;
-    m_forwardRenderPass->m_params.Lights      = m_params.Lights;
-    m_forwardRenderPass->m_params.Cam         = m_params.Cam;
-    m_forwardRenderPass->m_params.FrameBuffer = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SSAOEnabled = m_params.Gfx.SSAOEnabled;
-    m_forwardRenderPass->m_params.SsaoTexture = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.renderData        = &m_renderData;
+    m_forwardRenderPass->m_params.Lights            = m_params.Lights;
+    m_forwardRenderPass->m_params.Cam               = m_params.Cam;
+    m_forwardRenderPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
+    m_forwardRenderPass->m_params.SsaoTexture       = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.clearBuffer       = GraphicBitFields::None;
 
-    // If sky is being rendered, then clear the main framebuffer there. If sky pass is not rendered, clear the
-    // framebuffer here
-    if (!couldDrawSky)
+    bool forwardPreProcessExist                     = RequiresForwardPreProcessPass();
+    m_forwardRenderPass->m_params.hasForwardPrePass = forwardPreProcessExist;
+
+    if (m_drawSky) // Sky pass will clear frame buffer.
     {
-      GraphicBitFields clearBuffer = m_params.ClearFramebuffer ? GraphicBitFields::AllBits : GraphicBitFields::None;
-      m_forwardRenderPass->m_params.clearBuffer = clearBuffer;
+      if (forwardPreProcessExist) // We need to keep depth buffer for early Z pass.
+      {
+        m_skyPass->m_params.clearBuffer = GraphicBitFields::ColorBits;
+      }
+      else // Otherwise clear all.
+      {
+        m_skyPass->m_params.clearBuffer = GraphicBitFields::AllBits;
+      }
     }
-    else
+    else // Forward pass will clear frame buffer.
     {
-      m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::None;
+      if (forwardPreProcessExist)
+      {
+        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::ColorBits;
+      }
+      else
+      {
+        m_forwardRenderPass->m_params.clearBuffer = GraphicBitFields::AllBits;
+      }
     }
 
     m_forwardPreProcessPass->m_params       = m_forwardRenderPass->m_params;
@@ -176,10 +190,18 @@ namespace ToolKit
     m_bloomPass->m_params.minThreshold      = m_params.Gfx.BloomThreshold;
     m_bloomPass->m_params.iterationCount    = m_params.Gfx.BloomIterationCount;
 
-    m_dofPass->m_params.ColorRt    = m_params.MainFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
-    m_dofPass->m_params.DepthRt    = m_forwardPreProcessPass->m_linearDepthRt;
-    m_dofPass->m_params.focusPoint = m_params.Gfx.FocusPoint;
-    m_dofPass->m_params.focusScale = m_params.Gfx.FocusScale;
+    RenderTargetPtr atc = m_params.MainFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_dofPass->m_params.ColorRt     = atc;
+
+    m_dofPass->m_params.DepthRt     = m_forwardPreProcessPass->m_linearDepthRt;
+    m_dofPass->m_params.focusPoint  = m_params.Gfx.FocusPoint;
+    m_dofPass->m_params.focusScale  = m_params.Gfx.FocusScale;
     m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
   }
+
+  bool ForwardSceneRenderPath::RequiresForwardPreProcessPass()
+  {
+    return m_params.Gfx.SSAOEnabled || m_params.Gfx.DepthOfFieldEnabled;
+  }
+
 } // namespace ToolKit

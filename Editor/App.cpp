@@ -36,13 +36,19 @@ namespace ToolKit
 
     App::App(int windowWidth, int windowHeight)
     {
+      UI::Init();
+
       m_cursor           = nullptr;
       RenderSystem* rsys = GetRenderSystem();
       rsys->SetAppWindowSize((uint) windowWidth, (uint) windowHeight);
       m_statusMsg = "OK";
     }
 
-    App::~App() { Destroy(); }
+    App::~App()
+    {
+      Destroy();
+      UI::UnInit();
+    }
 
     void App::Init()
     {
@@ -147,21 +153,8 @@ namespace ToolKit
     {
       m_deltaTime = deltaTime;
 
-      PUSH_CPU_MARKER("UI Begin & Show UI");
-
-      UI::BeginUI();
-      UI::ShowUI();
-
-      POP_CPU_MARKER();
-
-      PUSH_CPU_MARKER("Mod Manager Update");
-
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
-
-      POP_CPU_MARKER();
-
-      PUSH_CPU_MARKER("Gather viewports & windows to dispatch signals");
 
       EditorViewportRawPtrArray viewports;
       for (WindowPtr wnd : m_windows)
@@ -197,16 +190,9 @@ namespace ToolKit
         viewports.push_back(m_simulationViewport.get());
       }
 
-      POP_CPU_MARKER();
-
-      PUSH_CPU_MARKER("Update Plugin & Simulation");
-
       // Update Plugins.
       GetPluginManager()->Update(deltaTime);
       UpdateSimulation();
-
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("Update Viewports & Add render tasks");
 
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
@@ -225,13 +211,14 @@ namespace ToolKit
         }
       }
 
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("End UI");
+      UI::BeginUI();
+      UI::ShowUI();
 
-      // Render UI.
-      UI::EndUI();
-
-      POP_CPU_MARKER();
+      GetRenderSystem()->AddRenderTask({[](Renderer* renderer) -> void
+                                        {
+                                          renderer->SetFramebuffer(nullptr, GraphicBitFields::None);
+                                          UI::EndUI(); // Render UI.
+                                        }});
 
       m_totalFrameCount = GetRenderSystem()->GetFrameCount();
     }
@@ -263,6 +250,9 @@ namespace ToolKit
 
       auto saveFn = []() -> void
       {
+        // Serialize engine settings.
+        g_app->m_workspace.SerializeEngineSettings();
+
         EditorScenePtr cScene = g_app->GetCurrentScene();
         cScene->Save(false);
 
@@ -1174,7 +1164,6 @@ namespace ToolKit
       UVec2 size = GetRenderSystem()->GetAppWindowSize();
 
       SDL_SetWindowSize(g_window, size.x, size.y);
-
       SDL_SetWindowPosition(g_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
       if (m_windowMaximized)
@@ -1201,19 +1190,7 @@ namespace ToolKit
       }
     }
 
-    void App::PackResources()
-    {
-      String projectName = m_workspace.GetActiveProject().name;
-      if (projectName.empty())
-      {
-        TK_ERR("No project is loaded.");
-        return;
-      }
-
-      String sceneResourcesPath = ConcatPaths({m_workspace.GetActiveWorkspace(), projectName, "Resources", "Scenes"});
-
-      GetFileManager()->PackResources(sceneResourcesPath);
-    }
+    void App::PackResources() { m_publishManager->Pack(); }
 
     void App::SaveAllResources()
     {

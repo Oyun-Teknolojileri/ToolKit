@@ -32,46 +32,37 @@ namespace ToolKit
 
   void ForwardRenderPass::Render()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::Render");
-    PUSH_CPU_MARKER("ForwardRenderPass::Render");
-
     RenderOpaque(m_params.renderData);
     RenderTranslucent(m_params.renderData);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::PreRender");
-    PUSH_CPU_MARKER("ForwardRenderPass::PreRender");
-
     Pass::PreRender();
+
     // Set self data.
     Renderer* renderer = GetRenderer();
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
-    renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
     renderer->SetCamera(m_params.Cam, true);
 
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    if (m_params.hasForwardPrePass)
+    {
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+    }
   }
 
   void ForwardRenderPass::PostRender()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::PostRender");
-    PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
-
     Pass::PostRender();
     Renderer* renderer = GetRenderer();
-    renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
 
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    if (m_params.hasForwardPrePass)
+    {
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
+    }
   }
 
   void ForwardRenderPass::RenderOpaque(RenderData* renderData)
@@ -142,20 +133,23 @@ namespace ToolKit
 
     GpuProgramPtr program = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
-    renderer->EnableDepthWrite(false);
-    for (RenderJobArray::iterator job = begin; job != end; job++)
+    if (begin != end)
     {
-      if (job->Material->m_isShaderMaterial)
+      renderer->EnableDepthWrite(false);
+      for (RenderJobArray::iterator job = begin; job != end; job++)
       {
-        renderer->BindProgramOfMaterial(job->Material);
+        if (job->Material->m_isShaderMaterial)
+        {
+          renderer->BindProgramOfMaterial(job->Material);
+        }
+        else
+        {
+          renderer->BindProgram(program);
+        }
+        renderFnc(*job);
       }
-      else
-      {
-        renderer->BindProgram(program);
-      }
-      renderFnc(*job);
+      renderer->EnableDepthWrite(true);
     }
-    renderer->EnableDepthWrite(true);
 
     POP_CPU_MARKER();
   }

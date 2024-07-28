@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "PostProcessPass.h"
+#include "FullQuadPass.h"
 
 namespace ToolKit
 {

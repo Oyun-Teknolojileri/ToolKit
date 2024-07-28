@@ -13,7 +13,6 @@
 #include "EditorViewport2d.h"
 #include "Gizmo.h"
 #include "LightMeshGenerator.h"
-#include "Util.h"
 
 #include <BVH.h>
 #include <Camera.h>
@@ -24,6 +23,7 @@
 #include <MaterialComponent.h>
 #include <TKProfiler.h>
 #include <UIManager.h>
+#include <Util.h>
 
 #include <DebugNew.h>
 
@@ -84,8 +84,7 @@ namespace ToolKit
         m_params.App->HideGizmos();
         sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
-        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
-            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        if (m_gammaTonemapFxaaPass->IsEnabled())
         {
           m_passArray.push_back(m_gammaTonemapFxaaPass);
         }
@@ -114,14 +113,15 @@ namespace ToolKit
 
         // Draw editor objects.
         m_passArray.push_back(m_editorPass);
+
         // Clears depth buffer to draw remaining entities always on top.
         m_passArray.push_back(m_gizmoPass);
-        // Scene meshs can't block editor billboards. Desired for this case.
+
+        // Scene meshes can't block editor billboards. Desired for this case.
         m_passArray.push_back(m_billboardPass);
 
         // Post process.
-        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
-            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        if (m_gammaTonemapFxaaPass->IsEnabled())
         {
           m_passArray.push_back(m_gammaTonemapFxaaPass);
         }
@@ -288,7 +288,7 @@ namespace ToolKit
       m_editorPass->m_params.clearBuffer    = GraphicBitFields::None;
 
       // Skip frame pass.
-      m_skipFramePass->m_params.FrameBuffer = viewport->m_framebuffer;
+      m_skipFramePass->m_params.frameBuffer = viewport->m_framebuffer;
       m_skipFramePass->m_material           = m_blackMaterial;
 
       // UI pass.
@@ -311,7 +311,6 @@ namespace ToolKit
       m_uiPass->m_params.clearBuffer                          = GraphicBitFields::DepthBits;
 
       // Post process pass
-
       m_gammaTonemapFxaaPass->m_params.frameBuffer            = viewport->m_framebuffer;
       m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = GetRenderSystem()->IsGammaCorrectionNeeded();
       m_gammaTonemapFxaaPass->m_params.enableFxaa             = gfx.FXAAEnabled;

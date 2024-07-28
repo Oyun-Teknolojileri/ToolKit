@@ -41,16 +41,7 @@ namespace ToolKit
     PUSH_CPU_MARKER("FullQuadPass::Render");
 
     Renderer* renderer = GetRenderer();
-
-    if (m_params.ClearFrameBuffer)
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
-    }
-    else
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
-    }
-
+    renderer->SetFramebuffer(m_params.frameBuffer, m_params.clearFrameBuffer);
     renderer->SetCamera(m_camera, true);
 
     RenderJobArray jobs;
@@ -77,6 +68,9 @@ namespace ToolKit
     mesh->m_material    = m_material;
     mesh->Init();
 
+    m_material->GetRenderState()->blendFunction = m_params.blendFunc;
+    SetFragmentShader(m_material->m_fragmentShader, renderer);
+
     POP_CPU_MARKER();
     POP_GPU_MARKER();
   }
@@ -95,17 +89,9 @@ namespace ToolKit
 
   void FullQuadPass::SetFragmentShader(ShaderPtr fragmentShader, Renderer* renderer)
   {
-    m_material->m_fragmentShader                = fragmentShader;
-    m_material->GetRenderState()->blendFunction = m_params.BlendFunc;
-
+    m_material->m_fragmentShader = fragmentShader;
     m_program = GetGpuProgramManager()->CreateProgram(m_material->m_vertexShader, m_material->m_fragmentShader);
-
     renderer->BindProgram(m_program);
-  }
-
-  void FullQuadPass::UpdateUniform(const ShaderUniform& shaderUniform)
-  {
-    m_program->UpdateCustomUniform(shaderUniform);
   }
 
 } // namespace ToolKit

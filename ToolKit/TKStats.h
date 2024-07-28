@@ -17,7 +17,7 @@ namespace ToolKit
   {
    public:
     // Vram Usage
-    ///////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     inline uint64 GetTotalVRAMUsageInBytes() { return m_totalVRAMUsageInBytes; }
 
@@ -39,9 +39,9 @@ namespace ToolKit
     inline void ResetVRAMUsage() { m_totalVRAMUsageInBytes = 0; }
 
     // Draw Call
-    ///////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
-    inline void AddDrawCall() { ++m_drawCallCount; }
+    inline void AddDrawCall() { m_drawCallCount++; }
 
     // NOTE: This function should be called regularly in a frame in order to get per-frame count
     inline void ResetDrawCallCounter() { m_drawCallCount = 0; }
@@ -49,11 +49,11 @@ namespace ToolKit
     inline uint64 GetDrawCallCount() { return m_drawCallCount; }
 
     // Hardware Render Pass Counter
-    ///////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
-    inline void AddHWRenderPass() { ++m_renderPassCount; }
+    inline void AddHWRenderPass() { m_renderPassCount++; }
 
-    inline void RemoveHWRenderPass() { --m_renderPassCount; }
+    inline void RemoveHWRenderPass() { m_renderPassCount--; }
 
     // NOTE: This function should be called regularly in a frame in order to get per-frame count
     inline void ResetHWRenderPassCounter() { m_renderPassCount = 0; }

@@ -14,7 +14,8 @@ namespace ToolKit
 {
 
   // Xml Processing.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   template <typename T>
   void ReadVec(XmlNode* node, T& val);
   template <typename T>
@@ -42,7 +43,7 @@ namespace ToolKit
   TK_API MaterialPtr ReadMaterial(XmlNode* parent);
 
   // File path operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   /**
    * Checks if a file exist in the host system.
@@ -117,7 +118,8 @@ namespace ToolKit
   TK_API String GetPluginExtention();
 
   // String operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API void Split(const String& s, const String& sep, StringArray& v);
 
   // Replace all occurrences of a string in another string.
@@ -150,7 +152,8 @@ namespace ToolKit
   TK_API bool Utf8CaseInsensitiveSearch(const String& text, const String& search);
 
   // Debug geometries.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API LineBatchPtr CreatePlaneDebugObject(PlaneEquation plane, float size);
   TK_API LineBatchPtr CreateLineDebugObject(const Vec3Array& corners);
   TK_API LineBatchPtr CreateBoundingBoxDebugObject(const BoundingBox& box,
@@ -181,14 +184,15 @@ namespace ToolKit
   TK_API Node* DeepNodeCopy(Node* node);
 
   // Memory operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   // Useful to force plugin modules to allocate from main toolkit module.
   TK_API void* TKMalloc(size_t sz);
   //  Use in combination with TKMalloc to free from main toolkit module.
   TK_API void TKFree(void* m);
 
   // Container operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TK_API int IndexOf(EntityPtr ntt, const EntityPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
@@ -301,7 +305,8 @@ namespace ToolKit
   }
 
   //  Time.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API float MillisecToSec(float ms);
 
   /**
@@ -310,7 +315,8 @@ namespace ToolKit
   TK_API float GetElapsedMilliSeconds();
 
   // Hash.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API uint64 MurmurHash(uint64 x);
 
   TK_API void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed);
