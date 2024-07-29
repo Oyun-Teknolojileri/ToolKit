@@ -241,21 +241,21 @@ namespace ToolKit
       m_defineArray.push_back(def);
     }
 
-    m_defineArray.erase(m_defineArray.end(), std::unique(m_defineArray.begin(), m_defineArray.end()));
+    m_defineArray.erase(std::unique(m_defineArray.begin(), m_defineArray.end()), m_defineArray.end());
 
     for (Uniform uniform : includeShader->m_uniforms)
     {
       m_uniforms.push_back(uniform);
     }
 
-    m_uniforms.erase(m_uniforms.end(), std::unique(m_uniforms.begin(), m_uniforms.end()));
+    m_uniforms.erase(std::unique(m_uniforms.begin(), m_uniforms.end()), m_uniforms.end());
 
     for (ArrayUniform uni : includeShader->m_arrayUniforms)
     {
       m_arrayUniforms.push_back(uni);
     }
 
-    m_arrayUniforms.erase(m_arrayUniforms.end(), std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end()));
+    m_arrayUniforms.erase(std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end()), m_arrayUniforms.end());
   }
 
   uint Shader::FindShaderMergeLocation(const String& file)

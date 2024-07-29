@@ -86,6 +86,9 @@ namespace ToolKit
       /** By default EVSM uses 2 component for shadow map generation. If this is true, it uses 4 component. */
       bool useEVSM4                     = false;
 
+      /** Uses 32 bit shadow maps. */
+      bool use32BitShadowMap            = true;
+
       /** Anisotropic texture filtering value. It can be 0, 2 ,4, 8, 16. Clamped with gpu max anisotropy. */
       int anisotropicTextureFiltering   = 8;
 

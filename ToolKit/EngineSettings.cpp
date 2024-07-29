@@ -116,6 +116,7 @@ namespace ToolKit
     WriteAttr(settings, doc, "UsePSSM", std::to_string(useParallelSplitPartitioning));
     WriteAttr(settings, doc, "PSSMLambda", std::to_string(parallelSplitLambda));
     WriteAttr(settings, doc, "StableShadow", std::to_string(stableShadowMap));
+    WriteAttr(settings, doc, "Use32BitSM", std::to_string(use32BitShadowMap));
 
     WriteAttr(settings, doc, "AnisotropicTextureFiltering", std::to_string(anisotropicTextureFiltering));
 
@@ -148,6 +149,7 @@ namespace ToolKit
       ReadAttr(node, "UsePSSM", useParallelSplitPartitioning);
       ReadAttr(node, "PSSMLambda", parallelSplitLambda);
       ReadAttr(node, "StableShadow", stableShadowMap);
+      ReadAttr(node, "Use32BitSM", use32BitShadowMap);
 
       ReadAttr(node, "AnisotropicTextureFiltering", anisotropicTextureFiltering);
 
