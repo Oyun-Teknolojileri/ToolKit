@@ -295,6 +295,7 @@ namespace ToolKit
     MaterialPtr shadowMaterial = lightType == Light::LightType::Directional ? m_shadowMatOrtho : m_shadowMatPersp;
     shadowMaterial->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
     shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+    shadowMaterial->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
     m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
@@ -435,6 +436,12 @@ namespace ToolKit
       needChange = true;
     }
 
+    if (m_use32BitShadowMap != graphicSettings.use32BitShadowMap)
+    {
+      m_use32BitShadowMap = graphicSettings.use32BitShadowMap;
+      needChange          = true;
+    }
+
     // After this loop m_previousShadowCasters is set with lights with shadows
     int nextId = 0;
     for (int i = 0; i < m_lights.size(); ++i)
@@ -477,14 +484,22 @@ namespace ToolKit
         GetLogger()->Log("ERROR: Max array texture layer size is reached: " + std::to_string(maxLayers) + " !");
       }
 
+      GraphicTypes bufferComponents = m_useEVSM4 ? GraphicTypes::FormatRGBA : GraphicTypes::FormatRG;
+      GraphicTypes bufferFormat     = m_useEVSM4 ? GraphicTypes::FormatRGBA32F : GraphicTypes::FormatRG32F;
+
+      if (!m_use32BitShadowMap)
+      {
+        bufferFormat = m_useEVSM4 ? GraphicTypes::FormatRGBA16F : GraphicTypes::FormatRG16F;
+      }
+
       const TextureSettings set = {GraphicTypes::Target2DArray,
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::SampleLinear,
                                    GraphicTypes::SampleLinear,
-                                   m_useEVSM4 ? GraphicTypes::FormatRGBA16F : GraphicTypes::FormatRG16F,
-                                   m_useEVSM4 ? GraphicTypes::FormatRGBA : GraphicTypes::FormatRG,
+                                   bufferFormat,
+                                   bufferComponents,
                                    GraphicTypes::TypeFloat,
                                    m_layerCount,
                                    false};

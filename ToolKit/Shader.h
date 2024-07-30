@@ -30,6 +30,8 @@ namespace ToolKit
     StringArray variants; //!< Value combinations for the given define.
 
     bool operator==(const ShaderDefine& other) const { return define == other.define; }
+
+    bool operator<(const ShaderDefine& other) const { return define < other.define; }
   };
 
   typedef std::vector<ShaderDefine> ShaderDefineArray;
@@ -108,6 +110,8 @@ namespace ToolKit
       int size;
 
       bool operator==(const ArrayUniform& other) const { return uniform == other.uniform && size == other.size; }
+
+      bool operator<(const ArrayUniform& other) const { return uniform < other.uniform; }
     };
 
     /** Built-in Uniform's that are required for the shader. */

@@ -1,5 +1,6 @@
 <shader>
 	<type name = "includeShader" />
+  <define name = "SMFormat16Bit" val="0,1" />
 	<source>
 	<!--
 
@@ -147,12 +148,11 @@ float Random(vec4 seed)
 // Evsm from TheRealMJP shadow sample app.
 // https://github.com/TheRealMJP/Shadows
 
-#define SMFormat16Bit 1
-#define EvsmExponents GetEVSMExponents(40.0, 5.0, 1)
+#define EvsmExponents GetEVSMExponents(40.0, 5.0)
 
-vec2 GetEVSMExponents(in float positiveExponent, in float negativeExponent, in int vsmFormat)
+vec2 GetEVSMExponents(in float positiveExponent, in float negativeExponent)
 {
-    float maxExponent = vsmFormat == SMFormat16Bit ? 5.54f : 42.0f;
+    float maxExponent = SMFormat16Bit == 1 ? 5.54f : 42.0f;
 
     vec2 lightSpaceExponents = vec2(positiveExponent, negativeExponent);
 

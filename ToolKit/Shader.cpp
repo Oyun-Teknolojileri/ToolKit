@@ -236,26 +236,22 @@ namespace ToolKit
     ShaderPtr includeShader = GetShaderManager()->Create<Shader>(ShaderPath(file, true));
     m_source.replace(mergeLoc, 0, includeShader->m_source);
 
-    for (ShaderDefine& def : includeShader->m_defineArray)
-    {
-      m_defineArray.push_back(def);
-    }
+    // Handle m_defineArray
+    m_defineArray.insert(m_defineArray.end(), includeShader->m_defineArray.begin(), includeShader->m_defineArray.end());
+    std::sort(m_defineArray.begin(), m_defineArray.end());
+    m_defineArray.erase(std::unique(m_defineArray.begin(), m_defineArray.end()), m_defineArray.end());
 
-    m_defineArray.erase(m_defineArray.end(), std::unique(m_defineArray.begin(), m_defineArray.end()));
+    // Handle m_uniforms
+    m_uniforms.insert(m_uniforms.end(), includeShader->m_uniforms.begin(), includeShader->m_uniforms.end());
+    std::sort(m_uniforms.begin(), m_uniforms.end());
+    m_uniforms.erase(std::unique(m_uniforms.begin(), m_uniforms.end()), m_uniforms.end());
 
-    for (Uniform uniform : includeShader->m_uniforms)
-    {
-      m_uniforms.push_back(uniform);
-    }
-
-    m_uniforms.erase(m_uniforms.end(), std::unique(m_uniforms.begin(), m_uniforms.end()));
-
-    for (ArrayUniform uni : includeShader->m_arrayUniforms)
-    {
-      m_arrayUniforms.push_back(uni);
-    }
-
-    m_arrayUniforms.erase(m_arrayUniforms.end(), std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end()));
+    // Handle m_arrayUniforms
+    m_arrayUniforms.insert(m_arrayUniforms.end(),
+                           includeShader->m_arrayUniforms.begin(),
+                           includeShader->m_arrayUniforms.end());
+    std::sort(m_arrayUniforms.begin(), m_arrayUniforms.end());
+    m_arrayUniforms.erase(std::unique(m_arrayUniforms.begin(), m_arrayUniforms.end()), m_arrayUniforms.end());
   }
 
   uint Shader::FindShaderMergeLocation(const String& file)

@@ -74,6 +74,7 @@ namespace ToolKit
 
     EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
     mat->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
+    mat->m_fragmentShader->SetDefine("SMFormat16Bit", graphicsSettings.use32BitShadowMap ? "0" : "1");
 
     GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 

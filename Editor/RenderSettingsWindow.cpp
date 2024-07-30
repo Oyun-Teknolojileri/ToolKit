@@ -209,6 +209,9 @@ namespace ToolKit
         UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive and negative component."
                                  "\nRequires more shadow map memory, but yields softer shadows.");
 
+        ImGui::Checkbox("Use high precision shadow maps", &engineSettings.Graphics.use32BitShadowMap);
+        UI::AddTooltipToLastItem("Uses 32 bits floating point textures for shadow map generation.");
+
         // Cascade count combo.
         {
           const char* itemNames[] = {"1", "2", "3", "4"};
