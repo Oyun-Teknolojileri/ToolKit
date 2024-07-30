@@ -17,7 +17,7 @@ namespace ToolKit
 
   int TK_GL_EXT_texture_filter_anisotropic                                     = 0;
 
-  int TK_GL_EXT_color_buffer_float                                             = 0;
+  int TK_GL_OES_texture_float_linear                                           = 0;
 
   void LoadGlFunctions(void* glGetProcAddres)
   {
@@ -36,8 +36,8 @@ namespace ToolKit
     TK_GL_EXT_texture_filter_anisotropic = GLAD_GL_EXT_texture_filter_anisotropic;
   #endif
 
-  #ifdef GL_EXT_color_buffer_float
-    TK_GL_EXT_color_buffer_float = GLAD_GL_EXT_color_buffer_float;
+  #ifdef GL_OES_texture_float_linear
+    TK_GL_OES_texture_float_linear = GLAD_GL_OES_texture_float_linear;
   #endif
 
 #endif
@@ -62,7 +62,7 @@ namespace ToolKit
       if (extensions != nullptr)
       {
         String extensionsStr((const char*) extensions);
-        TK_GL_EXT_color_buffer_float         = extensionsStr.find("GL_EXT_color_buffer_float") != String::npos;
+        TK_GL_OES_texture_float_linear       = extensionsStr.find("GL_OES_texture_float_linear") != String::npos;
         TK_GL_EXT_texture_filter_anisotropic = extensionsStr.find("GL_EXT_texture_filter_anisotropic") != String::npos;
       }
     }

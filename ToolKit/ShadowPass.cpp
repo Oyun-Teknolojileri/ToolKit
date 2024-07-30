@@ -492,12 +492,19 @@ namespace ToolKit
         bufferFormat = m_useEVSM4 ? GraphicTypes::FormatRGBA16F : GraphicTypes::FormatRG16F;
       }
 
+      GraphicTypes sampler = GraphicTypes::SampleLinear;
+      if (!TK_GL_OES_texture_float_linear)
+      {
+        // Fall back to nearest sampling. 32 bit filterable textures are not available.
+        sampler = GraphicTypes::SampleNearest;
+      }
+
       const TextureSettings set = {GraphicTypes::Target2DArray,
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
                                    GraphicTypes::UVClampToEdge,
-                                   GraphicTypes::SampleLinear,
-                                   GraphicTypes::SampleLinear,
+                                   sampler,
+                                   sampler,
                                    bufferFormat,
                                    bufferComponents,
                                    GraphicTypes::TypeFloat,

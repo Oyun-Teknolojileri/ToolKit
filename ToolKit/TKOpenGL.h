@@ -57,10 +57,10 @@ namespace ToolKit
 #undef GL_TEXTURE_MAX_ANISOTROPY_EXT
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 
-  // GL_EXT_color_buffer_float
+  // GL_OES_texture_float_linear
   //////////////////////////////////////////
 
-  extern int TK_GL_EXT_color_buffer_float;
+  extern int TK_GL_OES_texture_float_linear;
 
   // GL Loader function
   //////////////////////////////////////////
