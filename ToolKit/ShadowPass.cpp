@@ -487,7 +487,7 @@ namespace ToolKit
       GraphicTypes bufferComponents = m_useEVSM4 ? GraphicTypes::FormatRGBA : GraphicTypes::FormatRG;
       GraphicTypes bufferFormat     = m_useEVSM4 ? GraphicTypes::FormatRGBA32F : GraphicTypes::FormatRG32F;
 
-      if (!graphicSettings.use32BitShadowMap)
+      if (!m_use32BitShadowMap)
       {
         bufferFormat = m_useEVSM4 ? GraphicTypes::FormatRGBA16F : GraphicTypes::FormatRG16F;
       }
