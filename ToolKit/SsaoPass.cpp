@@ -103,7 +103,7 @@ namespace ToolKit
     // the only render target is already being resized.
     m_ssaoFramebuffer->Init({width, height, false, false});
 
-    TextureSettings oneChannelSet = {};
+    TextureSettings oneChannelSet;
     oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
     oneChannelSet.InternalFormat  = GraphicTypes::FormatR32F;

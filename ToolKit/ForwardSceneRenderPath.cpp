@@ -84,9 +84,12 @@ namespace ToolKit
       m_passArray.push_back(m_dofPass);
     }
 
-    if (m_params.enableGammaTonemapFxaa)
+    if (m_params.applyGammaTonemapFxaa)
     {
-      m_passArray.push_back(m_gammaTonemapFxaaPass);
+      if (m_gammaTonemapFxaaPass->IsEnabled())
+      {
+        m_passArray.push_back(m_gammaTonemapFxaaPass);
+      }
     }
 
     RenderPath::Render(renderer);
