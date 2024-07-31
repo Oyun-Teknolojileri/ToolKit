@@ -32,13 +32,7 @@ namespace ToolKit
       DrawCommands();
 
       m_previewRenderer->m_params.MainFramebuffer = m_framebuffer;
-      RenderTask task                             = {[this](Renderer* renderer) -> void
-                                                     {
-                           renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
-                           m_previewRenderer->Render(renderer);
-                         }};
-
-      GetRenderSystem()->AddRenderTask(task);
+      GetRenderSystem()->AddRenderTask({[this](Renderer* renderer) -> void { m_previewRenderer->Render(renderer); }});
 
       // Render color attachment as rounded image
       const FramebufferSettings& fbSettings = m_framebuffer->GetSettings();

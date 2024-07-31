@@ -119,14 +119,9 @@ namespace ToolKit
         skelComp->Init();
       }
 
-      BoundingBox aabb;
-      EntityPtrArray entities = m_viewport->GetScene()->GetEntities();
-      for (EntityPtr ntt : entities)
-      {
-        aabb.UpdateBoundary(ntt->GetBoundingBox(true).min);
-        aabb.UpdateBoundary(ntt->GetBoundingBox(true).max);
-      }
-
+      ScenePtr scene = m_viewport->GetScene();
+      scene->RebuildBVH();
+      BoundingBox aabb = scene->GetSceneBoundary();
       m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);
     }
 
