@@ -13,6 +13,7 @@
 #include "EngineSettings.h"
 #include "ForwardPass.h"
 #include "ForwardPreProcessPass.h"
+#include "GammaTonemapFxaaPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
 #include "ShadowPass.h"
@@ -27,6 +28,7 @@ namespace ToolKit
     ScenePtr Scene                 = nullptr;
     CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
+    bool enableGammaTonemapFxaa    = false;
     EngineSettings::PostProcessingSettings Gfx;
   };
 
@@ -59,6 +61,7 @@ namespace ToolKit
     SSAOPassPtr m_ssaoPass                           = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
     DoFPassPtr m_dofPass                             = nullptr;
+    GammaTonemapFxaaPassPtr m_gammaTonemapFxaaPass   = nullptr;
 
    protected:
     bool m_drawSky   = false;

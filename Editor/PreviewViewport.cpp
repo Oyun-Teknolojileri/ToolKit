@@ -18,9 +18,10 @@ namespace ToolKit
 
     PreviewViewport::PreviewViewport()
     {
-      m_previewRenderer                           = MakeNewPtr<ForwardSceneRenderPath>();
-      m_previewRenderer->m_params.Cam             = GetCamera();
-      m_previewRenderer->m_params.MainFramebuffer = m_framebuffer;
+      m_previewRenderer                                  = MakeNewPtr<ForwardSceneRenderPath>();
+      m_previewRenderer->m_params.enableGammaTonemapFxaa = true;
+      m_previewRenderer->m_params.Cam                    = GetCamera();
+      m_previewRenderer->m_params.MainFramebuffer        = m_framebuffer;
     }
 
     PreviewViewport::~PreviewViewport() { m_previewRenderer = nullptr; }
@@ -61,7 +62,8 @@ namespace ToolKit
     void PreviewViewport::SetScene(ScenePtr scene)
     {
       scene->Update(0.0f);
-      m_previewRenderer->m_params.Scene = scene;
+      m_previewRenderer->m_params.Scene  = scene;
+      m_previewRenderer->m_params.Lights = scene->GetLights();
     }
 
     void PreviewViewport::ResetCamera()
