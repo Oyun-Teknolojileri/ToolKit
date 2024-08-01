@@ -37,8 +37,11 @@ namespace ToolKit
 
     void MeshView::ResetCamera()
     {
-      m_viewport->GetCamera()->m_node->SetTranslation(Vec3(0, 2.0, 5));
-      m_viewport->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0));
+      m_previewEntity->InvalidateSpatialCaches();
+      ScenePtr scene = m_viewport->GetScene();
+      scene->Update(0.0f);
+      BoundingBox aabb = scene->GetSceneBoundary();
+      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.5f);
     }
 
     void MeshView::Show()
@@ -120,11 +123,7 @@ namespace ToolKit
         skelComp->Init();
       }
 
-      m_previewEntity->InvalidateSpatialCaches();
-      ScenePtr scene = m_viewport->GetScene();
-      scene->Update(0.0f);
-      BoundingBox aabb = scene->GetSceneBoundary();
-      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.5f);
+      ResetCamera();
     }
 
   } // namespace Editor
