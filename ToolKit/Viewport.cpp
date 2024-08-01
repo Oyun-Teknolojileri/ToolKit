@@ -131,11 +131,7 @@ namespace ToolKit
     m_framebuffer->Init({width, height, false, true, engineSettings.Graphics.msaa});
     m_renderTarget = MakeNewPtr<RenderTarget>(width, height, settings);
     m_renderTarget->Init();
-
-    if (m_renderTarget->m_initiated)
-    {
-      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);
-    }
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);
   }
 
   Ray Viewport::RayFromMousePosition()

@@ -23,6 +23,7 @@ namespace ToolKit
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
     m_bloomPass             = MakeNewPtr<BloomPass>();
     m_dofPass               = MakeNewPtr<DoFPass>();
+    m_gammaTonemapFxaaPass  = MakeNewPtr<GammaTonemapFxaaPass>();
   }
 
   ForwardSceneRenderPath::ForwardSceneRenderPath(const SceneRenderPathParams& params) { m_params = params; }
@@ -36,6 +37,7 @@ namespace ToolKit
     m_forwardPreProcessPass = nullptr;
     m_bloomPass             = nullptr;
     m_dofPass               = nullptr;
+    m_gammaTonemapFxaaPass  = nullptr;
   }
 
   void ForwardSceneRenderPath::Render(Renderer* renderer)
@@ -80,6 +82,14 @@ namespace ToolKit
     if (m_params.Gfx.DepthOfFieldEnabled)
     {
       m_passArray.push_back(m_dofPass);
+    }
+
+    if (m_params.applyGammaTonemapFxaa)
+    {
+      if (m_gammaTonemapFxaaPass->IsEnabled())
+      {
+        m_passArray.push_back(m_gammaTonemapFxaaPass);
+      }
     }
 
     RenderPath::Render(renderer);
@@ -191,12 +201,24 @@ namespace ToolKit
     m_bloomPass->m_params.iterationCount    = m_params.Gfx.BloomIterationCount;
 
     RenderTargetPtr atc = m_params.MainFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
-    m_dofPass->m_params.ColorRt     = atc;
+    m_dofPass->m_params.ColorRt                            = atc;
 
-    m_dofPass->m_params.DepthRt     = m_forwardPreProcessPass->m_linearDepthRt;
-    m_dofPass->m_params.focusPoint  = m_params.Gfx.FocusPoint;
-    m_dofPass->m_params.focusScale  = m_params.Gfx.FocusScale;
-    m_dofPass->m_params.blurQuality = m_params.Gfx.DofQuality;
+    m_dofPass->m_params.DepthRt                            = m_forwardPreProcessPass->m_linearDepthRt;
+    m_dofPass->m_params.focusPoint                         = m_params.Gfx.FocusPoint;
+    m_dofPass->m_params.focusScale                         = m_params.Gfx.FocusScale;
+    m_dofPass->m_params.blurQuality                        = m_params.Gfx.DofQuality;
+
+    // Post Process Pass
+    bool gammaNeeded                                       = GetRenderSystem()->IsGammaCorrectionNeeded();
+    m_gammaTonemapFxaaPass->m_params.enableGammaCorrection = m_params.Gfx.GammaCorrectionEnabled && gammaNeeded;
+    m_gammaTonemapFxaaPass->m_params.enableFxaa            = m_params.Gfx.FXAAEnabled;
+    m_gammaTonemapFxaaPass->m_params.enableTonemapping     = m_params.Gfx.TonemappingEnabled;
+    m_gammaTonemapFxaaPass->m_params.frameBuffer           = m_params.MainFramebuffer;
+    m_gammaTonemapFxaaPass->m_params.tonemapMethod         = m_params.Gfx.TonemapperMode;
+    m_gammaTonemapFxaaPass->m_params.gamma                 = m_params.Gfx.Gamma;
+
+    FramebufferSettings fbs                                = m_params.MainFramebuffer->GetSettings();
+    m_gammaTonemapFxaaPass->m_params.screenSize            = Vec2(fbs.width, fbs.height);
   }
 
   bool ForwardSceneRenderPath::RequiresForwardPreProcessPass()

@@ -629,6 +629,8 @@ namespace ToolKit
       m_copyFb->Init({src->m_width, src->m_height, false, false});
     }
 
+    m_copyFb->ReconstructIfNeeded(src->m_width, src->m_height);
+
     FramebufferPtr lastFb = m_framebuffer;
     SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 

@@ -19,6 +19,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     MeshView::MeshView() : View("Mesh View")
     {
       m_viewID   = 3;
@@ -36,8 +37,11 @@ namespace ToolKit
 
     void MeshView::ResetCamera()
     {
-      m_viewport->GetCamera()->m_node->SetTranslation(Vec3(0, 2.0, 5));
-      m_viewport->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0));
+      m_previewEntity->InvalidateSpatialCaches();
+      ScenePtr scene = m_viewport->GetScene();
+      scene->Update(0.0f);
+      BoundingBox aabb = scene->GetSceneBoundary();
+      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.5f);
     }
 
     void MeshView::Show()
@@ -119,15 +123,7 @@ namespace ToolKit
         skelComp->Init();
       }
 
-      BoundingBox aabb;
-      EntityPtrArray entities = m_viewport->GetScene()->GetEntities();
-      for (EntityPtr ntt : entities)
-      {
-        aabb.UpdateBoundary(ntt->GetBoundingBox(true).min);
-        aabb.UpdateBoundary(ntt->GetBoundingBox(true).max);
-      }
-
-      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);
+      ResetCamera();
     }
 
   } // namespace Editor
