@@ -19,6 +19,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     MeshView::MeshView() : View("Mesh View")
     {
       m_viewID   = 3;
@@ -119,10 +120,11 @@ namespace ToolKit
         skelComp->Init();
       }
 
+      m_previewEntity->InvalidateSpatialCaches();
       ScenePtr scene = m_viewport->GetScene();
-      scene->RebuildBVH();
+      scene->Update(0.0f);
       BoundingBox aabb = scene->GetSceneBoundary();
-      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);
+      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.5f);
     }
 
   } // namespace Editor
