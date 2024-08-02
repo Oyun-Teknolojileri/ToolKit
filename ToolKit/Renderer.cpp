@@ -632,10 +632,10 @@ namespace ToolKit
     m_copyFb->ReconstructIfNeeded(src->m_width, src->m_height);
 
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 
-    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dst);
+    RenderTargetPtr rt    = std::static_pointer_cast<RenderTarget>(dst);
     m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+    SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
