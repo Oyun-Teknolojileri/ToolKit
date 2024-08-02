@@ -10,6 +10,7 @@
 #include "App.h"
 
 #include <Camera.h>
+#include <GradientSky.h>
 #include <Material.h>
 #include <Mesh.h>
 #include <Surface.h>
@@ -26,17 +27,23 @@ namespace ToolKit
       m_maxThumbSize    = 300;
 
       m_thumbnailBuffer = MakeNewPtr<Framebuffer>();
-      m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true});
+      m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true, 4});
 
       m_thumbnailScene = MakeNewPtr<Scene>();
+      m_sky            = MakeNewPtr<GradientSky>();
 
       m_entity         = MakeNewPtr<Entity>();
       m_entity->AddComponent<MeshComponent>();
 
       m_sphere      = MakeNewPtr<Sphere>();
+      m_surface     = MakeNewPtr<Surface>();
 
       m_lightSystem = MakeNewPtr<ThreePointLightSystem>();
-      m_cam         = MakeNewPtr<Camera>();
+      m_lightSystem->m_lights[0]->SetIntensityVal(2.0f);
+
+      m_cam                          = MakeNewPtr<Camera>();
+
+      m_params.applyGammaTonemapFxaa = true;
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()
@@ -58,6 +65,9 @@ namespace ToolKit
     {
       String fullpath = dirEnt.GetFullPath();
       m_thumbnailScene->ClearEntities();
+      m_renderData.jobs.clear();
+
+      m_thumbnailScene->AddEntity(m_sky);
 
       // TODO: This function should not load meshes.
       // Instead another task queue may be used to load meshes async.
@@ -87,7 +97,9 @@ namespace ToolKit
           skelComp->Init();
         }
 
+        m_entity->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_entity);
+        m_thumbnailScene->Update(0.0f);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->FocusToBoundingBox(m_entity->GetBoundingBox(true), 1.5f);
@@ -100,7 +112,9 @@ namespace ToolKit
           mc->SetFirstMaterial(mat);
         }
 
+        m_sphere->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_sphere);
+        m_thumbnailScene->Update(0.0f);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->m_node->SetOrientation(Quaternion());
@@ -123,7 +137,7 @@ namespace ToolKit
         float w      = (texture->m_width / maxDim) * m_maxThumbSize;
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
-        m_surface    = MakeNewPtr<Surface>();
+        m_surface->InvalidateSpatialCaches();
         m_surface->Update(Vec2(w, h));
         m_surface->UpdateGeometry(false);
         MaterialComponentPtr matCom                  = m_surface->GetMaterialComponent();

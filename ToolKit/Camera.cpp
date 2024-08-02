@@ -157,7 +157,7 @@ namespace ToolKit
     }
 
     Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
-    float r        = glm::distance(geoCenter, bb.max) * margin;
+    float r        = glm::max(glm::distance(geoCenter, bb.max) * margin, 1.5f);
     float d        = r / glm::tan(m_fov / 2.0f);
     Vec3 eye       = geoCenter + glm::normalize(Vec3(1.0f)) * d;
     m_node->SetTranslation(eye, TransformationSpace::TS_WORLD);

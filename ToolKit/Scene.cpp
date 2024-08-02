@@ -473,7 +473,11 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  void Scene::ClearEntities() { m_entities.clear(); }
+  void Scene::ClearEntities()
+  {
+    m_entities.clear();
+    m_bvh->Clean();
+  }
 
   void Scene::RebuildBVH() { m_bvh->ReBuild(); }
 
