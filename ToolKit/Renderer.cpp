@@ -1528,16 +1528,10 @@ namespace ToolKit
                                                             -1,
                                                             (Framebuffer::CubemapFace) i);
 
-        if (mip != 0 && i != 0)
-        {
-          AddHWRenderPass();
-        }
+        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
 
         mat->UpdateProgramUniform("roughness", (float) mip / (float) mipMaps);
         mat->UpdateProgramUniform("resPerFace", (float) mipSize);
-
-        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
-        SetViewportSize(mipSize, mipSize);
 
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
 
@@ -1546,9 +1540,6 @@ namespace ToolKit
         // Copy color attachment to cubemap's correct mip level and face.
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId, 0);
         glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
-
-        // Set the read cubemap back. When renderer hijacked like this, we need to restore its state manually.
-        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
       }
     }
 
