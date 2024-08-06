@@ -935,18 +935,6 @@ namespace ToolKit
         glUniform4fv(uniformLoc, 1, &color.x);
       }
 
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_INTENSITY);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, m_renderState.iblIntensity);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
-      if (uniformLoc != -1)
-      {
-        glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
-      }
-
       uniformLoc = program->GetDefaultUniformLocation(Uniform::COLOR_ALPHA);
       if (uniformLoc != -1)
       {
@@ -1056,7 +1044,6 @@ namespace ToolKit
         Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
         glUniformMatrix4fv(uniformLoc, 1, false, &invTrModel[0][0]);
       }
-
       uniformLoc = program->GetDefaultUniformLocation(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1094,6 +1081,16 @@ namespace ToolKit
         {
           glUniformMatrix4fv(uniformLoc, 1, false, &m_iblRotation[0][0]);
         }
+      }
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_INTENSITY);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, m_renderState.iblIntensity);
+      }
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
+      if (uniformLoc != -1)
+      {
+        glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
       }
       uniformLoc = program->GetDefaultUniformLocation(Uniform::EMISSIVE_TEXTURE_IN_USE);
       if (uniformLoc != -1)
