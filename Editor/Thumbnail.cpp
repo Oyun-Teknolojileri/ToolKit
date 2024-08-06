@@ -69,6 +69,8 @@ namespace ToolKit
 
       m_thumbnailScene->AddEntity(m_sky);
 
+      m_params.Gfx = EngineSettings::PostProcessingSettings();
+
       // TODO: This function should not load meshes.
       // Instead another task queue may be used to load meshes async.
       // Because we are in the rendering phase at this stage.
@@ -99,7 +101,6 @@ namespace ToolKit
 
         m_entity->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_entity);
-        m_thumbnailScene->Update(0.0f);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->FocusToBoundingBox(m_entity->GetBoundingBox(true), 1.5f);
@@ -114,7 +115,6 @@ namespace ToolKit
 
         m_sphere->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_sphere);
-        m_thumbnailScene->Update(0.0f);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
         m_cam->m_node->SetOrientation(Quaternion());
@@ -122,7 +122,14 @@ namespace ToolKit
       }
       else if (SupportedImageFormat(dirEnt.m_ext))
       {
-        TexturePtr texture = nullptr;
+        m_thumbnailScene->GetSky().reset();
+
+        m_params.applyGammaTonemapFxaa = true;
+        m_params.Gfx.FXAAEnabled       = false;
+        m_params.Gfx.BloomEnabled      = false;
+        m_params.Gfx.SSAOEnabled       = false;
+
+        TexturePtr texture             = nullptr;
         if (dirEnt.m_ext == HDR)
         {
           texture = GetTextureManager()->Create<Hdri>(fullpath);
@@ -140,9 +147,11 @@ namespace ToolKit
         m_surface->InvalidateSpatialCaches();
         m_surface->Update(Vec2(w, h));
         m_surface->UpdateGeometry(false);
-        MaterialComponentPtr matCom                  = m_surface->GetMaterialComponent();
-        matCom->GetFirstMaterial()->m_diffuseTexture = texture;
-        matCom->Init(false);
+
+        MaterialPtr unlitMaterial       = GetMaterialManager()->GetCopyOfUIMaterial();
+        unlitMaterial->m_diffuseTexture = texture;
+
+        m_surface->GetMaterialComponent()->SetFirstMaterial(unlitMaterial);
 
         m_thumbnailScene->AddEntity(m_surface);
         m_cam->m_orthographicScale = 1.0f;
@@ -155,6 +164,8 @@ namespace ToolKit
       {
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
+
+      m_thumbnailScene->Update(0.0f);
 
       m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize, TextureSettings());
       m_thumbnailRT->Init();
