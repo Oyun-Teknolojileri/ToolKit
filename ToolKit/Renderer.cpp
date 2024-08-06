@@ -1005,7 +1005,6 @@ namespace ToolKit
     }
 
     // Built-in variables.
-
     {
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_VIEW_MATRIX);
       if (uniformLoc != -1)
@@ -1038,12 +1037,14 @@ namespace ToolKit
         modelNoTr[3][2] = 0.0f;
         glUniformMatrix4fv(uniformLoc, 1, false, &modelNoTr[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::INV_TR_MODEL);
       if (uniformLoc != -1)
       {
         Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
         glUniformMatrix4fv(uniformLoc, 1, false, &invTrModel[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1063,6 +1064,7 @@ namespace ToolKit
           SetTexture(9, m_mat->m_normalMap->m_textureId);
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::USE_IBL);
       if (uniformLoc != -1)
       {
@@ -1074,6 +1076,7 @@ namespace ToolKit
         }
         glUniform1i(uniformLoc, (GLint) m_renderState.IBLInUse);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_ROTATION);
       if (uniformLoc != -1)
       {
@@ -1082,11 +1085,13 @@ namespace ToolKit
           glUniformMatrix4fv(uniformLoc, 1, false, &m_iblRotation[0][0]);
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_INTENSITY);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, m_renderState.iblIntensity);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
       if (uniformLoc != -1)
       {
@@ -1100,26 +1105,31 @@ namespace ToolKit
           SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.firstKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_2);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.secondKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_INT_TIME);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.keyFrameInterpolationTime);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_COUNT);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.keyFrameCount);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IS_ANIMATED);
       if (uniformLoc != -1)
       {
@@ -1130,26 +1140,31 @@ namespace ToolKit
       {
         glUniform1i(uniformLoc, job.animData.blendAnimation != nullptr);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_FACTOR);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.animationBlendFactor);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_1);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendFirstKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_2);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendSecondKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_INT_TIME);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendKeyFrameInterpolationTime);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_COUNT);
       if (uniformLoc != -1)
       {
@@ -1300,8 +1315,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1343,7 +1356,7 @@ namespace ToolKit
                     glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
                     glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; i++)
     {
       Vec3 pos, sca;
       Quaternion rot;
@@ -1359,10 +1372,6 @@ namespace ToolKit
                                                           0,
                                                           -1,
                                                           (Framebuffer::CubemapFace) i);
-      if (i > 0)
-      {
-        AddHWRenderPass();
-      }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
@@ -1376,8 +1385,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1432,10 +1439,6 @@ namespace ToolKit
                                                           0,
                                                           -1,
                                                           (Framebuffer::CubemapFace) i);
-      if (i > 0)
-      {
-        AddHWRenderPass();
-      }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
@@ -1451,8 +1454,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1486,6 +1487,7 @@ namespace ToolKit
     // Create material
     MaterialPtr mat         = MakeNewPtr<Material>();
     mat->m_isShaderMaterial = true;
+
     ShaderPtr vert          = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
     ShaderPtr frag          = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 
