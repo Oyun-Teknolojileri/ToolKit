@@ -22,7 +22,7 @@ namespace ToolKit
     {
      public:
       MaterialView();
-      ~MaterialView();
+      virtual ~MaterialView();
 
       void Show() override;
       void SetMaterials(const MaterialPtrArray& mat);
@@ -55,7 +55,7 @@ namespace ToolKit
       TKDeclareClass(MaterialWindow, Window);
 
       MaterialWindow();
-      ~MaterialWindow();
+      virtual ~MaterialWindow();
 
       void SetMaterial(MaterialPtr mat);
       void Show() override;

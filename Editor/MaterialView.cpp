@@ -430,8 +430,8 @@ namespace ToolKit
       {
         HandleStates();
         m_view->Show();
-        ImGui::End();
       }
+      ImGui::End();
     }
 
   } // namespace Editor

@@ -52,6 +52,12 @@ namespace ToolKit
       void CreateItemActions();
       void MoveTo(const String& dst); // Imgui Drop target.
 
+      void DetermineAndSetBackgroundColor(bool isSelected, int index);
+      bool IsMultiSelecting();
+
+      /** Selects the files between two entry index(including a and b) */
+      void SelectFilesInRange(int a, int b);
+
      public:
       // Indicates this is a root folder (one level under Resources)
       // and currently selected in the FolderWindow.
@@ -73,17 +79,11 @@ namespace ToolKit
       String m_path;
 
      private:
-      void DeterminateAndSetBackgroundColor(bool isSelected, int index);
-      bool IsMultiSelecting();
-      /**
-       * Selects the files between two entry index(including a and b).
-       */
-      void SelectFilesInRange(int a, int b);
-
-      FolderWindow* m_parent  = nullptr;
-      bool m_dirty            = false;
-      ImVec2 m_contextBtnSize = ImVec2(75, 20);
-      String m_filter         = "";
+      MaterialWindowPtr m_materialWindow = nullptr;
+      FolderWindow* m_parent             = nullptr;
+      bool m_dirty                       = false;
+      ImVec2 m_contextBtnSize            = ImVec2(75, 20);
+      String m_filter                    = "";
       std::unordered_map<String, std::function<void(DirectoryEntry*, FolderView*)>> m_itemActions;
 
       // If you change this value, change the calculaton of thumbnail zoom
