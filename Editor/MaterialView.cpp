@@ -416,13 +416,16 @@ namespace ToolKit
 
     void MaterialWindow::Show()
     {
-      ImGuiIO io = ImGui::GetIO();
+      ULongID wndId   = GetIdVal();
+      String strWndId = "Material View##" + std::to_string(wndId);
+
+      ImGuiIO io      = ImGui::GetIO();
       ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
                               ImGuiCond_Once,
                               ImVec2(0.5f, 0.5f));
 
-      if (ImGui::Begin("Material View", &m_visible))
+      if (ImGui::Begin(strWndId.c_str(), &m_visible))
       {
         HandleStates();
         m_view->Show();

@@ -406,17 +406,10 @@ namespace ToolKit
             {
               if (rm->m_baseType == Material::StaticClass())
               {
-                MaterialPtr mat = rm->Create<Material>(dirEnt.GetFullPath());
-
-                if (m_materialWindow == nullptr)
-                {
-                  m_materialWindow = MakeNewPtr<MaterialWindow>();
-                }
-                m_materialWindow->SetMaterial(mat);
-                if (!m_materialWindow->IsVisible())
-                {
-                  m_materialWindow->AddToUI();
-                }
+                MaterialPtr mat                  = rm->Create<Material>(dirEnt.GetFullPath());
+                MaterialWindowPtr materialWindow = MakeNewPtr<MaterialWindow>();
+                materialWindow->SetMaterial(mat);
+                materialWindow->AddToUI();
               }
               else if (rm->m_baseType == Mesh::StaticClass())
               {
