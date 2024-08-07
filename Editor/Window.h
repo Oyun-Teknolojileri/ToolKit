@@ -76,6 +76,7 @@ namespace ToolKit
       /**
        * UI system removes its reference and UI stops processing the window.
        * Object does not gets destroyed and can be re added.
+       * Do not call this in class destructor, which may cause infinite recursion.
        */
       void RemoveFromUI();
 

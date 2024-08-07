@@ -410,11 +410,7 @@ namespace ToolKit
       m_view->m_isTempView = true;
     }
 
-    MaterialWindow::~MaterialWindow()
-    {
-      RemoveFromUI();
-      m_view = nullptr;
-    }
+    MaterialWindow::~MaterialWindow() { m_view = nullptr; }
 
     void MaterialWindow::SetMaterial(MaterialPtr mat) { m_view->SetMaterials({mat}); }
 

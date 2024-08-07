@@ -831,6 +831,8 @@ namespace ToolKit
       }
 
       m_simulationViewport = nullptr;
+
+      UI::m_volatileWindows.clear();
     }
 
     void App::ReconstructDynamicMenus()
