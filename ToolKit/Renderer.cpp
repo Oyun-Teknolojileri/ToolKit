@@ -801,6 +801,15 @@ namespace ToolKit
     }
   }
 
+  void Renderer::SetAmbientOcclusionTexture(TexturePtr aoTexture)
+  {
+    m_aoTexture = aoTexture;
+    if (m_aoTexture)
+    {
+      SetTexture(5, m_aoTexture->m_textureId);
+    }
+  }
+
   void Renderer::BindProgramOfMaterial(Material* material)
   {
     material->Init();
@@ -885,13 +894,6 @@ namespace ToolKit
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
-      }
-
-      const EngineSettings& engineSettings = GetEngineSettings();
-      uniformLoc                           = program->GetDefaultUniformLocation(Uniform::AO_ENABLED);
-      if (uniformLoc != -1)
-      {
-        glUniform1i(uniformLoc, engineSettings.PostProcessing.SSAOEnabled);
       }
 
       uniformLoc = program->GetDefaultUniformLocation(Uniform::SHADOW_ATLAS_SIZE);
@@ -1019,11 +1021,13 @@ namespace ToolKit
         Mat4 mul = m_projectView * m_model;
         glUniformMatrix4fv(uniformLoc, 1, false, &mul[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL);
       if (uniformLoc != -1)
       {
         glUniformMatrix4fv(uniformLoc, 1, false, &m_model[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_NO_TR);
       if (uniformLoc != -1)
       {
@@ -1056,6 +1060,7 @@ namespace ToolKit
           }
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::NORMAL_MAP_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1097,6 +1102,7 @@ namespace ToolKit
       {
         glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::EMISSIVE_TEXTURE_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1104,6 +1110,13 @@ namespace ToolKit
         {
           SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
         }
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::AO_ENABLED);
+      if (uniformLoc != -1)
+      {
+        bool aoEnabled = m_aoTexture != nullptr;
+        glUniform1i(uniformLoc, aoEnabled);
       }
 
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);

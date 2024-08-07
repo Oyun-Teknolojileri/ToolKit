@@ -126,6 +126,9 @@ namespace ToolKit
     /** Initialize brdf lut textures. */
     void GenerateBRDFLutTexture();
 
+    /** Ambient occlusion texture to be applied. If ao is not enabled, set this explicitly to null. */
+    void SetAmbientOcclusionTexture(TexturePtr aoTexture);
+
    private:
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
     void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
@@ -169,6 +172,7 @@ namespace ToolKit
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
     RenderTargetPtr m_brdfLut    = nullptr;
+    TexturePtr m_aoTexture       = nullptr;
 
     int m_textureSlots[RHIConstants::TextureSlotCount];
 

@@ -162,10 +162,7 @@ namespace ToolKit
   {
     Renderer* renderer = GetRenderer();
 
-    if (m_params.SsaoTexture)
-    {
-      renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
-    }
+    renderer->SetAmbientOcclusionTexture(m_params.SsaoTexture);
 
     for (RenderJobItr job = begin; job != end; job++)
     {

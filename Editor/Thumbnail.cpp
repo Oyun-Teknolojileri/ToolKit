@@ -31,8 +31,9 @@ namespace ToolKit
 
       m_thumbnailScene = MakeNewPtr<Scene>();
       m_sky            = MakeNewPtr<GradientSky>();
+      m_sky->Init();
 
-      m_entity         = MakeNewPtr<Entity>();
+      m_entity = MakeNewPtr<Entity>();
       m_entity->AddComponent<MeshComponent>();
 
       m_sphere      = MakeNewPtr<Sphere>();
@@ -107,7 +108,9 @@ namespace ToolKit
       }
       else if (dirEnt.m_ext == MATERIAL)
       {
-        MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
+        m_params.Gfx.SSAOEnabled = false;
+
+        MaterialPtr mat          = GetMaterialManager()->Create<Material>(fullpath);
         if (MaterialComponentPtr mc = m_sphere->GetMaterialComponent())
         {
           mc->SetFirstMaterial(mat);
@@ -122,14 +125,10 @@ namespace ToolKit
       }
       else if (SupportedImageFormat(dirEnt.m_ext))
       {
-        m_thumbnailScene->GetSky().reset();
+        m_params.Gfx.BloomEnabled = false;
+        m_params.Gfx.SSAOEnabled  = false;
 
-        m_params.applyGammaTonemapFxaa = true;
-        m_params.Gfx.FXAAEnabled       = false;
-        m_params.Gfx.BloomEnabled      = false;
-        m_params.Gfx.SSAOEnabled       = false;
-
-        TexturePtr texture             = nullptr;
+        TexturePtr texture        = nullptr;
         if (dirEnt.m_ext == HDR)
         {
           texture = GetTextureManager()->Create<Hdri>(fullpath);

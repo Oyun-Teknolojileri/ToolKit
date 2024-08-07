@@ -156,7 +156,7 @@ namespace ToolKit
     m_forwardRenderPass->m_params.Lights            = m_params.Lights;
     m_forwardRenderPass->m_params.Cam               = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
-    m_forwardRenderPass->m_params.SsaoTexture       = m_ssaoPass->m_ssaoTexture;
+    m_forwardRenderPass->m_params.SsaoTexture       = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;
     m_forwardRenderPass->m_params.clearBuffer       = GraphicBitFields::None;
 
     bool forwardPreProcessExist                     = RequiresForwardPreProcessPass();
