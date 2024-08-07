@@ -391,8 +391,6 @@ namespace ToolKit
 
   void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam)
   {
-    CPU_FUNC_RANGE();
-
     Vec3 camLoc = cam->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
     std::function<bool(const RenderJob&, const RenderJob&)> sortFn = [&camLoc](const RenderJob& j1,
@@ -479,8 +477,6 @@ namespace ToolKit
                                              RenderJobItr end,
                                              const EnvironmentComponentPtrArray& environments)
   {
-    CPU_FUNC_RANGE();
-
     if (environments.empty())
     {
       return;

@@ -34,8 +34,6 @@ namespace ToolKit
 
     void GizmoPass::Render()
     {
-      PUSH_CPU_MARKER("GizmoPass::Render");
-
       Renderer* renderer                   = GetRenderer();
       GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
 
@@ -65,14 +63,10 @@ namespace ToolKit
           renderer->RenderWithProgramFromMaterial(jobs);
         }
       }
-
-      POP_CPU_MARKER();
     }
 
     void GizmoPass::PreRender()
     {
-      PUSH_CPU_MARKER("GizmoPass::PreRender");
-
       Pass::PreRender();
       Renderer* renderer = GetRenderer();
 
@@ -95,16 +89,9 @@ namespace ToolKit
                                         return false;
                                       }),
                        gizmoArray.end());
-
-      POP_CPU_MARKER();
     }
 
-    void GizmoPass::PostRender()
-    {
-      PUSH_CPU_MARKER("GizmoPass::PostRender");
-      Pass::PostRender();
-      POP_CPU_MARKER();
-    }
+    void GizmoPass::PostRender() { Pass::PostRender(); }
 
   } // namespace Editor
 } // namespace ToolKit

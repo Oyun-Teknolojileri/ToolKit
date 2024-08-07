@@ -37,9 +37,6 @@ namespace ToolKit
 
   void FullQuadPass::Render()
   {
-    PUSH_GPU_MARKER("FullQuadPass::Render");
-    PUSH_CPU_MARKER("FullQuadPass::Render");
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.frameBuffer, m_params.clearFrameBuffer);
     renderer->SetCamera(m_camera, true);
@@ -47,16 +44,10 @@ namespace ToolKit
     RenderJobArray jobs;
     RenderJobProcessor::CreateRenderJobs(jobs, {m_quad.get()});
     renderer->Render(jobs);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void FullQuadPass::PreRender()
   {
-    PUSH_GPU_MARKER("FullQuadPass::PreRender");
-    PUSH_CPU_MARKER("FullQuadPass::PreRender");
-
     // Gpu Program should be bound before calling FulQuadPass Render
 
     Pass::PreRender();
@@ -70,21 +61,12 @@ namespace ToolKit
 
     m_material->GetRenderState()->blendFunction = m_params.blendFunc;
     SetFragmentShader(m_material->m_fragmentShader, renderer);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void FullQuadPass::PostRender()
   {
-    PUSH_GPU_MARKER("FullQuadPass::PostRender");
-    PUSH_CPU_MARKER("FullQuadPass::PostRender");
-
     Pass::PostRender();
     GetRenderer()->EnableDepthTest(true);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void FullQuadPass::SetFragmentShader(ShaderPtr fragmentShader, Renderer* renderer)

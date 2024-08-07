@@ -51,13 +51,7 @@ namespace ToolKit
 
     void EditorRenderer::Render(Renderer* renderer)
     {
-      PUSH_CPU_MARKER("EditorRenderer::PreRender");
-
       PreRender();
-
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("EditorRenderer::Render");
-
       SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
@@ -96,9 +90,6 @@ namespace ToolKit
         break;
       }
 
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("EditorRender Editor & PostProcess Render");
-
       if (m_params.LitMode != EditorLitMode::Game)
       {
         // Draw scene and apply bloom effect.
@@ -129,11 +120,7 @@ namespace ToolKit
         RenderPath::Render(renderer);
       }
 
-      POP_CPU_MARKER();
-
-      PUSH_CPU_MARKER("EditorRender::PostRender");
       PostRender();
-      POP_CPU_MARKER();
     }
 
     void EditorRenderer::PreRender()

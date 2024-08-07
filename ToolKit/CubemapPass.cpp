@@ -23,9 +23,6 @@ namespace ToolKit
 
   void CubeMapPass::Render()
   {
-    PUSH_GPU_MARKER("CubeMapPass::Render");
-    PUSH_CPU_MARKER("CubeMapPass::Render");
-
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
 
@@ -33,16 +30,10 @@ namespace ToolKit
     RenderJobProcessor::CreateRenderJobs(jobs, {m_cube.get()});
 
     renderer->RenderWithProgramFromMaterial(jobs);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void CubeMapPass::PreRender()
   {
-    PUSH_GPU_MARKER("CubeMapPass::PreRender");
-    PUSH_CPU_MARKER("CubeMapPass::PreRender");
-
     Pass::PreRender();
 
     m_cube->m_node->SetTransform(m_params.Transform);
@@ -53,21 +44,12 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     renderer->SetDepthTestFunc(m_params.DepthFn);
     renderer->SetCamera(m_params.Cam, false);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void CubeMapPass::PostRender()
   {
-    PUSH_GPU_MARKER("CubeMapPass::PostRender");
-    PUSH_CPU_MARKER("CubeMapPass::PostRender");
-
     Pass::PostRender();
     GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

@@ -260,8 +260,6 @@ namespace ToolKit
 
   void Renderer::SetRenderState(const RenderState* const state, bool cullFlip)
   {
-    CPU_FUNC_RANGE();
-
     CullingType targetMode = state->cullMode;
     if (cullFlip)
     {
@@ -391,8 +389,6 @@ namespace ToolKit
                                 const Vec4& clearColor,
                                 GraphicFramebufferTypes fbType)
   {
-    CPU_FUNC_RANGE();
-
     if (fb != nullptr)
     {
       RHI::SetFramebuffer((GLenum) fbType, fb->GetFboId());
@@ -618,8 +614,6 @@ namespace ToolKit
 
   void Renderer::CopyTexture(TexturePtr src, TexturePtr dst)
   {
-    CPU_FUNC_RANGE();
-
     assert(src->m_initiated && dst->m_initiated && "Texture is not initialized.");
     assert(src->m_width == dst->m_width && src->m_height == dst->m_height && "Sizes of the textures are not the same.");
 
@@ -836,8 +830,6 @@ namespace ToolKit
 
   void Renderer::FeedUniforms(const GpuProgramPtr& program, const RenderJob& job)
   {
-    CPU_FUNC_RANGE();
-
     // Update camera related uniforms.
     if (m_gpuProgramHasCameraUpdates.find(program->m_handle) == m_gpuProgramHasCameraUpdates.end())
     {
@@ -1228,8 +1220,6 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job)
   {
-    CPU_FUNC_RANGE();
-
     GLint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
     if (loc != -1)
     {

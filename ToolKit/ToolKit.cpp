@@ -277,25 +277,17 @@ namespace ToolKit
 
   void Main::Frame(float deltaTime)
   {
-
-    PUSH_CPU_MARKER("Exec Render Tasks");
     GetRenderSystem()->DecrementSkipFrame();
     GetRenderSystem()->ExecuteRenderTasks();
-    POP_CPU_MARKER();
 
-    PUSH_CPU_MARKER("Animation Update");
     // Update animations.
     GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
-    POP_CPU_MARKER();
-
     GetUIManager()->Update(deltaTime);
 
-    PUSH_CPU_MARKER("Update Scene");
     if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
     {
       scene->Update(deltaTime);
     }
-    POP_CPU_MARKER();
   }
 
   void Main::RegisterPreUpdateFunction(TKUpdateFn preUpdateFn) { m_preUpdateFunctions.push_back(preUpdateFn); }

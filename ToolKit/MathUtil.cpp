@@ -747,8 +747,6 @@ namespace ToolKit
 
   void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera)
   {
-    CPU_FUNC_RANGE();
-
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
@@ -763,8 +761,6 @@ namespace ToolKit
 
   void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices)
   {
-    CPU_FUNC_RANGE();
-
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
@@ -784,8 +780,6 @@ namespace ToolKit
 
   void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs)
   {
-    CPU_FUNC_RANGE();
-
     // Frustum cull
     Mat4 pr         = camera->GetProjectionMatrix();
     Mat4 v          = camera->GetViewMatrix();
@@ -910,7 +904,7 @@ namespace ToolKit
   }
 
   // Converted from OgreVector3.h perpendicular()
-  TK_API Vec3 Orthogonal(const Vec3& v)
+  Vec3 Orthogonal(const Vec3& v)
   {
     static const float fSquareZero = static_cast<float>(1e-06 * 1e-06);
     Vec3 perp                      = glm::cross(v, X_AXIS);

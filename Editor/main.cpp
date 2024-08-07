@@ -295,8 +295,6 @@ namespace ToolKit
 
             TKUpdateFn preUpdateFn = [](float deltaTime)
             {
-              PUSH_CPU_MARKER("SDL Poll Event");
-
               SDL_Event sdlEvent;
               while (SDL_PollEvent(&sdlEvent))
               {
@@ -304,32 +302,19 @@ namespace ToolKit
                 ProcessEvent(sdlEvent);
               }
 
-              POP_CPU_MARKER();
-
-              PUSH_CPU_MARKER("App Frame");
-
               g_app->Frame(deltaTime);
-
-              POP_CPU_MARKER();
             };
             g_proxy->RegisterPreUpdateFunction(preUpdateFn);
 
             TKUpdateFn postUpdateFn = [](float deltaTime)
             {
-              PUSH_CPU_MARKER("Swap Window");
-
               SDL_GL_MakeCurrent(g_window, g_context);
               SDL_GL_SwapWindow(g_window);
-
-              POP_CPU_MARKER();
-              PUSH_CPU_MARKER("Clear SDL Event Pool");
 
               g_sdlEventPool->ClearPool(); // Clear after consumption.
 
               g_app->m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
               g_app->m_lastFrameDrawCallCount     = GetDrawCallCount();
-
-              POP_CPU_MARKER();
             };
             g_proxy->RegisterPostUpdateFunction(postUpdateFn);
 
@@ -361,8 +346,6 @@ namespace ToolKit
     {
       while (g_running)
       {
-        PUSH_CPU_MARKER("Whole Frame");
-
         if (g_proxy->SyncFrameTime())
         {
           g_proxy->FrameBegin();
@@ -371,8 +354,6 @@ namespace ToolKit
 
           g_app->m_fps = g_proxy->GetCurrentFPS();
         }
-
-        POP_CPU_MARKER();
       }
     }
 

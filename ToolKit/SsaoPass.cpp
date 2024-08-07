@@ -62,9 +62,6 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
-    PUSH_GPU_MARKER("SSAOPass::Render");
-    PUSH_CPU_MARKER("SSAOPass::Render");
-
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
@@ -79,16 +76,10 @@ namespace ToolKit
 
     // Vertical blur
     renderer->Apply7x1GaussianBlur(m_tempBlurRt, m_ssaoTexture, Y_AXIS, 1.0f / m_ssaoTexture->m_height);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void SSAOPass::PreRender()
   {
-    PUSH_GPU_MARKER("SSAOPass::PreRender");
-    PUSH_CPU_MARKER("SSAOPass::PreRender");
-
     Pass::PreRender();
 
     int width           = m_params.GNormalBuffer->m_width;
@@ -104,12 +95,12 @@ namespace ToolKit
     m_ssaoFramebuffer->Init({width, height, false, false});
 
     TextureSettings oneChannelSet;
-    oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat  = GraphicTypes::FormatR32F;
-    oneChannelSet.Format          = GraphicTypes::FormatRed;
-    oneChannelSet.Type            = GraphicTypes::TypeFloat;
-    oneChannelSet.GenerateMipMap  = false;
+    oneChannelSet.WarpS          = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT          = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat = GraphicTypes::FormatR32F;
+    oneChannelSet.Format         = GraphicTypes::FormatRed;
+    oneChannelSet.Type           = GraphicTypes::TypeFloat;
+    oneChannelSet.GenerateMipMap = false;
 
     // Init ssao texture
     m_ssaoTexture->Settings(oneChannelSet);
@@ -144,28 +135,16 @@ namespace ToolKit
     m_quadPass->UpdateUniform(ShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix()));
     m_quadPass->UpdateUniform(ShaderUniform("radius", m_params.Radius));
     m_quadPass->UpdateUniform(ShaderUniform("bias", m_params.Bias));
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void SSAOPass::PostRender()
   {
-    PUSH_GPU_MARKER("SSAOPass::PostRender");
-    PUSH_CPU_MARKER("SSAOPass::PostRender");
-
     m_currentKernelSize = m_params.KernelSize;
-
     Pass::PostRender();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void SSAOPass::GenerateSSAONoise()
   {
-    CPU_FUNC_RANGE();
-
     if (m_prevSpread != m_params.spread)
     {
       GenerateRandomSamplesInHemisphere(m_maximumKernelSize, m_params.spread, m_ssaoKernel);

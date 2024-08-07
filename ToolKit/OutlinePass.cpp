@@ -39,9 +39,6 @@ namespace ToolKit
   {
     assert(m_params.RenderJobs != nullptr && "Outline Pass Render Jobs Are Not Given!");
 
-    PUSH_GPU_MARKER("OutlinePass::Render");
-    PUSH_CPU_MARKER("OutlinePass::Render");
-
     // Generate stencil binary image.
     RenderSubPass(m_stencilPass);
 
@@ -56,16 +53,10 @@ namespace ToolKit
     m_outlinePass->m_params.clearFrameBuffer = GraphicBitFields::None;
 
     RenderSubPass(m_outlinePass);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void OutlinePass::PreRender()
   {
-    PUSH_GPU_MARKER("OutlinePass::PreRender");
-    PUSH_CPU_MARKER("OutlinePass::PreRender");
-
     Pass::PreRender();
 
     // Create stencil image.
@@ -76,20 +67,8 @@ namespace ToolKit
     const FramebufferSettings& fbs     = m_params.FrameBuffer->GetSettings();
     m_stencilAsRt->ReconstructIfNeeded(fbs.width, fbs.height);
     m_stencilPass->m_params.OutputTarget = m_stencilAsRt;
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
-  void OutlinePass::PostRender()
-  {
-    PUSH_GPU_MARKER("OutlinePass::PostRender");
-    PUSH_CPU_MARKER("OutlinePass::PostRender");
-
-    Pass::PostRender();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
-  }
+  void OutlinePass::PostRender() { Pass::PostRender(); }
 
 } // namespace ToolKit

@@ -104,8 +104,6 @@ namespace ToolKit
 
   void Framebuffer::AttachDepthTexture(DepthTexturePtr dt)
   {
-    CPU_FUNC_RANGE();
-
     m_depthAtch = dt;
 
     RHI::SetFramebuffer(GL_FRAMEBUFFER, m_fboId);
@@ -129,8 +127,6 @@ namespace ToolKit
                                                   int layer,
                                                   CubemapFace face)
   {
-    CPU_FUNC_RANGE();
-
     GLenum attachment = GL_COLOR_ATTACHMENT0 + (int) atc;
 
     if (rt->m_width <= 0 || rt->m_height <= 0 || rt->m_textureId == 0)
@@ -228,8 +224,6 @@ namespace ToolKit
 
   RenderTargetPtr Framebuffer::DetachColorAttachment(Attachment atc)
   {
-    CPU_FUNC_RANGE();
-
     RenderTargetPtr rt = m_colorAtchs[(int) atc];
     if (rt == nullptr)
     {
@@ -253,8 +247,6 @@ namespace ToolKit
 
   void Framebuffer::CheckFramebufferComplete()
   {
-    CPU_FUNC_RANGE();
-
     RHI::SetFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
     GLenum check = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -263,8 +255,6 @@ namespace ToolKit
 
   void Framebuffer::RemoveDepthAttachment()
   {
-    CPU_FUNC_RANGE();
-
     if (m_depthAtch == nullptr)
     {
       return;

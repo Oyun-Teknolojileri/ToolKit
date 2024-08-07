@@ -10,8 +10,6 @@
 #include "Material.h"
 #include "TKProfiler.h"
 
-
-
 namespace ToolKit
 {
   namespace Editor
@@ -30,8 +28,6 @@ namespace ToolKit
 
     void SingleMatForwardRenderPass::Render()
     {
-      PUSH_CPU_MARKER("SingleMatForwardRenderPass::Render");
-
       Renderer* renderer = GetRenderer();
 
       RenderJobItr begin = m_params.ForwardParams.renderData->GetForwardOpaqueBegin();
@@ -43,14 +39,10 @@ namespace ToolKit
       }
 
       RenderTranslucent(m_params.ForwardParams.renderData);
-
-      POP_CPU_MARKER();
     }
 
     void SingleMatForwardRenderPass::PreRender()
     {
-      PUSH_CPU_MARKER("SingleMatForwardRenderPass::PreRender");
-
       ForwardRenderPass::m_params = m_params.ForwardParams;
       ForwardRenderPass::PreRender();
 
@@ -60,8 +52,6 @@ namespace ToolKit
 
       m_program = GetGpuProgramManager()->CreateProgram(m_overrideMat->m_vertexShader, m_overrideMat->m_fragmentShader);
       GetRenderer()->BindProgram(m_program);
-
-      POP_CPU_MARKER();
     };
 
   } // namespace Editor

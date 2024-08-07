@@ -67,8 +67,6 @@ namespace ToolKit
 
   void ForwardRenderPass::RenderOpaque(RenderData* renderData)
   {
-    PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
-
     const MaterialPtr mat = GetMaterialManager()->GetDefaultMaterial();
     mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
 
@@ -82,10 +80,6 @@ namespace ToolKit
     RenderJobItr end         = renderData->GetForwardAlphaMaskedBegin();
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
 
-    POP_CPU_MARKER();
-
-    PUSH_CPU_MARKER("ForwardRenderPass::RenderAlphaMasked");
-
     mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
     gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
 
@@ -94,14 +88,10 @@ namespace ToolKit
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
 
     mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
-
-    POP_CPU_MARKER();
   }
 
   void ForwardRenderPass::RenderTranslucent(RenderData* renderData)
   {
-    PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
-
     RenderJobItr begin = renderData->GetForwardTranslucentBegin();
     RenderJobItr end   = renderData->jobs.end();
 
@@ -151,8 +141,6 @@ namespace ToolKit
       }
       renderer->EnableDepthWrite(true);
     }
-
-    POP_CPU_MARKER();
   }
 
   void ForwardRenderPass::RenderOpaqueHelper(RenderData* renderData,

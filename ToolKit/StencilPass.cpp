@@ -41,9 +41,6 @@ namespace ToolKit
 
   void StencilRenderPass::Render()
   {
-    PUSH_GPU_MARKER("StencilRenderPass::Render");
-    PUSH_CPU_MARKER("StencilRenderPass::Render");
-
     assert(m_params.RenderJobs != nullptr && "Stencil Render Pass Render Jobs Are Not Given!");
 
     Renderer* renderer = GetRenderer();
@@ -63,16 +60,10 @@ namespace ToolKit
     RenderSubPass(m_copyStencilSubPass);
 
     renderer->SetStencilOperation(StencilOperation::None);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void StencilRenderPass::PreRender()
   {
-    PUSH_GPU_MARKER("StencilRenderPass::PreRender");
-    PUSH_CPU_MARKER("StencilRenderPass::PreRender");
-
     Pass::PreRender();
     Renderer* renderer                   = GetRenderer();
 
@@ -97,20 +88,8 @@ namespace ToolKit
     renderer->SetStencilOperation(StencilOperation::AllowAllPixels);
     renderer->SetFramebuffer(m_frameBuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Camera, true);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
-  void StencilRenderPass::PostRender()
-  {
-    PUSH_GPU_MARKER("StencilRenderPass::PostRender");
-    PUSH_CPU_MARKER("StencilRenderPass::PostRender");
-
-    Pass::PostRender();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
-  }
+  void StencilRenderPass::PostRender() { Pass::PostRender(); }
 
 } // namespace ToolKit

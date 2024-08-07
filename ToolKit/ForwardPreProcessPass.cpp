@@ -65,12 +65,8 @@ namespace ToolKit
 
   void ForwardPreProcess::Render()
   {
-    // currently transparent objects are not rendered to export screen space normals or linear depth
-    // we want SSAO and DOF to effect on opaque objects only
-    // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
-
-    PUSH_GPU_MARKER("ForwardPreProcess::Render");
-    PUSH_CPU_MARKER("ForwardPreProcess::Render");
+    // Currently transparent objects are not rendered to export screen space normals or linear depth
+    // we want SSAO and DOF to effect on opaque objects only renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
 
     Renderer* renderer                      = GetRenderer();
 
@@ -98,24 +94,15 @@ namespace ToolKit
     m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
     renderer->BindProgram(m_program);
     renderLinearDepthAndNormalFn(begin, end);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void ForwardPreProcess::PreRender()
   {
-    PUSH_GPU_MARKER("ForwardPreProcess::PreRender");
-    PUSH_CPU_MARKER("ForwardPreProcess::PreRender");
-
     RenderPass::PreRender();
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Cam, true);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void ForwardPreProcess::InitDefaultDepthTexture(int width, int height)
@@ -125,5 +112,6 @@ namespace ToolKit
       m_depthTexture = MakeNewPtr<DepthTexture>();
       m_depthTexture->Init(width, height, false);
     }
-  } // namespace ToolKit
+  }
+
 } // namespace ToolKit

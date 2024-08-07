@@ -74,9 +74,6 @@ namespace ToolKit
       return;
     }
 
-    PUSH_GPU_MARKER("ShadowPass::Render");
-    PUSH_CPU_MARKER("ShadowPass::Render");
-
     Renderer* renderer        = GetRenderer();
     const Vec4 lastClearColor = renderer->m_clearColor;
 
@@ -109,16 +106,10 @@ namespace ToolKit
     }
 
     renderer->m_clearColor = lastClearColor;
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void ShadowPass::PreRender()
   {
-    PUSH_GPU_MARKER("ShadowPass::PreRender");
-    PUSH_CPU_MARKER("ShadowPass::PreRender");
-
     Pass::PreRender();
 
     EngineSettings& settings = GetEngineSettings();
@@ -156,28 +147,14 @@ namespace ToolKit
     erase_if(m_lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
-  void ShadowPass::PostRender()
-  {
-    PUSH_GPU_MARKER("ShadowPas::PostRender");
-    PUSH_CPU_MARKER("ShadowPas::PostRender");
-
-    Pass::PostRender();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
-  }
+  void ShadowPass::PostRender() { Pass::PostRender(); }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
   void ShadowPass::RenderShadowMaps(LightPtr light)
   {
-    CPU_FUNC_RANGE();
-
     Renderer* renderer                                = GetRenderer();
     EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
 
@@ -339,8 +316,6 @@ namespace ToolKit
 
   int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
   {
-    CPU_FUNC_RANGE();
-
     LightPtrArray lightArray = lights;
 
     // Sort all lights based on resolution.
@@ -419,8 +394,6 @@ namespace ToolKit
 
   void ShadowPass::InitShadowAtlas()
   {
-    CPU_FUNC_RANGE();
-
     // Check if the shadow atlas needs to be updated
     bool needChange                                  = false;
     EngineSettings::GraphicSettings& graphicSettings = GetEngineSettings().Graphics;
