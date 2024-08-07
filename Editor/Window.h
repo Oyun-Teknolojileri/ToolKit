@@ -76,6 +76,7 @@ namespace ToolKit
       /**
        * UI system removes its reference and UI stops processing the window.
        * Object does not gets destroyed and can be re added.
+       * Do not call this in class destructor, which may cause infinite recursion.
        */
       void RemoveFromUI();
 
@@ -107,7 +108,7 @@ namespace ToolKit
       // States.
 
       /** States if the window is visible, doesn't mean that its being shown. May be in a tab and hidden. */
-      bool m_visible    = true;
+      bool m_visible    = false;
 
       /** States if the visible window is shown, not in a hidden tab or minimized. */
       bool m_isShown    = false;

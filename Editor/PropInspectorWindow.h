@@ -34,7 +34,7 @@ namespace ToolKit
       void SetMeshView(MeshPtr mesh);
 
      private:
-      void DeterminateSelectedMaterial(EntityPtr curEntity);
+      void DetermineSelectedMaterial(EntityPtr curEntity);
 
      public:
       ViewRawPtrArray m_views;

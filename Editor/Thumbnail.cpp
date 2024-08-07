@@ -10,6 +10,7 @@
 #include "App.h"
 
 #include <Camera.h>
+#include <GradientSky.h>
 #include <Material.h>
 #include <Mesh.h>
 #include <Surface.h>
@@ -26,17 +27,24 @@ namespace ToolKit
       m_maxThumbSize    = 300;
 
       m_thumbnailBuffer = MakeNewPtr<Framebuffer>();
-      m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true});
+      m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true, 4});
 
       m_thumbnailScene = MakeNewPtr<Scene>();
+      m_sky            = MakeNewPtr<GradientSky>();
+      m_sky->Init();
 
-      m_entity         = MakeNewPtr<Entity>();
+      m_entity = MakeNewPtr<Entity>();
       m_entity->AddComponent<MeshComponent>();
 
       m_sphere      = MakeNewPtr<Sphere>();
+      m_surface     = MakeNewPtr<Surface>();
 
       m_lightSystem = MakeNewPtr<ThreePointLightSystem>();
-      m_cam         = MakeNewPtr<Camera>();
+      m_lightSystem->m_lights[0]->SetIntensityVal(2.0f);
+
+      m_cam                          = MakeNewPtr<Camera>();
+
+      m_params.applyGammaTonemapFxaa = true;
     }
 
     ThumbnailRenderer::~ThumbnailRenderer()
@@ -58,6 +66,11 @@ namespace ToolKit
     {
       String fullpath = dirEnt.GetFullPath();
       m_thumbnailScene->ClearEntities();
+      m_renderData.jobs.clear();
+
+      m_thumbnailScene->AddEntity(m_sky);
+
+      m_params.Gfx = EngineSettings::PostProcessingSettings();
 
       // TODO: This function should not load meshes.
       // Instead another task queue may be used to load meshes async.
@@ -87,6 +100,7 @@ namespace ToolKit
           skelComp->Init();
         }
 
+        m_entity->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_entity);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
@@ -94,12 +108,15 @@ namespace ToolKit
       }
       else if (dirEnt.m_ext == MATERIAL)
       {
-        MaterialPtr mat = GetMaterialManager()->Create<Material>(fullpath);
+        m_params.Gfx.SSAOEnabled = false;
+
+        MaterialPtr mat          = GetMaterialManager()->Create<Material>(fullpath);
         if (MaterialComponentPtr mc = m_sphere->GetMaterialComponent())
         {
           mc->SetFirstMaterial(mat);
         }
 
+        m_sphere->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_sphere);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
@@ -108,7 +125,10 @@ namespace ToolKit
       }
       else if (SupportedImageFormat(dirEnt.m_ext))
       {
-        TexturePtr texture = nullptr;
+        m_params.Gfx.BloomEnabled = false;
+        m_params.Gfx.SSAOEnabled  = false;
+
+        TexturePtr texture        = nullptr;
         if (dirEnt.m_ext == HDR)
         {
           texture = GetTextureManager()->Create<Hdri>(fullpath);
@@ -123,12 +143,14 @@ namespace ToolKit
         float w      = (texture->m_width / maxDim) * m_maxThumbSize;
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
-        m_surface    = MakeNewPtr<Surface>();
+        m_surface->InvalidateSpatialCaches();
         m_surface->Update(Vec2(w, h));
         m_surface->UpdateGeometry(false);
-        MaterialComponentPtr matCom                  = m_surface->GetMaterialComponent();
-        matCom->GetFirstMaterial()->m_diffuseTexture = texture;
-        matCom->Init(false);
+
+        MaterialPtr unlitMaterial       = GetMaterialManager()->GetCopyOfUIMaterial();
+        unlitMaterial->m_diffuseTexture = texture;
+
+        m_surface->GetMaterialComponent()->SetFirstMaterial(unlitMaterial);
 
         m_thumbnailScene->AddEntity(m_surface);
         m_cam->m_orthographicScale = 1.0f;
@@ -141,6 +163,8 @@ namespace ToolKit
       {
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
+
+      m_thumbnailScene->Update(0.0f);
 
       m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize, TextureSettings());
       m_thumbnailRT->Init();

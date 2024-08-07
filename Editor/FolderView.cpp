@@ -233,7 +233,7 @@ namespace ToolKit
       }
     }
 
-    void FolderView::DeterminateAndSetBackgroundColor(bool isSelected, int i)
+    void FolderView::DetermineAndSetBackgroundColor(bool isSelected, int i)
     {
       ImVec4 hoverColor     = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
       ImVec4 buttonColor    = ImGui::GetStyleColorVec4(ImGuiCol_Button);
@@ -368,9 +368,8 @@ namespace ToolKit
           DirectoryEntry* entryPtr = m_entries.data() + i;
 
           bool isSelected          = contains(g_selectedFiles, entryPtr);
-          // this function will push color. we are popping it down below this if
-          // block
-          DeterminateAndSetBackgroundColor(isSelected, i);
+          // this function will push color. we are popping it down below this if block.
+          DetermineAndSetBackgroundColor(isSelected, i);
 
           // Draw Item Icon.
           if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId), m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
@@ -381,7 +380,7 @@ namespace ToolKit
             // handle multi selection and input
             if (!shiftDown && !ctrlDown)
             {
-              // this means not multiselecting so select only this
+              // this means not multi selecting so select only this.
               g_selectedFiles.clear();
               g_selectedFiles.push_back(entryPtr);
             }
@@ -407,10 +406,10 @@ namespace ToolKit
             {
               if (rm->m_baseType == Material::StaticClass())
               {
-                MaterialPtr mat               = rm->Create<Material>(dirEnt.GetFullPath());
-                MaterialWindowPtr materialWnd = MakeNewPtr<MaterialWindow>();
-                materialWnd->SetMaterial(mat);
-                materialWnd->AddToUI();
+                MaterialPtr mat                  = rm->Create<Material>(dirEnt.GetFullPath());
+                MaterialWindowPtr materialWindow = MakeNewPtr<MaterialWindow>();
+                materialWindow->SetMaterial(mat);
+                materialWindow->AddToUI();
               }
               else if (rm->m_baseType == Mesh::StaticClass())
               {

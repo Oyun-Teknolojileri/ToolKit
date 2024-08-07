@@ -632,10 +632,10 @@ namespace ToolKit
     m_copyFb->ReconstructIfNeeded(src->m_width, src->m_height);
 
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 
-    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dst);
+    RenderTargetPtr rt    = std::static_pointer_cast<RenderTarget>(dst);
     m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+    SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -801,6 +801,15 @@ namespace ToolKit
     }
   }
 
+  void Renderer::SetAmbientOcclusionTexture(TexturePtr aoTexture)
+  {
+    m_aoTexture = aoTexture;
+    if (m_aoTexture)
+    {
+      SetTexture(5, m_aoTexture->m_textureId);
+    }
+  }
+
   void Renderer::BindProgramOfMaterial(Material* material)
   {
     material->Init();
@@ -887,13 +896,6 @@ namespace ToolKit
         glUniform1f(uniformLoc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
       }
 
-      const EngineSettings& engineSettings = GetEngineSettings();
-      uniformLoc                           = program->GetDefaultUniformLocation(Uniform::AO_ENABLED);
-      if (uniformLoc != -1)
-      {
-        glUniform1i(uniformLoc, engineSettings.PostProcessing.SSAOEnabled);
-      }
-
       uniformLoc = program->GetDefaultUniformLocation(Uniform::SHADOW_ATLAS_SIZE);
       if (uniformLoc != -1)
       {
@@ -933,18 +935,6 @@ namespace ToolKit
           color = Vec4(1.0f, 1.0f, 1.0f, color.w);
         }
         glUniform4fv(uniformLoc, 1, &color.x);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_INTENSITY);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, m_renderState.iblIntensity);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
-      if (uniformLoc != -1)
-      {
-        glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
       }
 
       uniformLoc = program->GetDefaultUniformLocation(Uniform::COLOR_ALPHA);
@@ -1017,7 +1007,6 @@ namespace ToolKit
     }
 
     // Built-in variables.
-
     {
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_VIEW_MATRIX);
       if (uniformLoc != -1)
@@ -1032,11 +1021,13 @@ namespace ToolKit
         Mat4 mul = m_projectView * m_model;
         glUniformMatrix4fv(uniformLoc, 1, false, &mul[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL);
       if (uniformLoc != -1)
       {
         glUniformMatrix4fv(uniformLoc, 1, false, &m_model[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_NO_TR);
       if (uniformLoc != -1)
       {
@@ -1050,6 +1041,7 @@ namespace ToolKit
         modelNoTr[3][2] = 0.0f;
         glUniformMatrix4fv(uniformLoc, 1, false, &modelNoTr[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::INV_TR_MODEL);
       if (uniformLoc != -1)
       {
@@ -1068,6 +1060,7 @@ namespace ToolKit
           }
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::NORMAL_MAP_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1076,6 +1069,7 @@ namespace ToolKit
           SetTexture(9, m_mat->m_normalMap->m_textureId);
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::USE_IBL);
       if (uniformLoc != -1)
       {
@@ -1087,6 +1081,7 @@ namespace ToolKit
         }
         glUniform1i(uniformLoc, (GLint) m_renderState.IBLInUse);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_ROTATION);
       if (uniformLoc != -1)
       {
@@ -1095,6 +1090,19 @@ namespace ToolKit
           glUniformMatrix4fv(uniformLoc, 1, false, &m_iblRotation[0][0]);
         }
       }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_INTENSITY);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, m_renderState.iblIntensity);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
+      if (uniformLoc != -1)
+      {
+        glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
+      }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::EMISSIVE_TEXTURE_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1103,26 +1111,38 @@ namespace ToolKit
           SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
         }
       }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::AO_ENABLED);
+      if (uniformLoc != -1)
+      {
+        bool aoEnabled = m_aoTexture != nullptr;
+        glUniform1i(uniformLoc, aoEnabled);
+      }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.firstKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_2);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.secondKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_INT_TIME);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.keyFrameInterpolationTime);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_COUNT);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.keyFrameCount);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IS_ANIMATED);
       if (uniformLoc != -1)
       {
@@ -1133,26 +1153,31 @@ namespace ToolKit
       {
         glUniform1i(uniformLoc, job.animData.blendAnimation != nullptr);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_FACTOR);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.animationBlendFactor);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_1);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendFirstKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_2);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendSecondKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_INT_TIME);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendKeyFrameInterpolationTime);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_COUNT);
       if (uniformLoc != -1)
       {
@@ -1303,8 +1328,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1346,7 +1369,7 @@ namespace ToolKit
                     glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
                     glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; i++)
     {
       Vec3 pos, sca;
       Quaternion rot;
@@ -1362,10 +1385,6 @@ namespace ToolKit
                                                           0,
                                                           -1,
                                                           (Framebuffer::CubemapFace) i);
-      if (i > 0)
-      {
-        AddHWRenderPass();
-      }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
@@ -1379,8 +1398,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1435,10 +1452,6 @@ namespace ToolKit
                                                           0,
                                                           -1,
                                                           (Framebuffer::CubemapFace) i);
-      if (i > 0)
-      {
-        AddHWRenderPass();
-      }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
@@ -1454,8 +1467,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1489,6 +1500,7 @@ namespace ToolKit
     // Create material
     MaterialPtr mat         = MakeNewPtr<Material>();
     mat->m_isShaderMaterial = true;
+
     ShaderPtr vert          = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
     ShaderPtr frag          = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 
@@ -1528,16 +1540,10 @@ namespace ToolKit
                                                             -1,
                                                             (Framebuffer::CubemapFace) i);
 
-        if (mip != 0 && i != 0)
-        {
-          AddHWRenderPass();
-        }
+        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
 
         mat->UpdateProgramUniform("roughness", (float) mip / (float) mipMaps);
         mat->UpdateProgramUniform("resPerFace", (float) mipSize);
-
-        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
-        SetViewportSize(mipSize, mipSize);
 
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
 
@@ -1546,9 +1552,6 @@ namespace ToolKit
         // Copy color attachment to cubemap's correct mip level and face.
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId, 0);
         glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
-
-        // Set the read cubemap back. When renderer hijacked like this, we need to restore its state manually.
-        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
       }
     }
 

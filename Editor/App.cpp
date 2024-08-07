@@ -194,6 +194,9 @@ namespace ToolKit
       GetPluginManager()->Update(deltaTime);
       UpdateSimulation();
 
+      UI::BeginUI();
+      UI::ShowUI();
+
       // Render Viewports.
       for (EditorViewport* viewport : viewports)
       {
@@ -210,9 +213,6 @@ namespace ToolKit
                                             }});
         }
       }
-
-      UI::BeginUI();
-      UI::ShowUI();
 
       GetRenderSystem()->AddRenderTask({[](Renderer* renderer) -> void
                                         {
@@ -831,6 +831,8 @@ namespace ToolKit
       }
 
       m_simulationViewport = nullptr;
+
+      UI::m_volatileWindows.clear();
     }
 
     void App::ReconstructDynamicMenus()
