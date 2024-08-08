@@ -294,8 +294,14 @@ namespace ToolKit
 
   EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
   {
+    if (m_entities.empty())
+    {
+      return nullptr;
+    }
+
     EntityPtr removed = nullptr;
-    for (size_t i = 0; i < m_entities.size(); i++)
+    int nttCount      = (int) m_entities.size() - 1;
+    for (int i = nttCount; i >= 0; i--)
     {
       if (m_entities[i]->GetIdVal() == id)
       {
@@ -331,7 +337,10 @@ namespace ToolKit
 
   void Scene::RemoveEntity(const EntityPtrArray& entities)
   {
-    erase_if(m_entities, [entities](EntityPtr ntt) -> bool { return FindIndex(entities, ntt) != -1; });
+    for (size_t i = 0; i < entities.size(); i++)
+    {
+      RemoveEntity(entities[i]->GetIdVal());
+    }
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
