@@ -237,7 +237,7 @@ namespace ToolKit
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      for (LightPtr& light : scene->GetLights())
+      for (const LightPtr& light : scene->GetLights())
       {
         if (light->GetLightType() == Light::LightType::Directional)
         {
@@ -253,8 +253,9 @@ namespace ToolKit
             editorEntities.push_back(light);
           }
         }
-        else // if (light->GetLightType() == Light::LightType::Point)
+        else
         {
+          assert(light->GetLightType() == Light::LightType::Point);
           if (Cast<EditorPointLight>(light)->GizmoActive())
           {
             editorEntities.push_back(light);

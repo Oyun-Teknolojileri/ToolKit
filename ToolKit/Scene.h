@@ -156,7 +156,7 @@ namespace ToolKit
      * Gets an array of all the lights in the scene.
      * @returns An array containing pointers to all the lights in the scene.
      */
-    LightPtrArray& GetLights() const;
+    const LightPtrArray& GetLights() const;
 
     /**
      * Gets the sky object associated with the scene. If multiple exist, returns the last one.

@@ -347,7 +347,7 @@ namespace ToolKit
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  LightPtrArray& Scene::GetLights() const { return m_lightCache; }
+  const LightPtrArray& Scene::GetLights() const { return m_lightCache; }
 
   SkyBasePtr& Scene::GetSky() { return m_skyCache; }
 

@@ -177,7 +177,7 @@ namespace ToolKit
 
           // if right clicked this will try to insert to where we clicked
           // otherwise(top bar add) this will spawn at the end of the list.
-          outliner->TryReorderEntites({createdEntity});
+          // outliner->TryReorderEntites({createdEntity});
           currScene->ValidateBillboard(createdEntity);
         }
       }

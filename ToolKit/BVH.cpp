@@ -411,7 +411,7 @@ namespace ToolKit
   void BVHTree::ReAssignLightsFromParent(BVHNode* node)
   {
     node->m_lights.clear();
-    LightPtrArray* lights;
+    const LightPtrArray* lights;
 
     if (node->m_parent == nullptr)
     {
