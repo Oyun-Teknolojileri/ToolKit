@@ -257,23 +257,31 @@ namespace ToolKit
     return nullptr;
   }
 
-  void Scene::AddEntity(EntityPtr entity)
+  void Scene::AddEntity(EntityPtr entity, int index)
   {
-    if (entity)
+    if (entity != nullptr)
     {
       bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
       assert(isUnique);
+
       if (isUnique)
       {
         UpdateEntityCaches(entity, true);
-        m_entities.push_back(entity);
+
+        if (index < 0 || index >= (int) m_entities.size())
+        {
+          m_entities.push_back(entity);
+        }
+        else
+        {
+          m_entities.insert(m_entities.begin() + index, entity);
+        }
+
         entity->m_bvh = m_bvh;
         m_bvh->AddEntity(entity);
       }
     }
   }
-
-  EntityPtrArray& Scene::AccessEntityArray() { return m_entities; }
 
   void Scene::RemoveChildren(EntityPtr removed)
   {

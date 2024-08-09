@@ -133,18 +133,8 @@ namespace ToolKit
      */
     EntityPtr GetEntity(ULongID id) const;
 
-    /**
-     * Adds an entity to the scene.
-     * @param entity The entity to add.
-     */
-    virtual void AddEntity(EntityPtr entity);
-
-    /**
-     * Allow access and modification to underlying entity array. Care must be taken when modifying the array.
-     * Its generally okay to reorder entities but for removing and adding new entities consider appropriate functions.
-     * @retruns Mutable entity array for the scene.
-     */
-    EntityPtrArray& AccessEntityArray();
+    /** Adds an entity to the scene. If an index is provided, insert the entity to the given position in the array. */
+    virtual void AddEntity(EntityPtr entity, int index = -1);
 
     /**
      * Gets all the entities in the scene.

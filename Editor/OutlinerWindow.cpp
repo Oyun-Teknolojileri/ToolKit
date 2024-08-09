@@ -376,17 +376,27 @@ namespace ToolKit
         return false;
       }
 
-      int selectedIndex        = m_insertSelectedIndex;
-      EditorScenePtr scene     = g_app->GetCurrentScene();
-      EntityPtrArray& entities = scene->AccessEntityArray();
+      int selectedIndex              = m_insertSelectedIndex;
+      EditorScenePtr scene           = g_app->GetCurrentScene();
+      const EntityPtrArray& entities = scene->GetEntities();
 
       SortDraggedEntitiesByNodeIndex();
+
+      auto insertNttFn = [&](const EntityPtrArray& ntties, int startIndex) -> void
+      {
+        for (int i = 0; i < (int) ntties.size(); i++)
+        {
+          EntityPtr ntt = ntties[i];
+          scene->AddEntity(ntt, startIndex + i);
+        }
+      };
+
       // is dropped to on top of the first entity?
       if (selectedIndex == DroppedOnTopOfEntities)
       {
         OrphanAll(movedEntities);
         scene->RemoveEntity(movedEntities);
-        entities.insert(entities.begin(), movedEntities.begin(), movedEntities.end());
+        insertNttFn(movedEntities, 0);
         return true;
       }
 
@@ -394,7 +404,7 @@ namespace ToolKit
       {
         OrphanAll(movedEntities);
         scene->RemoveEntity(movedEntities);
-        entities.insert(entities.end(), movedEntities.begin(), movedEntities.end());
+        insertNttFn(movedEntities, -1);
         return true;
       }
 
@@ -452,7 +462,8 @@ namespace ToolKit
         // find index of dropped entity and
         // insert all dropped entities below dropped entity
         auto find = std::find(entities.cbegin(), entities.cend(), droppedBelowNtt);
-        entities.insert(find + 1, movedEntities.begin(), movedEntities.end());
+        int index = (int) std::distance(entities.cbegin(), find);
+        insertNttFn(movedEntities, index + 1);
       }
       else if (droppedParent != nullptr) // did we drop in child list?
       {

@@ -387,7 +387,7 @@ namespace ToolKit
       }
     }
 
-    totalNtties      = glm::max(1, (int) m_scene->AccessEntityArray().size());
+    totalNtties      = glm::max(1, (int) m_scene->GetEntities().size());
     assignmentPerNtt = (float) assignedNtties / (float) totalNtties;
   }
 

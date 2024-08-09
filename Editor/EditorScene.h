@@ -48,7 +48,7 @@ namespace ToolKit
       void Save(bool onlyIfDirty) override;
 
       // Entity operations.
-      void AddEntity(EntityPtr entity) override;
+      void AddEntity(EntityPtr entity, int index = -1) override;
       void RemoveEntity(const EntityPtrArray& entities) override;
 
       /**
@@ -69,7 +69,7 @@ namespace ToolKit
 
       void PickObject(const Frustum& frustum,
                       PickDataArray& pickedObjects,
-                      const IDArray& ignoreList = {},
+                      const IDArray& ignoreList       = {},
                       const EntityPtrArray& extraList = {},
                       bool pickPartiallyInside        = true) override;
 

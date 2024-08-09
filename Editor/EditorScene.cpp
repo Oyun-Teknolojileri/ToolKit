@@ -300,9 +300,9 @@ namespace ToolKit
       m_newScene = false;
     }
 
-    void EditorScene::AddEntity(EntityPtr entity)
+    void EditorScene::AddEntity(EntityPtr entity, int index)
     {
-      Scene::AddEntity(entity);
+      Scene::AddEntity(entity, index);
 
       // Add bilboard gizmo
       AddBillboard(entity);
