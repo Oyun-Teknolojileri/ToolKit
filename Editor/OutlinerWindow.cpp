@@ -583,12 +583,20 @@ namespace ToolKit
           }
         }
 
+        static bool popupHasBeenOpen = false;
         if (ImGui::BeginPopup("##Create"))
         {
+          popupHasBeenOpen = true;
           // this function will call TryReorderEntities
           // (if we click one of the creation buttons)
           OverlayTopBar::ShowAddMenuPopup();
           ImGui::EndPopup();
+        }
+
+        if (!ImGui::IsPopupOpen("##Create") && popupHasBeenOpen)
+        {
+          popupHasBeenOpen      = false;
+          m_insertSelectedIndex = TK_INT_MAX;
         }
 
         ImGui::EndChild();
