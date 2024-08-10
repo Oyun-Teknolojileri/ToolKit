@@ -277,7 +277,8 @@ namespace ToolKit
           m_entities.insert(m_entities.begin() + index, entity);
         }
 
-        entity->m_bvh = m_bvh;
+        entity->m_bvh             = m_bvh;
+        entity->m_markedForDelete = false;
         m_bvh->AddEntity(entity);
       }
     }
