@@ -21,6 +21,7 @@
 #include <GradientSky.h>
 #include <Material.h>
 #include <MaterialComponent.h>
+#include <Prefab.h>
 #include <TKProfiler.h>
 #include <UIManager.h>
 #include <Util.h>
@@ -447,6 +448,18 @@ namespace ToolKit
 
       selecteds.clear();
       selecteds.push_back(primary);
+
+      if (primary->IsA<Prefab>())
+      {
+        auto addToSelectionFn = [&selecteds](Node* node)
+        {
+          EntityPtr ntt = node->OwnerEntity();
+          selecteds.push_back(ntt);
+        };
+
+        TraverseChildNodes(primary->m_node, addToSelectionFn);
+      }
+
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 

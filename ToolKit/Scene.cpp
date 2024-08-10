@@ -244,14 +244,25 @@ namespace ToolKit
     m_bvh->PickObject(frustum, pickedObjects, ignoreList, pickPartiallyInside);
   }
 
-  EntityPtr Scene::GetEntity(ULongID id) const
+  EntityPtr Scene::GetEntity(ULongID id, int* index) const
   {
-    for (EntityPtr ntt : m_entities)
+    for (int i = 0; i < (int) m_entities.size(); i++)
     {
+      EntityPtr ntt = m_entities[i];
       if (ntt->GetIdVal() == id)
       {
+        if (index != nullptr)
+        {
+          *index = i;
+        }
+
         return ntt;
       }
+    }
+
+    if (index != nullptr)
+    {
+      *index = -1;
     }
 
     return nullptr;
@@ -308,37 +319,48 @@ namespace ToolKit
       return nullptr;
     }
 
-    EntityPtr removed = nullptr;
-    int nttCount      = (int) m_entities.size() - 1;
-    for (int i = nttCount; i >= 0; i--)
+    int indx          = -1;
+    EntityPtr removed = GetEntity(id, &indx);
+    if (removed == nullptr)
     {
-      if (m_entities[i]->GetIdVal() == id)
+      return nullptr;
+    }
+
+    if (removed->IsA<Prefab>())
+    {
+      EntityPtrArray prefabNtties;
+      auto addToSelectionFn = [&prefabNtties](Node* node)
       {
-        removed                    = m_entities[i];
-        removed->m_markedForDelete = true;
+        EntityPtr ntt = node->OwnerEntity();
+        prefabNtties.push_back(ntt);
+      };
 
-        UpdateEntityCaches(removed, false);
-        m_entities.erase(m_entities.begin() + i);
-        m_bvh->RemoveEntity(removed);
-        removed->m_bvh.reset();
+      TraverseChildNodes(removed->m_node, addToSelectionFn);
+      prefabNtties.pop_back(); // drop self.
 
-        // Keep hierarchy if its prefab.
-        if (removed->GetPrefabRoot() == nullptr)
-        {
-          removed->m_node->OrphanSelf();
-        }
+      RemoveEntity(prefabNtties);
+    }
 
-        if (deep)
-        {
-          RemoveChildren(removed);
-        }
-        else
-        {
-          removed->m_node->OrphanAllChildren(true);
-        }
+    removed->m_markedForDelete = true;
 
-        break;
-      }
+    UpdateEntityCaches(removed, false);
+    m_entities.erase(m_entities.begin() + indx);
+    m_bvh->RemoveEntity(removed);
+    removed->m_bvh.reset();
+
+    // Keep hierarchy if its prefab.
+    if (removed->GetPrefabRoot() == nullptr)
+    {
+      removed->m_node->OrphanSelf();
+    }
+
+    if (deep)
+    {
+      RemoveChildren(removed);
+    }
+    else
+    {
+      removed->m_node->OrphanAllChildren(true);
     }
 
     return removed;

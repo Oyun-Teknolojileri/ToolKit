@@ -108,15 +108,6 @@ namespace ToolKit
       }
     }
 
-    void TraverseChildNodes(Node* parent, const std::function<void(Node* node)>& callbackFn)
-    {
-      for (Node* childNode : parent->m_children)
-      {
-        TraverseChildNodes(childNode, callbackFn);
-      }
-      callbackFn(parent);
-    }
-
     void EditorScene::AddToSelection(ULongID id, bool additive)
     {
       if (!additive)
@@ -134,20 +125,6 @@ namespace ToolKit
       }
 
       EntityPtr ntt = GetEntity(id);
-
-      // If selected entity belongs to a prefab
-      // select all children of the prefab entity too
-      if (PrefabPtr mainPrefab = Prefab::GetPrefabRoot(ntt))
-      {
-        auto addToSelectionFn = [this](Node* node)
-        {
-          EntityPtr ntt = node->OwnerEntity();
-          m_selectedEntities.push_back(ntt->GetIdVal());
-        };
-
-        TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
-        return;
-      }
 
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {

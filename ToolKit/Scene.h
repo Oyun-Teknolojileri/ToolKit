@@ -128,10 +128,11 @@ namespace ToolKit
     /**
      * Gets the entity with the given ID from the scene.
      * @param id The ID of the entity to get.
+     * @param index is the index in to the entity list. If provided index of the entity is filled.
      * @returns The entity with the given ID, or nullptr if no entity with that
      * ID exists in the scene.
      */
-    EntityPtr GetEntity(ULongID id) const;
+    EntityPtr GetEntity(ULongID id, int* index = nullptr) const;
 
     /** Adds an entity to the scene. If an index is provided, insert the entity to the given position in the array. */
     virtual void AddEntity(EntityPtr entity, int index = -1);
