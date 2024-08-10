@@ -166,6 +166,14 @@ namespace ToolKit
 
         // if numSameType equals 0 EntityType otherwise EntityType_123
         createdEntity->SetNameVal(typeName + suffix);
+
+        // Adjust entity location.
+        if (g_app && g_app->m_cursor)
+        {
+          Vec3 loc = g_app->m_cursor->m_worldLocation;
+          createdEntity->m_node->SetTranslation(loc);
+        }
+
         currScene->AddEntity(createdEntity);
 
         if (OutlinerWindowPtr outliner = g_app->GetOutliner())
