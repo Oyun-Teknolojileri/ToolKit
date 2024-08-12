@@ -476,7 +476,7 @@ namespace ToolKit
                     if (skelComp != nullptr && mesh->IsSkinned())
                     {
                       SkinMesh* skinMesh = (SkinMesh*) mesh;
-                      for (uint32_t vertexIndx = 0; vertexIndx < 3; vertexIndx++)
+                      for (uint vertexIndx = 0; vertexIndx < 3; vertexIndx++)
                       {
                         positions[vertexIndx] = CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
                                                             skinMesh->m_skeleton.get(),

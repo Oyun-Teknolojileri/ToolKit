@@ -48,17 +48,18 @@ namespace ToolKit
       void Save(bool onlyIfDirty) override;
 
       // Entity operations.
-      void AddEntity(EntityPtr entity) override;
-      void RemoveEntity(const EntityPtrArray& entities) override;
+      void AddEntity(EntityPtr entity, int index = -1) override;
+      void RemoveEntity(const EntityPtrArray& entities, bool deep = true) override;
 
       /**
        * remove entity from the scene
        * @param  the id of the entity you want to remove
-       * @param  do you want to remove with childs ?
-       *         be aware that removed childs transforms preserved
+       * @param  do you want to remove with children ?
+       *         be aware that removed children transforms preserved
        * @returns the entity that you removed, nullptr if entity is not in scene
        */
       EntityPtr RemoveEntity(ULongID id, bool deep = true) override;
+
       void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityPtrArray& entities) const;
       void GetSelectedEntities(IDArray& entities) const;
@@ -69,7 +70,7 @@ namespace ToolKit
 
       void PickObject(const Frustum& frustum,
                       PickDataArray& pickedObjects,
-                      const IDArray& ignoreList = {},
+                      const IDArray& ignoreList       = {},
                       const EntityPtrArray& extraList = {},
                       bool pickPartiallyInside        = true) override;
 

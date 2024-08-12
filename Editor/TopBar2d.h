@@ -21,8 +21,8 @@ namespace ToolKit
       void Show() override;
 
      protected:
-      void Show2DViewZoomOptions(uint32_t& nextItemIndex);
-      void ShowGridOptions(uint32_t& nextItemIndex);
+      void Show2DViewZoomOptions(uint& nextItemIndex);
+      void ShowGridOptions(uint& nextItemIndex);
     };
 
   } // namespace Editor

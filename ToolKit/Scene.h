@@ -128,23 +128,14 @@ namespace ToolKit
     /**
      * Gets the entity with the given ID from the scene.
      * @param id The ID of the entity to get.
+     * @param index is the index in to the entity list. If provided index of the entity is filled.
      * @returns The entity with the given ID, or nullptr if no entity with that
      * ID exists in the scene.
      */
-    EntityPtr GetEntity(ULongID id) const;
+    EntityPtr GetEntity(ULongID id, int* index = nullptr) const;
 
-    /**
-     * Adds an entity to the scene.
-     * @param entity The entity to add.
-     */
-    virtual void AddEntity(EntityPtr entity);
-
-    /**
-     * Allow access and modification to underlying entity array. Care must be taken when modifying the array.
-     * Its generally okay to reorder entities but for removing and adding new entities consider appropriate functions.
-     * @retruns Mutable entity array for the scene.
-     */
-    EntityPtrArray& AccessEntityArray();
+    /** Adds an entity to the scene. If an index is provided, insert the entity to the given position in the array. */
+    virtual void AddEntity(EntityPtr entity, int index = -1);
 
     /**
      * Gets all the entities in the scene.
@@ -156,7 +147,7 @@ namespace ToolKit
      * Gets an array of all the lights in the scene.
      * @returns An array containing pointers to all the lights in the scene.
      */
-    LightPtrArray& GetLights() const;
+    const LightPtrArray& GetLights() const;
 
     /**
      * Gets the sky object associated with the scene. If multiple exist, returns the last one.
@@ -221,8 +212,9 @@ namespace ToolKit
     /**
      * Removes an array of entities from the scene.
      * @param entities An array of pointers to the entities to be removed.
+     * @param  States if the remove will be recursive to the all leafs.
      */
-    virtual void RemoveEntity(const EntityPtrArray& entities);
+    virtual void RemoveEntity(const EntityPtrArray& entities, bool deep = true);
 
     /** Removes all entities from the scene. */
     virtual void RemoveAllEntities();
@@ -288,10 +280,13 @@ namespace ToolKit
 
    private:
     /**
-     * Removes all children of the given entity.
+     * Internally used only.
+     * Intention is to remove children of this entity to aid remove deep operation.
+     * To preserve hierarchy, the parent / child relation is preserved.
+     * That is, when query the children list of this entity, you'll see removed entities.
      * @param removed The entity whose children will be removed.
      */
-    void RemoveChildren(EntityPtr removed);
+    void _RemoveChildren(EntityPtr removed);
 
    public:
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses

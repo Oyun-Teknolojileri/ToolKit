@@ -711,7 +711,7 @@ namespace ToolKit
 
       if (g_app->m_snapsEnabled)
       {
-        for (uint32_t i = 0; i < 3; i++)
+        for (uint i = 0; i < 3; i++)
         {
           delta[i] = glm::round(delta[i] / spacing) * spacing;
         }

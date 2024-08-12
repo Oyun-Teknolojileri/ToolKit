@@ -21,6 +21,7 @@
 #include <GradientSky.h>
 #include <Material.h>
 #include <MaterialComponent.h>
+#include <Prefab.h>
 #include <TKProfiler.h>
 #include <UIManager.h>
 #include <Util.h>
@@ -237,7 +238,7 @@ namespace ToolKit
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      for (LightPtr& light : scene->GetLights())
+      for (const LightPtr& light : scene->GetLights())
       {
         if (light->GetLightType() == Light::LightType::Directional)
         {
@@ -253,8 +254,9 @@ namespace ToolKit
             editorEntities.push_back(light);
           }
         }
-        else // if (light->GetLightType() == Light::LightType::Point)
+        else
         {
+          assert(light->GetLightType() == Light::LightType::Point);
           if (Cast<EditorPointLight>(light)->GizmoActive())
           {
             editorEntities.push_back(light);
@@ -391,9 +393,21 @@ namespace ToolKit
           return;
         }
 
+        EntityPtrArray highlightList = selection;
+
+        // Extend the render jobs for prefabs.
+        for (EntityPtr ntt : selection)
+        {
+          if (ntt->IsA<Prefab>())
+          {
+            auto addToSelectionFn = [&highlightList](Node* node) { highlightList.push_back(node->OwnerEntity()); };
+            TraverseChildNodes(ntt->m_node, addToSelectionFn);
+          }
+        }
+
         RenderJobArray renderJobs;
         RenderJobArray billboardJobs;
-        for (EntityPtr entity : selection)
+        for (EntityPtr entity : highlightList)
         {
           // Disable light gizmos
           if (Light* light = entity->As<Light>())
@@ -413,7 +427,8 @@ namespace ToolKit
         }
 
         EntityRawPtrArray rawNtties;
-        ToEntityRawPtrArray(rawNtties, selection);
+        ToEntityRawPtrArray(rawNtties, highlightList);
+
         RenderJobProcessor::CreateRenderJobs(renderJobs, rawNtties, true);
         renderJobs.insert(renderJobs.end(), billboardJobs.begin(), billboardJobs.end());
 
@@ -430,7 +445,7 @@ namespace ToolKit
         RenderPath::Render(renderer);
 
         // Enable light gizmos back
-        for (EntityPtr entity : selection)
+        for (EntityPtr entity : highlightList)
         {
           if (Light* light = entity->As<Light>())
           {
@@ -446,6 +461,7 @@ namespace ToolKit
 
       selecteds.clear();
       selecteds.push_back(primary);
+
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 

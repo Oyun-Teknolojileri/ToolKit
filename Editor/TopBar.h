@@ -21,12 +21,10 @@ namespace ToolKit
       static void ShowAddMenuPopup();
 
      protected:
-      void ShowAddMenu(std::function<void()> showMenuFn, uint32_t& nextItemIndex);
-      void ShowTransformOrientation(uint32_t& nextColumnItem);
-      void SnapOptions(uint32_t& nextItemIndex);
-      void CameraAlignmentOptions(uint32_t& nextItemIndex);
-      void Show2DViewZoomOptions(uint32_t& nextItemIndex);
-      void ShowGridOptions(uint32_t& nextItemIndex);
+      void ShowAddMenu(std::function<void()> showMenuFn, uint& nextItemIndex);
+      void ShowTransformOrientation(uint& nextColumnItem);
+      void SnapOptions(uint& nextItemIndex);
+      void CameraAlignmentOptions(uint& nextItemIndex);
     };
 
   } // namespace Editor

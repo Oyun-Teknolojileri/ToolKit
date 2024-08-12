@@ -227,6 +227,11 @@ namespace ToolKit
         ModManager::GetInstance()->DispatchSignal(BaseMod::m_duplicate);
       }
 
+      if (ImGui::IsKeyPressed(ImGuiKey_C, false) && !Exist(mask, ImGuiKey_C))
+      {
+        ModManager::GetInstance()->SetMod(true, ModId::Cursor);
+      }
+
       if (ImGui::IsKeyPressed(ImGuiKey_B, false) && !Exist(mask, ImGuiKey_B))
       {
         ModManager::GetInstance()->SetMod(true, ModId::Select);

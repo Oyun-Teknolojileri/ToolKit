@@ -93,6 +93,9 @@ namespace ToolKit
     const String g_showBVHNodes("ShowBVHNodes");
     void ShowBVHNodes(TagArgArray tagArgs);
 
+    const String g_deleteSelection("DeleteSelection");
+    void DeleteSelection(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

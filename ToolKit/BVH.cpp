@@ -387,7 +387,7 @@ namespace ToolKit
       }
     }
 
-    totalNtties      = glm::max(1, (int) m_scene->AccessEntityArray().size());
+    totalNtties      = glm::max(1, (int) m_scene->GetEntities().size());
     assignmentPerNtt = (float) assignedNtties / (float) totalNtties;
   }
 
@@ -411,7 +411,7 @@ namespace ToolKit
   void BVHTree::ReAssignLightsFromParent(BVHNode* node)
   {
     node->m_lights.clear();
-    LightPtrArray* lights;
+    const LightPtrArray* lights;
 
     if (node->m_parent == nullptr)
     {

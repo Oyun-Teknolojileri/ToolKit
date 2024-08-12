@@ -244,52 +244,81 @@ namespace ToolKit
     m_bvh->PickObject(frustum, pickedObjects, ignoreList, pickPartiallyInside);
   }
 
-  EntityPtr Scene::GetEntity(ULongID id) const
+  EntityPtr Scene::GetEntity(ULongID id, int* index) const
   {
-    for (EntityPtr ntt : m_entities)
+    for (int i = 0; i < (int) m_entities.size(); i++)
     {
+      EntityPtr ntt = m_entities[i];
       if (ntt->GetIdVal() == id)
       {
+        if (index != nullptr)
+        {
+          *index = i;
+        }
+
         return ntt;
       }
+    }
+
+    if (index != nullptr)
+    {
+      *index = -1;
     }
 
     return nullptr;
   }
 
-  void Scene::AddEntity(EntityPtr entity)
+  void Scene::AddEntity(EntityPtr entity, int index)
   {
-    if (entity)
+    if (entity != nullptr)
     {
       bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
       assert(isUnique);
+
       if (isUnique)
       {
+        if (m_loaded)
+        {
+          // Don't link prefabs if the scene is in loading phase.
+          // Id conflicts may occur. Linking for prefabs separately handed on load.
+          if (Prefab* prefab = entity->As<Prefab>())
+          {
+            prefab->Link();
+          }
+        }
+
         UpdateEntityCaches(entity, true);
-        m_entities.push_back(entity);
-        entity->m_bvh = m_bvh;
+
+        if (index < 0 || index >= (int) m_entities.size())
+        {
+          m_entities.push_back(entity);
+        }
+        else
+        {
+          m_entities.insert(m_entities.begin() + index, entity);
+        }
+
+        entity->m_bvh             = m_bvh;
+        entity->m_markedForDelete = false;
         m_bvh->AddEntity(entity);
       }
     }
   }
 
-  EntityPtrArray& Scene::AccessEntityArray() { return m_entities; }
-
-  void Scene::RemoveChildren(EntityPtr removed)
+  void Scene::_RemoveChildren(EntityPtr removed)
   {
     NodeRawPtrArray& children = removed->m_node->m_children;
 
-    // recursive remove children
-    // (RemoveEntity function will call all children recursively).
-    while (!children.empty())
+    for (Node* child : children)
     {
-      Node* child = children.back();
-      children.pop_back();
       if (EntityPtr childNtt = child->OwnerEntity())
       {
         RemoveEntity(childNtt->GetIdVal());
       }
     }
+
+    // Preserve parent - child relation.
+    // children.clear();
   }
 
   EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
@@ -299,47 +328,44 @@ namespace ToolKit
       return nullptr;
     }
 
-    EntityPtr removed = nullptr;
-    int nttCount      = (int) m_entities.size() - 1;
-    for (int i = nttCount; i >= 0; i--)
+    int indx          = -1;
+    EntityPtr removed = GetEntity(id, &indx);
+    if (removed == nullptr)
     {
-      if (m_entities[i]->GetIdVal() == id)
-      {
-        removed                    = m_entities[i];
-        removed->m_markedForDelete = true;
+      return nullptr;
+    }
 
-        UpdateEntityCaches(removed, false);
-        m_entities.erase(m_entities.begin() + i);
-        m_bvh->RemoveEntity(removed);
-        removed->m_bvh.reset();
+    if (Prefab* prefab = removed->As<Prefab>())
+    {
+      prefab->Unlink(); // This operation may alter the removed index.
+      indx              = -1;
+      EntityPtr removed = GetEntity(id, &indx);
+    }
 
-        // Keep hierarchy if its prefab.
-        if (removed->GetPrefabRoot() == nullptr)
-        {
-          removed->m_node->OrphanSelf();
-        }
+    removed->m_markedForDelete = true;
 
-        if (deep)
-        {
-          RemoveChildren(removed);
-        }
-        else
-        {
-          removed->m_node->OrphanAllChildren(true);
-        }
+    UpdateEntityCaches(removed, false);
+    m_entities.erase(m_entities.begin() + indx);
+    m_bvh->RemoveEntity(removed);
+    removed->m_bvh.reset();
 
-        break;
-      }
+    if (deep)
+    {
+      _RemoveChildren(removed);
+    }
+    else
+    {
+      removed->m_node->OrphanAllChildren(true);
     }
 
     return removed;
   }
 
-  void Scene::RemoveEntity(const EntityPtrArray& entities)
+  void Scene::RemoveEntity(const EntityPtrArray& entities, bool deep)
   {
     for (size_t i = 0; i < entities.size(); i++)
     {
-      RemoveEntity(entities[i]->GetIdVal());
+      RemoveEntity(entities[i]->GetIdVal(), deep);
     }
   }
 
@@ -347,7 +373,7 @@ namespace ToolKit
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  LightPtrArray& Scene::GetLights() const { return m_lightCache; }
+  const LightPtrArray& Scene::GetLights() const { return m_lightCache; }
 
   SkyBasePtr& Scene::GetSky() { return m_skyCache; }
 
@@ -420,7 +446,6 @@ namespace ToolKit
     PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
-    prefab->Link();
     AddEntity(prefab);
   }
 

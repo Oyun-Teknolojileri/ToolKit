@@ -574,16 +574,19 @@ namespace ToolKit
           for (EntityPtr ntt : selectedRoots)
           {
             EntityPtrArray copies;
+
             // Prefab will already create its own child prefab scene entities,
-            //  So don't need to copy them too!
+            // So don't need to copy them too.
             if (ntt->IsA<Prefab>())
             {
-              copies.push_back(Cast<Entity>(ntt->Copy()));
+              EntityPtr cpyPrefab = Cast<Entity>(ntt->Copy());
+              copies.push_back(cpyPrefab);
             }
             else
             {
               DeepCopy(ntt, copies);
             }
+
             copies[0]->m_node->SetTransform(ntt->m_node->GetTransform(), TransformationSpace::TS_WORLD);
 
             for (EntityPtr cpy : copies)
@@ -592,7 +595,8 @@ namespace ToolKit
             }
 
             currScene->AddToSelection(copies.front()->GetIdVal(), true);
-            cpyCount           += static_cast<int>(copies.size());
+            cpyCount           += (int) copies.size();
+
             // Status info
             g_app->m_statusMsg  = std::to_string(cpyCount) + " entities are copied.";
           }

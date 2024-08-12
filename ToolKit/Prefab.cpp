@@ -12,8 +12,6 @@
 #include "Scene.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -37,7 +35,16 @@ namespace ToolKit
       if (m_linked)
       {
         m_linked = false;
-        m_currentScene->RemoveEntity(m_instanceEntities);
+
+        EntityPtrArray roots;
+        GetRootEntities(m_instanceEntities, roots);
+        m_currentScene->RemoveEntity(roots);
+
+        // Detach roots from prefab.
+        for (EntityPtr root : roots)
+        {
+          root->m_node->OrphanSelf();
+        }
       }
     }
   }
@@ -51,6 +58,14 @@ namespace ToolKit
       for (EntityPtr child : m_instanceEntities)
       {
         m_currentScene->AddEntity(child);
+      }
+
+      // Attach roots to prefab.
+      EntityPtrArray roots;
+      GetRootEntities(m_instanceEntities, roots);
+      for (EntityPtr root : roots)
+      {
+        m_node->AddChild(root->m_node);
       }
     }
   }
@@ -75,7 +90,7 @@ namespace ToolKit
     Entity::CopyTo(other);
     Prefab* prefab = (Prefab*) other;
     prefab->Init(m_currentScene);
-    prefab->Link();
+
     return other;
   }
 
@@ -145,7 +160,7 @@ namespace ToolKit
     {
       EntityPtrArray instantiatedEntityList;
       DeepCopy(root, instantiatedEntityList);
-      m_node->AddChild(instantiatedEntityList[0]->m_node);
+
       for (EntityPtr child : instantiatedEntityList)
       {
         child->SetTransformLockVal(true);

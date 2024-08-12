@@ -191,8 +191,10 @@ namespace ToolKit
 
       if (parent->IsA<Prefab>())
       {
+        TK_WRN("Prefabs can't be parent of another entity.");
         return;
       }
+
       for (int i = 0; i < selected.size(); i++)
       {
         bool sameParent = selected[i]->GetIdVal() != parent->GetIdVal();
@@ -376,17 +378,37 @@ namespace ToolKit
         return false;
       }
 
-      int selectedIndex        = m_insertSelectedIndex;
-      EditorScenePtr scene     = g_app->GetCurrentScene();
-      EntityPtrArray& entities = scene->AccessEntityArray();
+      int selectedIndex              = m_insertSelectedIndex;
+      EditorScenePtr scene           = g_app->GetCurrentScene();
+      const EntityPtrArray& entities = scene->GetEntities();
 
       SortDraggedEntitiesByNodeIndex();
+
+      auto insertNttFn = [&](const EntityPtrArray& ntties, int startIndex) -> void
+      {
+        int insertLoc = 0;
+        for (int i = 0; i < (int) ntties.size(); i++)
+        {
+          EntityPtr ntt = ntties[i];
+
+          // RemoveEntity may recursively delete all children if exist, so we need to add back all removed.
+          TraverseChildNodes(ntt->m_node,
+                             [&](Node* child) -> void
+                             {
+                               if (EntityPtr childNtt = child->OwnerEntity())
+                               {
+                                 scene->AddEntity(childNtt, startIndex + insertLoc++);
+                               }
+                             });
+        }
+      };
+
       // is dropped to on top of the first entity?
       if (selectedIndex == DroppedOnTopOfEntities)
       {
         OrphanAll(movedEntities);
         scene->RemoveEntity(movedEntities);
-        entities.insert(entities.begin(), movedEntities.begin(), movedEntities.end());
+        insertNttFn(movedEntities, 0);
         return true;
       }
 
@@ -394,7 +416,7 @@ namespace ToolKit
       {
         OrphanAll(movedEntities);
         scene->RemoveEntity(movedEntities);
-        entities.insert(entities.end(), movedEntities.begin(), movedEntities.end());
+        insertNttFn(movedEntities, -1);
         return true;
       }
 
@@ -444,15 +466,18 @@ namespace ToolKit
       const auto isRootFn = [](EntityPtr entity) -> bool { return entity->m_node->m_parent == nullptr; };
 
       OrphanAll(movedEntities);
+
       // the object that we dropped below is root ?
       if (isRootFn(droppedBelowNtt) && !droppedAboveFirstChild)
       {
         // remove all dropped entites
         scene->RemoveEntity(movedEntities);
+
         // find index of dropped entity and
         // insert all dropped entities below dropped entity
         auto find = std::find(entities.cbegin(), entities.cend(), droppedBelowNtt);
-        entities.insert(find + 1, movedEntities.begin(), movedEntities.end());
+        int index = (int) std::distance(entities.cbegin(), find);
+        insertNttFn(movedEntities, index + 1);
       }
       else if (droppedParent != nullptr) // did we drop in child list?
       {
@@ -572,12 +597,20 @@ namespace ToolKit
           }
         }
 
+        static bool popupHasBeenOpen = false;
         if (ImGui::BeginPopup("##Create"))
         {
+          popupHasBeenOpen = true;
           // this function will call TryReorderEntities
           // (if we click one of the creation buttons)
           OverlayTopBar::ShowAddMenuPopup();
           ImGui::EndPopup();
+        }
+
+        if (!ImGui::IsPopupOpen("##Create") && popupHasBeenOpen)
+        {
+          popupHasBeenOpen      = false;
+          m_insertSelectedIndex = TK_INT_MAX;
         }
 
         ImGui::EndChild();

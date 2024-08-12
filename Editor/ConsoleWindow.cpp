@@ -600,6 +600,19 @@ namespace ToolKit
 
     void ShowBVHNodes(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showBVHNodes); }
 
+    void DeleteSelection(TagArgArray tagArgs)
+    {
+      bool isDeep = false;
+      BoolCheck(tagArgs, &isDeep);
+
+      EditorScenePtr scene = g_app->GetCurrentScene();
+
+      EntityPtrArray selection;
+      scene->GetSelectedEntities(selection);
+
+      scene->RemoveEntity(selection, isDeep);
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -662,6 +675,7 @@ namespace ToolKit
       CreateCommand(g_checkSceneHealth, CheckSceneHealth);
       CreateCommand(g_showSceneBoundary, ShowSceneBoundary);
       CreateCommand(g_showBVHNodes, ShowBVHNodes);
+      CreateCommand(g_deleteSelection, DeleteSelection);
     }
 
     ConsoleWindow::~ConsoleWindow() {}

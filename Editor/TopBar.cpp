@@ -166,6 +166,14 @@ namespace ToolKit
 
         // if numSameType equals 0 EntityType otherwise EntityType_123
         createdEntity->SetNameVal(typeName + suffix);
+
+        // Adjust entity location.
+        if (g_app && g_app->m_cursor)
+        {
+          Vec3 loc = g_app->m_cursor->m_worldLocation;
+          createdEntity->m_node->SetTranslation(loc);
+        }
+
         currScene->AddEntity(createdEntity);
 
         if (OutlinerWindowPtr outliner = g_app->GetOutliner())
@@ -224,7 +232,7 @@ namespace ToolKit
       ImGui::EndChildFrame();
     }
 
-    void OverlayTopBar::ShowAddMenu(std::function<void()> showMenuFn, uint32_t& nextItemIndex)
+    void OverlayTopBar::ShowAddMenu(std::function<void()> showMenuFn, uint& nextItemIndex)
     {
       ImGui::TableSetColumnIndex(nextItemIndex++);
       // Get the current cursor position
@@ -248,11 +256,11 @@ namespace ToolKit
       }
     }
 
-    void OverlayTopBar::ShowTransformOrientation(uint32_t& nextColumnItem)
+    void OverlayTopBar::ShowTransformOrientation(uint& nextColumnItem)
     {
       bool change = false;
       ImGui::TableSetColumnIndex(nextColumnItem++);
-      ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), ImVec2(20.0f, 20.0f));
+      ImGui::Image(Convert2ImGuiTexture(UI::m_axisIcon), Vec2(20.0f));
 
       // Transform orientation combo.
       ImGuiStyle& style            = ImGui::GetStyle();
@@ -306,7 +314,7 @@ namespace ToolKit
       UI::HelpMarker(TKLoc + m_owner->m_name, "Transform orientations\n");
     }
 
-    void OverlayTopBar::SnapOptions(uint32_t& nextItemIndex)
+    void OverlayTopBar::SnapOptions(uint& nextItemIndex)
     {
       // Auto snap.
       static bool autoSnapActivated = false;
@@ -325,7 +333,7 @@ namespace ToolKit
       }
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId, ImVec2(16, 16), g_app->m_snapsEnabled);
+      g_app->m_snapsEnabled = UI::ToggleButton(UI::m_snapIcon->m_textureId, Vec2(16.0), g_app->m_snapsEnabled);
       UI::HelpMarker(TKLoc + m_owner->m_name, "Grid snaping\nRight click for options");
 
       if (ImGui::BeginPopupContextItem("##SnapMenu"))
@@ -339,7 +347,7 @@ namespace ToolKit
       }
     }
 
-    void OverlayTopBar::CameraAlignmentOptions(uint32_t& nextItemIndex)
+    void OverlayTopBar::CameraAlignmentOptions(uint& nextItemIndex)
     {
       bool change = false;
       ImGui::TableSetColumnIndex(nextItemIndex++);
@@ -347,9 +355,8 @@ namespace ToolKit
       ImGui::Text(ICON_FA_VIDEO_CAMERA);
 
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      m_owner->m_orbitLock = UI::ToggleButton(m_owner->m_orbitLock ? ICON_FA_LOCK : ICON_FA_UNLOCK,
-                                              ImVec2(20.0f, 20.0f),
-                                              m_owner->m_orbitLock);
+      m_owner->m_orbitLock =
+          UI::ToggleButton(m_owner->m_orbitLock ? ICON_FA_LOCK : ICON_FA_UNLOCK, Vec2(20.0f), m_owner->m_orbitLock);
 
       UI::HelpMarker(TKLoc + m_owner->m_name,
                      "Lock Camera Alignment\nMiddle button drag doesn't orbit."

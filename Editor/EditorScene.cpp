@@ -108,15 +108,6 @@ namespace ToolKit
       }
     }
 
-    void TraverseChildNodes(Node* parent, const std::function<void(Node* node)>& callbackFn)
-    {
-      for (Node* childNode : parent->m_children)
-      {
-        TraverseChildNodes(childNode, callbackFn);
-      }
-      callbackFn(parent);
-    }
-
     void EditorScene::AddToSelection(ULongID id, bool additive)
     {
       if (!additive)
@@ -135,18 +126,11 @@ namespace ToolKit
 
       EntityPtr ntt = GetEntity(id);
 
-      // If selected entity belongs to a prefab
-      // select all children of the prefab entity too
-      if (PrefabPtr mainPrefab = Prefab::GetPrefabRoot(ntt))
+      // If the entity comes from a prefab scene, swap the child ntt with prefab.
+      if (Entity* prefabRoot = ntt->GetPrefabRoot())
       {
-        auto addToSelectionFn = [this](Node* node)
-        {
-          EntityPtr ntt = node->OwnerEntity();
-          m_selectedEntities.push_back(ntt->GetIdVal());
-        };
-
-        TraverseChildNodes(mainPrefab->m_node, addToSelectionFn);
-        return;
+        ntt = prefabRoot->Self<Entity>();
+        id  = ntt->GetIdVal();
       }
 
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
@@ -300,17 +284,17 @@ namespace ToolKit
       m_newScene = false;
     }
 
-    void EditorScene::AddEntity(EntityPtr entity)
+    void EditorScene::AddEntity(EntityPtr entity, int index)
     {
-      Scene::AddEntity(entity);
+      Scene::AddEntity(entity, index);
 
-      // Add bilboard gizmo
+      // Add billboard gizmo.
       AddBillboard(entity);
     }
 
-    void EditorScene::RemoveEntity(const EntityPtrArray& entities)
+    void EditorScene::RemoveEntity(const EntityPtrArray& entities, bool deep)
     {
-      Scene::RemoveEntity(entities);
+      Scene::RemoveEntity(entities, deep);
 
       for (EntityPtr ntt : entities)
       {
@@ -351,7 +335,7 @@ namespace ToolKit
 
       m_selectedEntities.clear();
 
-      // Destroy gizmos too
+      // Destroy gizmos too.
       m_entityBillboardMap.clear();
       m_billboards.clear();
     }
