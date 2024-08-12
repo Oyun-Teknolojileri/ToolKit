@@ -191,8 +191,10 @@ namespace ToolKit
 
       if (parent->IsA<Prefab>())
       {
+        TK_WRN("Prefabs can't be parent of another entity.");
         return;
       }
+
       for (int i = 0; i < selected.size(); i++)
       {
         bool sameParent = selected[i]->GetIdVal() != parent->GetIdVal();
