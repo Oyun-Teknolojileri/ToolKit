@@ -292,9 +292,9 @@ namespace ToolKit
       AddBillboard(entity);
     }
 
-    void EditorScene::RemoveEntity(const EntityPtrArray& entities)
+    void EditorScene::RemoveEntity(const EntityPtrArray& entities, bool deep)
     {
-      Scene::RemoveEntity(entities);
+      Scene::RemoveEntity(entities, deep);
 
       for (EntityPtr ntt : entities)
       {

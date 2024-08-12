@@ -212,8 +212,9 @@ namespace ToolKit
     /**
      * Removes an array of entities from the scene.
      * @param entities An array of pointers to the entities to be removed.
+     * @param  States if the remove will be recursive to the all leafs.
      */
-    virtual void RemoveEntity(const EntityPtrArray& entities);
+    virtual void RemoveEntity(const EntityPtrArray& entities, bool deep = true);
 
     /** Removes all entities from the scene. */
     virtual void RemoveAllEntities();

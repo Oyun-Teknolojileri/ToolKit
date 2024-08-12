@@ -48,7 +48,6 @@ namespace ToolKit
      private:
       EntityPtr m_ntt;
       ULongID m_parentId;
-      IDArray m_children;
       bool m_actionComitted;
     };
 

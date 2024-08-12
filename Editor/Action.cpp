@@ -108,6 +108,7 @@ namespace ToolKit
     {
       m_ntt                    = ntt;
       m_actionComitted         = true;
+
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(m_selecteds);
       currScene->AddEntity(ntt);
@@ -124,16 +125,19 @@ namespace ToolKit
     void CreateAction::Undo()
     {
       SwapSelection();
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
+
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->RemoveEntity(m_ntt->GetIdVal());
 
       m_actionComitted = false;
     }
 
     void CreateAction::Redo()
     {
-      g_app->GetCurrentScene()->AddEntity(m_ntt);
-      SwapSelection();
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->AddEntity(m_ntt);
 
+      SwapSelection();
       m_actionComitted = true;
     }
 

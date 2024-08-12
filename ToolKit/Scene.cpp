@@ -349,13 +349,6 @@ namespace ToolKit
     m_bvh->RemoveEntity(removed);
     removed->m_bvh.reset();
 
-    // If removed entity has a prefab root, its part of a prefab scene and we don't want to
-    // break parent child relation of the prefab scene.
-    if (removed->GetPrefabRoot() == nullptr)
-    {
-      removed->m_node->OrphanSelf();
-    }
-
     if (deep)
     {
       _RemoveChildren(removed);
@@ -368,11 +361,11 @@ namespace ToolKit
     return removed;
   }
 
-  void Scene::RemoveEntity(const EntityPtrArray& entities)
+  void Scene::RemoveEntity(const EntityPtrArray& entities, bool deep)
   {
     for (size_t i = 0; i < entities.size(); i++)
     {
-      RemoveEntity(entities[i]->GetIdVal());
+      RemoveEntity(entities[i]->GetIdVal(), deep);
     }
   }
 

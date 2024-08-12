@@ -49,7 +49,7 @@ namespace ToolKit
 
       // Entity operations.
       void AddEntity(EntityPtr entity, int index = -1) override;
-      void RemoveEntity(const EntityPtrArray& entities) override;
+      void RemoveEntity(const EntityPtrArray& entities, bool deep = true) override;
 
       /**
        * remove entity from the scene
