@@ -393,9 +393,21 @@ namespace ToolKit
           return;
         }
 
+        EntityPtrArray highlightList = selection;
+
+        // Extend the render jobs for prefabs.
+        for (EntityPtr ntt : selection)
+        {
+          if (ntt->IsA<Prefab>())
+          {
+            auto addToSelectionFn = [&highlightList](Node* node) { highlightList.push_back(node->OwnerEntity()); };
+            TraverseChildNodes(ntt->m_node, addToSelectionFn);
+          }
+        }
+
         RenderJobArray renderJobs;
         RenderJobArray billboardJobs;
-        for (EntityPtr entity : selection)
+        for (EntityPtr entity : highlightList)
         {
           // Disable light gizmos
           if (Light* light = entity->As<Light>())
@@ -415,7 +427,8 @@ namespace ToolKit
         }
 
         EntityRawPtrArray rawNtties;
-        ToEntityRawPtrArray(rawNtties, selection);
+        ToEntityRawPtrArray(rawNtties, highlightList);
+
         RenderJobProcessor::CreateRenderJobs(renderJobs, rawNtties, true);
         renderJobs.insert(renderJobs.end(), billboardJobs.begin(), billboardJobs.end());
 
@@ -432,7 +445,7 @@ namespace ToolKit
         RenderPath::Render(renderer);
 
         // Enable light gizmos back
-        for (EntityPtr entity : selection)
+        for (EntityPtr entity : highlightList)
         {
           if (Light* light = entity->As<Light>())
           {
@@ -447,20 +460,7 @@ namespace ToolKit
       RenderFn(selecteds, g_selectHighLightSecondaryColor);
 
       selecteds.clear();
-      if (primary->IsA<Prefab>())
-      {
-        auto addToSelectionFn = [&selecteds](Node* node)
-        {
-          EntityPtr ntt = node->OwnerEntity();
-          selecteds.push_back(ntt);
-        };
-
-        TraverseChildNodes(primary->m_node, addToSelectionFn);
-      }
-      else
-      {
-        selecteds.push_back(primary);
-      }
+      selecteds.push_back(primary);
 
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
