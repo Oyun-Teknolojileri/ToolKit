@@ -126,6 +126,13 @@ namespace ToolKit
 
       EntityPtr ntt = GetEntity(id);
 
+      // If the entity comes from a prefab scene, swap the child ntt with prefab.
+      if (Entity* prefabRoot = ntt->GetPrefabRoot())
+      {
+        ntt = prefabRoot->Self<Entity>();
+        id  = ntt->GetIdVal();
+      }
+
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
         LightPtrArray lights = GetLights();
@@ -281,7 +288,7 @@ namespace ToolKit
     {
       Scene::AddEntity(entity, index);
 
-      // Add bilboard gizmo
+      // Add billboard gizmo.
       AddBillboard(entity);
     }
 
@@ -328,7 +335,7 @@ namespace ToolKit
 
       m_selectedEntities.clear();
 
-      // Destroy gizmos too
+      // Destroy gizmos too.
       m_entityBillboardMap.clear();
       m_billboards.clear();
     }

@@ -447,8 +447,6 @@ namespace ToolKit
       RenderFn(selecteds, g_selectHighLightSecondaryColor);
 
       selecteds.clear();
-      selecteds.push_back(primary);
-
       if (primary->IsA<Prefab>())
       {
         auto addToSelectionFn = [&selecteds](Node* node)
@@ -458,6 +456,10 @@ namespace ToolKit
         };
 
         TraverseChildNodes(primary->m_node, addToSelectionFn);
+      }
+      else
+      {
+        selecteds.push_back(primary);
       }
 
       RenderFn(selecteds, g_selectHighLightPrimaryColor);

@@ -277,6 +277,16 @@ namespace ToolKit
 
       if (isUnique)
       {
+        if (m_loaded)
+        {
+          // Don't link prefabs if the scene is in loading phase.
+          // Id conflicts may occur. Linking for prefabs separately handed on load.
+          if (Prefab* prefab = entity->As<Prefab>())
+          {
+            prefab->Link();
+          }
+        }
+
         UpdateEntityCaches(entity, true);
 
         if (index < 0 || index >= (int) m_entities.size())
@@ -295,21 +305,20 @@ namespace ToolKit
     }
   }
 
-  void Scene::RemoveChildren(EntityPtr removed)
+  void Scene::_RemoveChildren(EntityPtr removed)
   {
     NodeRawPtrArray& children = removed->m_node->m_children;
 
-    // recursive remove children
-    // (RemoveEntity function will call all children recursively).
-    while (!children.empty())
+    for (Node* child : children)
     {
-      Node* child = children.back();
-      children.pop_back();
       if (EntityPtr childNtt = child->OwnerEntity())
       {
         RemoveEntity(childNtt->GetIdVal());
       }
     }
+
+    // Preserve parent - child relation.
+    // children.clear();
   }
 
   EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
@@ -326,19 +335,11 @@ namespace ToolKit
       return nullptr;
     }
 
-    if (removed->IsA<Prefab>())
+    if (Prefab* prefab = removed->As<Prefab>())
     {
-      EntityPtrArray prefabNtties;
-      auto addToSelectionFn = [&prefabNtties](Node* node)
-      {
-        EntityPtr ntt = node->OwnerEntity();
-        prefabNtties.push_back(ntt);
-      };
-
-      TraverseChildNodes(removed->m_node, addToSelectionFn);
-      prefabNtties.pop_back(); // drop self.
-
-      RemoveEntity(prefabNtties);
+      prefab->Unlink(); // This operation may alter the removed index.
+      indx              = -1;
+      EntityPtr removed = GetEntity(id, &indx);
     }
 
     removed->m_markedForDelete = true;
@@ -348,7 +349,8 @@ namespace ToolKit
     m_bvh->RemoveEntity(removed);
     removed->m_bvh.reset();
 
-    // Keep hierarchy if its prefab.
+    // If removed entity has a prefab root, its part of a prefab scene and we don't want to
+    // break parent child relation of the prefab scene.
     if (removed->GetPrefabRoot() == nullptr)
     {
       removed->m_node->OrphanSelf();
@@ -356,7 +358,7 @@ namespace ToolKit
 
     if (deep)
     {
-      RemoveChildren(removed);
+      _RemoveChildren(removed);
     }
     else
     {
@@ -451,7 +453,6 @@ namespace ToolKit
     PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
-    prefab->Link();
     AddEntity(prefab);
   }
 

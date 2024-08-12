@@ -279,10 +279,13 @@ namespace ToolKit
 
    private:
     /**
-     * Removes all children of the given entity.
+     * Internally used only.
+     * Intention is to remove children of this entity to aid remove deep operation.
+     * To preserve hierarchy, the parent / child relation is preserved.
+     * That is, when query the children list of this entity, you'll see removed entities.
      * @param removed The entity whose children will be removed.
      */
-    void RemoveChildren(EntityPtr removed);
+    void _RemoveChildren(EntityPtr removed);
 
    public:
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses

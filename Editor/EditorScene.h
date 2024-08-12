@@ -54,11 +54,12 @@ namespace ToolKit
       /**
        * remove entity from the scene
        * @param  the id of the entity you want to remove
-       * @param  do you want to remove with childs ?
-       *         be aware that removed childs transforms preserved
+       * @param  do you want to remove with children ?
+       *         be aware that removed children transforms preserved
        * @returns the entity that you removed, nullptr if entity is not in scene
        */
       EntityPtr RemoveEntity(ULongID id, bool deep = true) override;
+
       void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityPtrArray& entities) const;
       void GetSelectedEntities(IDArray& entities) const;
