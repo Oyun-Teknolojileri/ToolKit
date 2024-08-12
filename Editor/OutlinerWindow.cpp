@@ -384,10 +384,20 @@ namespace ToolKit
 
       auto insertNttFn = [&](const EntityPtrArray& ntties, int startIndex) -> void
       {
+        int insertLoc = 0;
         for (int i = 0; i < (int) ntties.size(); i++)
         {
           EntityPtr ntt = ntties[i];
-          scene->AddEntity(ntt, startIndex + i);
+
+          // RemoveEntity may recursively delete all children if exist, so we need to add back all removed.
+          TraverseChildNodes(ntt->m_node,
+                             [&](Node* child) -> void
+                             {
+                               if (EntityPtr childNtt = child->OwnerEntity())
+                               {
+                                 scene->AddEntity(childNtt, startIndex + insertLoc++);
+                               }
+                             });
         }
       };
 
@@ -454,11 +464,13 @@ namespace ToolKit
       const auto isRootFn = [](EntityPtr entity) -> bool { return entity->m_node->m_parent == nullptr; };
 
       OrphanAll(movedEntities);
+
       // the object that we dropped below is root ?
       if (isRootFn(droppedBelowNtt) && !droppedAboveFirstChild)
       {
         // remove all dropped entites
         scene->RemoveEntity(movedEntities);
+
         // find index of dropped entity and
         // insert all dropped entities below dropped entity
         auto find = std::find(entities.cbegin(), entities.cend(), droppedBelowNtt);
