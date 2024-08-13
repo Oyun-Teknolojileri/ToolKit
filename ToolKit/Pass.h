@@ -16,9 +16,7 @@ namespace ToolKit
   typedef std::shared_ptr<class Pass> PassPtr;
   typedef std::vector<PassPtr> PassPtrArray;
 
-  /**
-   * Base Pass class.
-   */
+  /** Base Pass class. */
   class TK_API Pass
   {
    public:
@@ -44,9 +42,15 @@ namespace ToolKit
     Renderer* m_renderer = nullptr;
   };
 
-  /**
-   * This struct holds all the data required to make a drawcall.
-   */
+  /** Base class for main rendering classes. */
+  class TK_API RenderPass : public Pass
+  {
+   public:
+    RenderPass();
+    virtual ~RenderPass();
+  };
+
+  /** This struct holds all the data required to make a drawcall. */
   struct RenderJob
   {
     Entity* Entity                          = nullptr; //!< Entity that this job is created from.
@@ -131,9 +135,7 @@ namespace ToolKit
                                  const EnvironmentComponentPtrArray& environments,
                                  bool ignoreVisibility = false);
 
-    /**
-     * This will drop the lights whose bounding volume does not intersect with camera.
-     */
+    /** This will drop the lights whose bounding volume does not intersect with camera. */
     static void CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance = TK_FLT_MAX);
 
     /**
@@ -144,11 +146,9 @@ namespace ToolKit
      */
     static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
 
+    /** Assign all lights affecting the job. */
     static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex);
 
-    /**
-     * Assign all lights affecting the job.
-     */
     static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
 
     /**
@@ -158,18 +158,13 @@ namespace ToolKit
      */
     static int PreSortLights(LightPtrArray& lights);
 
-    // Sort entities  by distance (from boundary center)
-    // in ascending order to camera. Accounts for isometric camera.
+    /** Sort entities by distance(from boundary center) in ascending order to camera. Accounts for isometric camera. */
     static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
 
-    /**
-     * Cull objects based on the sent camera. Update Job's frustumCulled state.
-     */
+    /** Cull objects based on the sent camera. Update Job's frustumCulled state. */
     static void CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera);
 
-    /**
-     * Doesn't alter render job, but puts results into cullResults array. Useful for not to alter RenderData.
-     */
+    /** Doesn't alter render job, but puts results into cullResults array. Useful for not to alter RenderData. */
     static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, UIntArray& resultIndices);
 
     static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, RenderJobArray& unCulledJobs);
@@ -197,16 +192,6 @@ namespace ToolKit
      * @param sigma is the threshold sigma to accept as outlier or not.
      */
     static bool IsOutlier(const RenderJob& rj, float sigma, const float stdev, const Vec3& mean);
-  };
-
-  /*
-   * Base class for main rendering classes.
-   */
-  class TK_API RenderPass : public Pass
-  {
-   public:
-    RenderPass();
-    virtual ~RenderPass();
   };
 
 } // namespace ToolKit

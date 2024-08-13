@@ -23,25 +23,14 @@
 
 namespace ToolKit
 {
-  RenderPass::RenderPass() {}
-
-  RenderPass::~RenderPass() {}
 
   Pass::Pass() {}
 
   Pass::~Pass() {}
 
-  void Pass::PreRender()
-  {
-    // Renderer* renderer = GetRenderer();
-    // m_prevFrameBuffer  = renderer->GetFrameBuffer();
-  }
+  void Pass::PreRender() {}
 
-  void Pass::PostRender()
-  {
-    // Renderer* renderer = GetRenderer();
-    // renderer->SetFramebuffer(m_prevFrameBuffer, GraphicBitFields::None);
-  }
+  void Pass::PostRender() {}
 
   void Pass::RenderSubPass(const PassPtr& pass)
   {
@@ -63,6 +52,10 @@ namespace ToolKit
       m_program->UpdateCustomUniform(shaderUniform);
     }
   }
+
+  RenderPass::RenderPass() {}
+
+  RenderPass::~RenderPass() {}
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             const EntityRawPtrArray& entities,
@@ -299,6 +292,7 @@ namespace ToolKit
 
   void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
   {
+    // Add all directional lights.
     for (int i = 0; i < startIndex; i++)
     {
       job.lights.push_back(lights[i].get());
@@ -308,13 +302,14 @@ namespace ToolKit
       }
     }
 
+    // No more lights to assign.
     if (lights.size() == job.lights.size())
     {
-      // No more lights to assign. Possibly editor lighting.
+      // Possibly editor lighting. All directional lights assigned to job.
       return;
     }
 
-    // Iterate lights that are inside of bvh nodes same with the job entity
+    // Iterate lights that are inside of bvh nodes same with the job entity.
     for (BVHNode* bvhNode : job.Entity->m_bvhNodes)
     {
       for (const EntityPtr& lightEntity : bvhNode->m_lights)
@@ -335,6 +330,8 @@ namespace ToolKit
         }
         else
         {
+          // Directional lights are not assigned to bvh nodes.
+          // The only light type that remains is point light.
           assert(light->IsA<PointLight>());
           PointLight* point = static_cast<PointLight*>(light);
           if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))

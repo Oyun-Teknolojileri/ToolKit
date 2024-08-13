@@ -14,6 +14,7 @@
 
 namespace ToolKit
 {
+
   class TK_API BVHNode
   {
    public:

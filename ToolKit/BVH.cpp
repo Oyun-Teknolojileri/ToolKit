@@ -13,6 +13,7 @@
 
 namespace ToolKit
 {
+
   inline bool IsBVHEntity(const EntityPtr& ntt)
   {
     return !ntt->IsA<SkyBase>() && !ntt->IsA<DirectionalLight>() && (ntt->IsDrawable() || ntt->IsA<Light>());
@@ -424,7 +425,7 @@ namespace ToolKit
       lights = &node->m_parent->m_lights;
     }
 
-    for (uint i = 0; i < lights->size(); ++i)
+    for (uint i = 0; i < lights->size(); i++)
     {
       Light* light = (*lights)[i].get();
       if (light->GetLightType() == Light::LightType::Spot)
@@ -435,7 +436,7 @@ namespace ToolKit
           node->m_lights.push_back((*lights)[i]);
         }
       }
-      else // if (light->GetLightType() == Light::LightType::Point)
+      else if (light->GetLightType() == Light::LightType::Point)
       {
         PointLight* point = static_cast<PointLight*>(light);
         if (SphereBoxIntersection(point->m_boundingSphereCache, node->m_aabb))
@@ -585,7 +586,7 @@ namespace ToolKit
         {
           nextNodes.push(node->m_right);
         }
-        else if (entityType == 0) // we must put entites into a node
+        else if (entityType == 0) // we must put entities into a node
         {
           // If entity can not go inside any child, put the entity to the nearest node
           const float distLeft  = glm::distance2(entity->m_node->GetTranslation(), node->m_left->m_aabb.GetCenter());
@@ -949,4 +950,5 @@ namespace ToolKit
     }
     m_lights.clear();
   }
+
 } // namespace ToolKit

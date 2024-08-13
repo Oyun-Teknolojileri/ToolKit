@@ -4,6 +4,7 @@
 
 namespace ToolKit
 {
+
   struct RHIConstants
   {
     static constexpr ubyte TextureSlotCount      = 32;
@@ -19,4 +20,5 @@ namespace ToolKit
     /** Update shadow.shader SHADOW_ATLAS_SIZE accordingly. */
     static constexpr uint ShadowAtlasTextureSize = 2048;
   };
+
 } // namespace ToolKit
