@@ -35,6 +35,13 @@ namespace ToolKit
       void SetDirty();
       void SetPath(const String& path);
       const String& GetPath() const;
+
+      /**
+       * Root part of the path is returned.
+       * Root is one level after Resource. Ex: ".../Resource/Audio"
+       */
+      String GetRoot() const;
+
       void Iterate();
       int Exist(const String& file, const String& ext);
       void ShowContextMenu(DirectoryEntry* entry = nullptr);
@@ -59,6 +66,8 @@ namespace ToolKit
       void SelectFilesInRange(int a, int b);
 
      public:
+      int m_folderIndex      = -1;
+
       // Indicates this is a root folder (one level under Resources)
       // and currently selected in the FolderWindow.
       bool m_currRoot        = false;
@@ -105,7 +114,7 @@ namespace ToolKit
       void SetActiveView(FolderView* view);
       int Exist(const String& folder);
       bool GetFileEntry(const String& fullPath, DirectoryEntry& entry);
-      void AddEntry(const FolderView& view);
+      void AddEntry(FolderView& view);
       void SetViewsDirty();
       void ReconstructFolderTree();
       void IterateFolders(bool includeEngine);
@@ -115,8 +124,8 @@ namespace ToolKit
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
-      // Returns active root's decendend views (tabs).
-      IntArray GetViews();
+      IntArray GetViews();      // Returns active root's descended views (tabs).
+      void UpdateCurrentRoot(); // Based on selected folder, updates the current root folder.
 
       void ShowFolderTree();
       void DeactivateNode(const String& name);

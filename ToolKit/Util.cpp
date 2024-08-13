@@ -539,7 +539,11 @@ namespace ToolKit
 #endif
   }
 
-  String GetPathSeparatorAsStr() { return String() + GetPathSeparator(); }
+  String GetPathSeparatorAsStr()
+  {
+    static String sep = String() + GetPathSeparator();
+    return sep;
+  }
 
   bool SupportedImageFormat(const String& ext)
   {

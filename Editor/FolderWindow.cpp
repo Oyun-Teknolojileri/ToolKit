@@ -134,12 +134,9 @@ namespace ToolKit
         {
           FolderView& selectedEntry = m_entries[selected];
           bool rootChanged          = false;
+          m_activeFolder            = selected;
 
-          if (m_lastSelectedTreeNode == -1)
-          {
-            m_activeFolder = selected;
-          }
-          else if (m_lastSelectedTreeNode < m_entries.size())
+          if (m_lastSelectedTreeNode < m_entries.size())
           {
             FolderView& lastSelectedEntry = m_entries[m_lastSelectedTreeNode];
 
@@ -152,20 +149,24 @@ namespace ToolKit
               // root folders different we should switch active folder
               m_activeFolder = selected;
 
-              for (int i : GetViews())
+              IntArray views = GetViews();
+              for (int i : views)
               {
                 FolderView& v = m_entries[i];
                 if (!v.m_currRoot)
                 {
                   m_entries[i].m_visible = false;
+                  m_entries[i].m_active  = false;
                 }
               }
             }
           }
 
           AddEntry(selectedEntry);
+
           node.active                  = true;
           m_lastSelectedTreeNode       = selected;
+
           selectedEntry.m_active       = true;
           selectedEntry.m_activateNext = true;
           selectedEntry.m_visible      = true;
@@ -259,23 +260,47 @@ namespace ToolKit
       { return !currRootPath.empty() && candidate.find(currRootPath) != std::string::npos; };
 
       IntArray views;
-
       for (int i = 0; i < (int) m_entries.size(); i++)
       {
         FolderView& view = m_entries[i];
         String candidate = view.GetPath();
-        if ((view.m_currRoot = (i == m_activeFolder)))
+        if (view.m_currRoot)
         {
           currRootPath = candidate;
         }
 
-        // Show only current root folder or descendents.
+        // Show only current root folder or descendants.
         if (view.m_currRoot || IsDescendentFn(candidate))
         {
           views.push_back(i);
         }
       }
+
       return views;
+    }
+
+    void FolderWindow::UpdateCurrentRoot()
+    {
+      for (int i = 0; i < (int) m_entries.size(); i++)
+      {
+        FolderView& view = m_entries[i];
+        view.m_currRoot  = false;
+
+        if (view.m_folderIndex == m_activeFolder)
+        {
+          // Find the root that active folder is belong to and set it as current.
+          String rootStr = view.GetRoot();
+          for (int ii = 0; ii < (int) m_entries.size(); ii++)
+          {
+            FolderView& rootCandidate = m_entries[ii];
+            if (rootCandidate.GetPath() == rootStr)
+            {
+              rootCandidate.m_currRoot = true;
+              break;
+            }
+          }
+        }
+      }
     }
 
     void FolderWindow::Show()
@@ -306,13 +331,16 @@ namespace ToolKit
 
         ImGui::SameLine();
 
+        UpdateCurrentRoot();
+
         ImGui::PushID("##FolderContent");
         ImGui::BeginGroup();
         if (ImGui::BeginTabBar("Folders",
                                ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs |
                                    ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
         {
-          for (int i : GetViews())
+          IntArray views = GetViews();
+          for (int i : views)
           {
             m_entries[i].Show();
           }
@@ -361,7 +389,7 @@ namespace ToolKit
           }
 
           view.Iterate();
-          m_entries.push_back(view);
+          AddEntry(view);
           Iterate(view.GetPath(), false, false);
         }
       }
@@ -381,7 +409,7 @@ namespace ToolKit
         }
 
         view.Iterate();
-        m_entries.push_back(view);
+        AddEntry(view);
         Iterate(view.GetPath(), false, false);
       }
     }
@@ -394,10 +422,11 @@ namespace ToolKit
       }
     }
 
-    void FolderWindow::AddEntry(const FolderView& view)
+    void FolderWindow::AddEntry(FolderView& view)
     {
       if (Exist(view.GetPath()) == -1)
       {
+        view.m_folderIndex = (int) m_entries.size();
         m_entries.push_back(view);
       }
     }

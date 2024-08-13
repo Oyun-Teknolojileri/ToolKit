@@ -308,7 +308,7 @@ namespace ToolKit
 
         bool anyButtonClicked = false;
         // Draw folder items.
-        for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
+        for (int i = 0; i < (int) m_entries.size(); i++)
         {
           // Prepare Item Icon.
           ImGuiStyle& style      = ImGui::GetStyle();
@@ -525,6 +525,22 @@ namespace ToolKit
     }
 
     const String& FolderView::GetPath() const { return m_path; }
+
+    String FolderView::GetRoot() const
+    {
+      String root;
+      String searchStr   = "Resources" + GetPathSeparatorAsStr();
+      size_t resourceLoc = m_path.find(searchStr);
+      if (resourceLoc != String::npos)
+      {
+        resourceLoc += searchStr.length();
+        root         = m_path.substr(0, resourceLoc);
+        resourceLoc  = m_path.find(GetPathSeparator(), resourceLoc);
+        root         = m_path.substr(0, resourceLoc);
+      }
+
+      return root;
+    }
 
     void FolderView::Iterate()
     {
@@ -1024,12 +1040,14 @@ namespace ToolKit
         {
           continue;
         }
+
         String newPath = ConcatPaths({dst, entry.m_fileName + entry.m_ext});
-        std::error_code ec;
-        std::filesystem::rename(entry.GetFullPath(), newPath, ec);
-        if (ec)
+        std::error_code errCode;
+        std::filesystem::rename(entry.GetFullPath(), newPath, errCode);
+
+        if (errCode)
         {
-          g_app->m_statusMsg = ec.message();
+          g_app->m_statusMsg = errCode.message();
         }
         else
         {
@@ -1049,6 +1067,7 @@ namespace ToolKit
           m_dirty = true;
         }
       }
+
       g_dragBeginView = nullptr;
       g_carryingFiles = false;
       g_selectedFiles.clear();
