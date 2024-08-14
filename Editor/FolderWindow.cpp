@@ -107,9 +107,18 @@ namespace ToolKit
         return; // shouldn't happen
       }
 
-      String activeView       = GetActiveView()->GetPath();
       FolderNode& node        = m_folderNodes[index];
-      String icon             = node.path == activeView ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
+      IntArray ascendantViews = GetAscendants();
+
+      // Check all ascendants to set their icons open.
+      bool folderOpen         = false;
+      for (int i : ascendantViews)
+      {
+        folderOpen |= node.path == m_entries[i].GetPath();
+      }
+      folderOpen             |= node.path == m_entries[m_activeFolder].GetRoot(); // Include current root as well.
+
+      String icon             = folderOpen ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
       String nodeHeader       = icon + ICON_SPACE + node.name;
       float headerLen         = ImGui::CalcTextSize(nodeHeader.c_str()).x;
       headerLen              += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
@@ -206,7 +215,7 @@ namespace ToolKit
       ImGui::PopID();
     }
 
-    IntArray FolderWindow::GetViews()
+    IntArray FolderWindow::GetAscendants()
     {
       // Find all the sub folders up to the active folder.
       FolderView& activeFolder = GetView(m_activeFolder);
@@ -361,7 +370,7 @@ namespace ToolKit
         if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_None))
         {
           // Draw each tab.
-          IntArray views = GetViews();
+          IntArray views = GetAscendants();
           for (int i = 0; i < (int) views.size(); i++)
           {
             int folderIndex  = views[i];

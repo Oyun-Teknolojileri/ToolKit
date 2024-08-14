@@ -133,9 +133,9 @@ namespace ToolKit
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
-      /** Returns active folder's descended views (tabs). */
-      IntArray GetViews();
-      /** Returns all the FolderViews which is sibling of the active folder. */
+      /** Returns active folder's ascendants views. */
+      IntArray GetAscendants();
+      /** Returns active folder's sibling views. */
       IntArray GetSiblings();
       /** Based on selected folder, updates the current root folder. */
       void UpdateCurrentRoot();
