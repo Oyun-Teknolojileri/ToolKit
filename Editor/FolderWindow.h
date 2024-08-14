@@ -104,8 +104,9 @@ namespace ToolKit
       FolderWindow();
       virtual ~FolderWindow();
       void Show() override;
-      void UpdateContent();
 
+      /** Reiterate all the views and updates their content. */
+      void UpdateContent();
       /** Returns the view in the given index of the entry list. */
       FolderView& GetView(int indx);
       /** Returns active folder view. */
@@ -132,8 +133,10 @@ namespace ToolKit
       XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
 
      private:
-      /** Returns active root's descended views (tabs). */
+      /** Returns active folder's descended views (tabs). */
       IntArray GetViews();
+      /** Returns all the FolderViews which is sibling of the active folder. */
+      IntArray GetSiblings();
       /** Based on selected folder, updates the current root folder. */
       void UpdateCurrentRoot();
 

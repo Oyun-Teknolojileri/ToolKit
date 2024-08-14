@@ -132,7 +132,7 @@ namespace ToolKit
         int selected = Exist(node.path);
         if (selected != -1)
         {
-          m_activeFolder = selected;
+          SetActiveView(selected);
         }
       };
 
@@ -247,7 +247,6 @@ namespace ToolKit
         }
 
         subDirPaths.push_back(ConcatPaths(subFolders));
-        TK_LOG("p %s", subDirPaths[i].c_str());
       }
 
       for (int i = 0; i < (int) m_entries.size(); i++)
@@ -274,6 +273,42 @@ namespace ToolKit
       }
 
       return views;
+    }
+
+    IntArray FolderWindow::GetSiblings()
+    {
+      IntArray siblings;
+      if (FolderView* view = GetActiveView())
+      {
+        String path = view->GetPath();
+
+        StringArray target;
+        Split(path, GetPathSeparatorAsStr(), target);
+
+        size_t lastSep  = path.find_last_of(GetPathSeparator());
+        String checkStr = path.substr(0, lastSep);
+
+        for (int i = 0; i < m_entries.size(); i++)
+        {
+          FolderView& candidate = m_entries[i];
+
+          // If candidate and active folder shares same root.
+          String candidatePath  = candidate.GetPath();
+          if (candidatePath.find(checkStr) != String::npos)
+          {
+            // And splits have same number of entry
+            StringArray src;
+            Split(candidatePath, GetPathSeparatorAsStr(), src);
+            if (src.size() == target.size())
+            {
+              // Than they are siblings.
+              siblings.push_back(i);
+            }
+          }
+        }
+      }
+
+      return siblings;
     }
 
     void FolderWindow::UpdateCurrentRoot()
@@ -433,15 +468,7 @@ namespace ToolKit
       }
 
       FolderView& rootView = GetView(m_activeFolder);
-      for (FolderView& view : m_entries)
-      {
-        if (view.m_active && view.m_visible)
-        {
-          return &view;
-        }
-      }
-
-      return nullptr;
+      return &rootView;
     }
 
     void FolderWindow::SetActiveView(int index)
