@@ -118,8 +118,9 @@ namespace ToolKit
         return; // shouldn't happen
       }
 
+      String activeView       = GetActiveView()->GetPath();
       FolderNode& node        = m_folderNodes[index];
-      String icon             = node.active ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
+      String icon             = node.path == activeView ? ICON_FA_FOLDER_OPEN_A : ICON_FA_FOLDER_A;
       String nodeHeader       = icon + ICON_SPACE + node.name;
       float headerLen         = ImGui::CalcTextSize(nodeHeader.c_str()).x;
       headerLen              += (depth * 20.0f) + 70.0f; // depth padding + UI start padding
@@ -228,10 +229,9 @@ namespace ToolKit
       StringArray subDirs;
       Split(intermediatePath, GetPathSeparatorAsStr(), subDirs);
 
-      IntArray views;
       if (subDirs.empty())
       {
-        return views;
+        return {m_activeFolder};
       }
 
       // Construct all sub directory paths.
@@ -249,6 +249,7 @@ namespace ToolKit
         subDirPaths.push_back(ConcatPaths(subFolders));
       }
 
+      IntArray views;
       for (int i = 0; i < (int) m_entries.size(); i++)
       {
         FolderView& view = m_entries[i];
