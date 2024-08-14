@@ -98,17 +98,6 @@ namespace ToolKit
       return index;
     }
 
-    void FolderWindow::DeactivateNode(const String& name)
-    {
-      for (int i = 0; i < m_folderNodes.size(); ++i)
-      {
-        if (m_folderNodes[i].name == name)
-        {
-          m_folderNodes[i].active = false;
-        }
-      }
-    }
-
     extern FolderView* g_dragBeginView;
 
     void FolderWindow::DrawTreeRec(int index, float depth)

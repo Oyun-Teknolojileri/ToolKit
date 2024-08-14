@@ -141,7 +141,6 @@ namespace ToolKit
       void UpdateCurrentRoot();
 
       void ShowFolderTree();
-      void DeactivateNode(const String& name);
       int CreateTreeRec(int parent, const std::filesystem::path& path);
       void DrawTreeRec(int index, float depth);
       void Iterate(const String& path, bool clear, bool addEngine = true);
@@ -149,15 +148,14 @@ namespace ToolKit
      private:
       struct FolderNode
       {
-        String path = "undefined";
-        String name = "undefined";
-        IntArray childs;
-        int index   = -1;
-        bool active = false;
-
         FolderNode() {}
 
         FolderNode(int idx, String p, String n) : index(idx), path(std::move(p)), name(std::move(n)) {}
+
+        String path = "undefined";
+        String name = "undefined";
+        IntArray childs;
+        int index = -1;
       };
 
       /** Flat resource content. */
