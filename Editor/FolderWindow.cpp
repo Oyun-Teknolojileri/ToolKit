@@ -132,44 +132,7 @@ namespace ToolKit
         int selected = Exist(node.path);
         if (selected != -1)
         {
-          FolderView& selectedEntry = m_entries[selected];
-          bool rootChanged          = false;
-          m_activeFolder            = selected;
-
-          if (m_lastSelectedTreeNode < m_entries.size())
-          {
-            FolderView& lastSelectedEntry = m_entries[m_lastSelectedTreeNode];
-
-            // set old node active false(icon will change to closed)
-            DeactivateNode(lastSelectedEntry.m_folder);
-            lastSelectedEntry.m_active = false;
-
-            if (GetRootPath(selectedEntry.GetPath()) != GetRootPath(lastSelectedEntry.GetPath()))
-            {
-              // root folders different we should switch active folder
-              m_activeFolder = selected;
-
-              IntArray views = GetViews();
-              for (int i : views)
-              {
-                FolderView& v = m_entries[i];
-                if (!v.m_currRoot)
-                {
-                  m_entries[i].m_visible = false;
-                  m_entries[i].m_active  = false;
-                }
-              }
-            }
-          }
-
-          AddEntry(selectedEntry);
-
-          node.active                  = true;
-          m_lastSelectedTreeNode       = selected;
-
-          selectedEntry.m_active       = true;
-          selectedEntry.m_activateNext = true;
-          selectedEntry.m_visible      = true;
+          m_activeFolder = selected;
         }
       };
 
@@ -255,24 +218,58 @@ namespace ToolKit
 
     IntArray FolderWindow::GetViews()
     {
-      String currRootPath;
-      auto IsDescendentFn = [&currRootPath](StringView candidate) -> bool
-      { return !currRootPath.empty() && candidate.find(currRootPath) != std::string::npos; };
+      // Find all the sub folders up to the active folder.
+      FolderView& activeFolder = GetView(m_activeFolder);
+      String fullPath          = activeFolder.GetPath();
+      String rootPath          = activeFolder.GetRoot();
+
+      String intermediatePath  = fullPath.substr(rootPath.size());
+
+      StringArray subDirs;
+      Split(intermediatePath, GetPathSeparatorAsStr(), subDirs);
 
       IntArray views;
+      if (subDirs.empty())
+      {
+        return views;
+      }
+
+      // Construct all sub directory paths.
+      StringArray subDirPaths;
+      for (int i = 0; i < (int) subDirs.size(); i++)
+      {
+        StringArray subFolders;
+        subFolders.push_back(rootPath);
+
+        for (int ii = 0; ii <= i; ii++)
+        {
+          subFolders.push_back(subDirs[ii]);
+        }
+
+        subDirPaths.push_back(ConcatPaths(subFolders));
+        TK_LOG("p %s", subDirPaths[i].c_str());
+      }
+
       for (int i = 0; i < (int) m_entries.size(); i++)
       {
         FolderView& view = m_entries[i];
         String candidate = view.GetPath();
-        if (view.m_currRoot)
+
+        for (int ii = 0; ii < (int) subDirPaths.size(); ii++)
         {
-          currRootPath = candidate;
+          String& subDir = subDirPaths[ii];
+          if (candidate == subDir)
+          {
+            views.push_back(i);
+            subDirPaths.erase(subDirPaths.begin() + ii);
+            break;
+          }
         }
 
-        // Show only current root folder or descendants.
-        if (view.m_currRoot || IsDescendentFn(candidate))
+        // Break if no next path remains.
+        if (subDirPaths.empty())
         {
-          views.push_back(i);
+          break;
         }
       }
 
@@ -296,7 +293,7 @@ namespace ToolKit
             if (rootCandidate.GetPath() == rootStr)
             {
               rootCandidate.m_currRoot = true;
-              break;
+              return;
             }
           }
         }
@@ -335,14 +332,17 @@ namespace ToolKit
 
         ImGui::PushID("##FolderContent");
         ImGui::BeginGroup();
-        if (ImGui::BeginTabBar("Folders",
-                               ImGuiTabBarFlags_NoTooltip | ImGuiTabBarFlags_AutoSelectNewTabs |
-                                   ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
+
+        if (ImGui::BeginTabBar("Folders", ImGuiTabBarFlags_None))
         {
+          // Draw each tab.
           IntArray views = GetViews();
-          for (int i : views)
+          for (int i = 0; i < (int) views.size(); i++)
           {
-            m_entries[i].Show();
+            int folderIndex  = views[i];
+            FolderView& view = m_entries[folderIndex];
+            view.m_active    = m_activeFolder == folderIndex;
+            view.Show();
           }
           ImGui::EndTabBar();
         }
@@ -380,14 +380,6 @@ namespace ToolKit
             continue;
           }
 
-          if (m_viewSettings.find(path) != m_viewSettings.end())
-          {
-            ViewSettings vs     = m_viewSettings[path];
-            view.m_iconSize     = vs.size;
-            view.m_visible      = vs.visible;
-            view.m_activateNext = vs.active;
-          }
-
           view.Iterate();
           AddEntry(view);
           Iterate(view.GetPath(), false, false);
@@ -399,14 +391,6 @@ namespace ToolKit
         // Engine folder
         FolderView view(this);
         view.SetPath(DefaultAbsolutePath());
-
-        if (m_viewSettings.find(path) != m_viewSettings.end())
-        {
-          ViewSettings vs     = m_viewSettings[path];
-          view.m_iconSize     = vs.size;
-          view.m_visible      = vs.visible;
-          view.m_activateNext = vs.active;
-        }
 
         view.Iterate();
         AddEntry(view);
@@ -441,48 +425,46 @@ namespace ToolKit
 
     FolderView& FolderWindow::GetView(int indx) { return m_entries[indx]; }
 
-    FolderView* FolderWindow::GetActiveView(bool deep)
+    FolderView* FolderWindow::GetActiveView()
     {
       if (m_activeFolder == -1)
       {
         return nullptr;
       }
 
-      if (deep)
+      FolderView& rootView = GetView(m_activeFolder);
+      for (FolderView& view : m_entries)
       {
-        FolderView& rootView = GetView(m_activeFolder);
-        for (FolderView& view : m_entries)
+        if (view.m_active && view.m_visible)
         {
-          if (view.m_active && view.m_visible)
-          {
-            return &view;
-          }
+          return &view;
         }
       }
 
-      return &GetView(m_activeFolder);
+      return nullptr;
+    }
+
+    void FolderWindow::SetActiveView(int index)
+    {
+      if (index >= 0 && index < (int) m_entries.size())
+      {
+        m_activeFolder = index;
+      }
     }
 
     void FolderWindow::SetActiveView(FolderView* view)
     {
-      int viewIndx = Exist(view->GetPath());
-      if (viewIndx != -1)
-      {
-        for (FolderView& view : m_entries)
-        {
-          view.m_active = false;
-        }
-        m_entries[viewIndx].m_active = true;
-      }
+      int indx = Exist(view->GetPath());
+      SetActiveView(indx);
     }
 
-    int FolderWindow::Exist(const String& folder)
+    int FolderWindow::Exist(const String& path)
     {
       for (size_t i = 0; i < m_entries.size(); i++)
       {
-        if (m_entries[i].GetPath() == folder)
+        if (m_entries[i].GetPath() == path)
         {
-          return static_cast<int>(i);
+          return (int) i;
         }
       }
 
@@ -515,18 +497,6 @@ namespace ToolKit
       WriteAttr(folder, doc, "activeFolder", std::to_string(m_activeFolder));
       WriteAttr(folder, doc, "showStructure", std::to_string(m_showStructure));
 
-      for (const FolderView& view : m_entries)
-      {
-        XmlNode* viewNode = doc->allocate_node(rapidxml::node_element, "FolderView");
-        WriteAttr(viewNode, doc, XmlNodePath.data(), view.GetPath());
-        WriteAttr(viewNode, doc, "vis", std::to_string(view.m_visible));
-        WriteAttr(viewNode, doc, "active", std::to_string(view.m_active));
-        folder->append_node(viewNode);
-        XmlNode* setting = doc->allocate_node(rapidxml::node_element, "IconSize");
-        WriteVec(setting, doc, view.m_iconSize);
-        viewNode->append_node(setting);
-      }
-
       return folder;
     }
 
@@ -537,30 +507,6 @@ namespace ToolKit
       {
         ReadAttr(node, "activeFolder", m_activeFolder);
         ReadAttr(node, "showStructure", m_showStructure);
-
-        if (XmlNode* view = node->first_node("FolderView"))
-        {
-          do
-          {
-            String path;
-            ReadAttr(view, XmlNodePath.data(), path);
-
-            ViewSettings vs;
-            vs.visible = false;
-            ReadAttr(view, "vis", vs.visible);
-
-            vs.active = false;
-            ReadAttr(view, "active", vs.active);
-
-            vs.size = Vec2(50.0f);
-            if (XmlNode* setting = view->first_node("IconSize"))
-            {
-              ReadVec(setting, vs.size);
-            }
-
-            m_viewSettings[path] = vs;
-          } while (view = view->next_sibling("FolderView"));
-        }
       }
 
       Iterate(ResourcePath(), true);

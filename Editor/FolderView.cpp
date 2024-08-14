@@ -197,14 +197,11 @@ namespace ToolKit
         view.Iterate();
         view.Refresh();
         parent->AddEntry(view);
-        return parent->Exist(path);
+        selected = parent->Exist(path);
       }
-      else
-      {
-        FolderView& view    = parent->GetView(selected);
-        view.m_visible      = true;
-        view.m_activateNext = true;
-      }
+
+      parent->SetActiveView(selected);
+
       return selected;
     }
 
@@ -269,17 +266,25 @@ namespace ToolKit
 
     void FolderView::Show()
     {
-      bool* visCheck = nullptr;
-      if (!m_currRoot)
+      ImGuiTabItemFlags flags = m_active ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+      if (ImGui::BeginTabItem(m_folder.c_str(), nullptr, flags))
       {
-        visCheck = &m_visible;
-      }
+        if (!m_active) // If this view is not active and imgui try to show it,
+        {
+          if (m_visible) // Either this window lost its activity via tree view
+          {
+            m_visible = false;
+            ImGui::EndTabItem();
+            return;
+          }
+          else // Or Activated via clicking on tab
+          {
+            m_parent->SetActiveView(this);
+          }
+        }
 
-      ImGuiTabItemFlags flags = m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
-      m_activateNext          = false;
-      if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
-      {
-        m_parent->SetActiveView(this);
+        m_visible = true;
+
         DrawSearchBar();
 
         if (m_dirty)
@@ -694,9 +699,12 @@ namespace ToolKit
         FolderViewRawPtrArray list = {};
         for (FolderWindow* folder : g_app->GetAssetBrowsers())
         {
-          if (folder->GetActiveView(true)->GetPath() == thisView->GetPath())
+          if (FolderView* activeView = folder->GetActiveView())
           {
-            list.push_back(folder->GetActiveView(true));
+            if (activeView->GetPath() == thisView->GetPath())
+            {
+              list.push_back(activeView);
+            }
           }
         }
 
@@ -1084,5 +1092,6 @@ namespace ToolKit
         ImGui::EndDragDropTarget();
       }
     }
+
   } // namespace Editor
 } // namespace ToolKit
