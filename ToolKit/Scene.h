@@ -228,8 +228,10 @@ namespace ToolKit
     /**
      * Saves a prefab for an entity in the scene.
      * @param entity The entity to create the prefab from.
+     * @param name is the name of the prefab for the saved file.
+     * @param sub folder that the prefab will be saved in prefabs folder.
      */
-    virtual void SavePrefab(EntityPtr entity);
+    virtual void SavePrefab(EntityPtr entity, String name, String path);
 
     /** Removes all entities from the scene. */
     virtual void ClearEntities();

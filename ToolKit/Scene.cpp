@@ -62,6 +62,18 @@ namespace ToolKit
       fullPath = ScenePath(m_name + SCENE);
     }
 
+    String path;
+    DecomposePath(fullPath, &path, nullptr, nullptr);
+
+    std::error_code err;
+    std::filesystem::create_directories(path, err);
+
+    if (err)
+    {
+      TK_ERR("Save scene failed: %s", err.message().c_str());
+      return;
+    }
+
     std::ofstream file;
     file.open(fullPath.c_str(), std::ios::out);
     if (file.is_open())
@@ -75,6 +87,10 @@ namespace ToolKit
       file << xml;
       file.close();
       doc.clear();
+    }
+    else
+    {
+      TK_ERR("Save scene failed. File %s can't be opened.", fullPath.c_str());
     }
   }
 
@@ -485,7 +501,7 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  void Scene::SavePrefab(EntityPtr entity)
+  void Scene::SavePrefab(EntityPtr entity, String name, String path)
   {
     // Assign a default node.
     Node* prevNode             = entity->m_node;
@@ -496,8 +512,10 @@ namespace ToolKit
     ScenePtr prefab            = MakeNewPtr<Scene>();
     prefab->AddEntity(entity);
     GetChildren(entity, prefab->m_entities);
-    String name = entity->GetNameVal() + SCENE;
-    prefab->SetFile(PrefabPath(name));
+    String prefabName = name.empty() ? entity->GetNameVal() + SCENE : name + SCENE;
+    String prefabPath = path.empty() ? prefabName : ConcatPaths({path, prefabName});
+    String fullPath   = PrefabPath(prefabPath);
+    prefab->SetFile(fullPath);
     prefab->m_name = name;
     prefab->Save(false);
     prefab->m_entities.clear();

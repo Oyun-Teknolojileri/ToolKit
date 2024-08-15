@@ -9,6 +9,7 @@
 
 #include "App.h"
 #include "Mod.h"
+#include "PopupWindows.h"
 #include "Prefab.h"
 #include "TopBar.h"
 
@@ -801,21 +802,36 @@ namespace ToolKit
 
       if (ImGui::BeginPopupContextItem())
       {
-        if (ImGui::MenuItem("SaveAsPrefab"))
+        if (ImGui::MenuItem("Save As Prefab"))
         {
-          GetSceneManager()->GetCurrentScene()->SavePrefab(ntt);
-          for (FolderWindow* browser : g_app->GetAssetBrowsers())
-          {
-            String folderPath, fullPath = PrefabPath("");
-            DecomposePath(fullPath, &folderPath, nullptr, nullptr);
+          StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("SavePrefab##SvPrfb", true);
+          inputWnd->m_inputLabel        = "Name";
+          inputWnd->m_hint              = "...";
+          inputWnd->AddToUI();
 
-            int indx = browser->Exist(folderPath);
-            if (indx != -1)
+          inputWnd->m_taskFn = [ntt](const String& val)
+          {
+            String path, name;
+            DecomposePath(val, &path, &name, nullptr);
+
+            if (ScenePtr scene = g_app->GetCurrentScene())
             {
-              FolderView& view = browser->GetView(indx);
-              view.Refresh();
+              scene->SavePrefab(ntt, name, path);
+
+              for (FolderWindow* browser : g_app->GetAssetBrowsers())
+              {
+                String folderPath, fullPath = PrefabPath("");
+                DecomposePath(fullPath, &folderPath, nullptr, nullptr);
+
+                int indx = browser->Exist(folderPath);
+                if (indx != -1)
+                {
+                  FolderView& view = browser->GetView(indx);
+                  view.Refresh();
+                }
+              }
             }
-          }
+          };
 
           ImGui::CloseCurrentPopup();
         }

@@ -6,6 +6,7 @@
  */
 
 #include <Animation.h>
+#include <Common/Win32Utils.h>
 #include <DirectionComponent.h>
 #include <Material.h>
 #include <MaterialComponent.h>
@@ -956,17 +957,7 @@ namespace ToolKit
     EntityPtr ntt = nullptr;
 
     // Camera transform data is local, it gets its full transforms when merged with node.
-    // So camera must be matched with a node in the graph.
-    for (LightPtr light : sceneLights)
-    {
-      if (light->GetNameVal() == node->mName.C_Str())
-      {
-        ntt = light;
-        break;
-      }
-    }
-
-    // Same as light.
+    // So camera must be matched with a node in the graph. (Look at aiCamera doc)
     for (CameraPtr cam : sceneCameras)
     {
       if (cam->GetNameVal() == node->mName.C_Str())
@@ -977,6 +968,17 @@ namespace ToolKit
       }
     }
 
+    // Same as light.
+    for (LightPtr light : sceneLights)
+    {
+      if (light->GetNameVal() == node->mName.C_Str())
+      {
+        ntt = light;
+        break;
+      }
+    }
+
+    // If there is no matching cam or light, its a mesh. Create a new entity for it.
     if (ntt == nullptr)
     {
       ntt = MakeNewPtr<Entity>();
@@ -991,13 +993,27 @@ namespace ToolKit
 
     if (parent)
     {
-      parent->m_node->AddChild(ntt->m_node);
+      // Sanity check.
+      if (ntt->m_node->m_parent != nullptr)
+      {
+        TK_ERR("Adding child to '%s' failed. Entity '%s' has already a parent '%s'.",
+               parent->GetNameVal().c_str(),
+               ntt->GetNameVal().c_str(),
+               ntt->m_node->ParentEntity()->GetNameVal().c_str());
+        return;
+      }
+      else
+      {
+        // If a parent is provided, set it.
+        parent->m_node->AddChild(ntt->m_node);
+      }
     }
 
     ntt->m_node->Translate(t, TransformationSpace::TS_LOCAL);
     ntt->m_node->Rotate(rt, TransformationSpace::TS_LOCAL);
     ntt->m_node->Scale(s);
 
+    // Insert all meshes to the entity.
     for (uint meshIndx = 0; meshIndx < node->mNumMeshes; meshIndx++)
     {
       aiMesh* aMesh = g_scene->mMeshes[node->mMeshes[meshIndx]];
@@ -1352,6 +1368,9 @@ namespace ToolKit
       Main::SetProxy(g_proxy);
       g_proxy->SetConfigPath(ConcatPaths({"..", "..", "Config"}));
       g_proxy->PreInit();
+
+      GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
+                                        { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
 
       // Create a dummy default material.
       g_proxy->m_materialManager->m_storage[MaterialPath("default.material", true)] = MakeNewPtr<Material>();

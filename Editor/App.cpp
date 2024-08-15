@@ -1091,7 +1091,7 @@ namespace ToolKit
                     {
                       if (folderWindow->MouseHovers())
                       {
-                        FolderView* activeView = folderWindow->GetActiveView(true);
+                        FolderView* activeView = folderWindow->GetActiveView();
                         if (activeView == nullptr)
                         {
                           log = "Activate a resource folder by selecting it from the Asset Browser.";

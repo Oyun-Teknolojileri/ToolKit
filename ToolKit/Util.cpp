@@ -241,20 +241,26 @@ namespace ToolKit
   {
     String normal = NormalizePath(fullPath);
 
+    // Parse path.
     size_t ind1   = normal.find_last_of(GetPathSeparator());
-    if (path != nullptr)
+    if (ind1 != String::npos) // If a path is not present, it only contains name.
     {
-      *path = normal.substr(0, ind1);
+      if (path != nullptr)
+      {
+        *path = normal.substr(0, ind1);
+      }
     }
 
+    // Parse name.
     size_t ind2 = normal.find_last_of('.');
+    if (name != nullptr)
+    {
+      *name = normal.substr(ind1 + 1, ind2 - ind1 - 1);
+    }
+
+    // Parse extension.
     if (ind2 != String::npos)
     {
-      if (name != nullptr)
-      {
-        *name = normal.substr(ind1 + 1, ind2 - ind1 - 1);
-      }
-
       if (ext != nullptr)
       {
         *ext = normal.substr(ind2);
@@ -539,7 +545,11 @@ namespace ToolKit
 #endif
   }
 
-  String GetPathSeparatorAsStr() { return String() + GetPathSeparator(); }
+  String GetPathSeparatorAsStr()
+  {
+    static String sep = String() + GetPathSeparator();
+    return sep;
+  }
 
   bool SupportedImageFormat(const String& ext)
   {
