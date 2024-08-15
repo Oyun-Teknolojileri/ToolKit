@@ -375,8 +375,9 @@ namespace ToolKit
           {
             int folderIndex  = views[i];
             FolderView& view = m_entries[folderIndex];
-            view.m_active    = m_activeFolder == folderIndex;
+            view.m_active    = m_activeFolder == folderIndex; // Set activation.
             view.Show();
+            view.m_visible = view.m_active; // Set visibility due imgui altering tab activity.
           }
           ImGui::EndTabBar();
         }

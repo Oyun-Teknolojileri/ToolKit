@@ -123,7 +123,13 @@ namespace ToolKit
 
         if (g_copyingFiles)
         {
-          std::filesystem::copy(src, dst);
+          std::error_code err;
+          std::filesystem::copy(src, dst, err);
+          if (err)
+          {
+            TK_ERR("Copy failed: %s", err.message().c_str());
+            g_app->m_statusMsg = "Operation failed.";
+          }
         }
         else if (g_cuttingFiles)
         {
@@ -717,7 +723,8 @@ namespace ToolKit
         std::filesystem::remove_all(path, ec);
         if (ec)
         {
-          g_app->m_statusMsg = ec.message();
+          TK_ERR("Delete failed: %s", ec.message().c_str());
+          g_app->m_statusMsg = "Operation failed.";
         }
 
         for (FolderView* view : getSameViewsFn(thisView))
@@ -1052,10 +1059,10 @@ namespace ToolKit
         String newPath = ConcatPaths({dst, entry.m_fileName + entry.m_ext});
         std::error_code errCode;
         std::filesystem::rename(entry.GetFullPath(), newPath, errCode);
-
         if (errCode)
         {
-          g_app->m_statusMsg = errCode.message();
+          TK_ERR("Rename failed: %s", errCode.message().c_str());
+          g_app->m_statusMsg = "Operation failed.";
         }
         else
         {
