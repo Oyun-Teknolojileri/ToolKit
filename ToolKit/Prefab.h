@@ -84,4 +84,5 @@ namespace ToolKit
     std::unordered_map<String, ParameterVariantArray> m_childCustomDatas;
     EntityPtrArray m_instanceEntities;
   };
+
 } // namespace ToolKit
