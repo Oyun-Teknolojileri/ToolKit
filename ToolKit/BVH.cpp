@@ -72,13 +72,13 @@ namespace ToolKit
           LightPtr light = Cast<Light>(ntt);
           light->UpdateShadowCamera();
           m_bvhTree->m_root->m_lights.push_back(light);
-          ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
+          ntt->m_bvhNodes.insert(m_bvhTree->m_root);
         }
         else
         {
           m_bvhTree->m_root->m_aabb.UpdateBoundary(ntt->GetBoundingBox(true));
           m_bvhTree->m_root->m_entites.push_back(ntt);
-          ntt->m_bvhNodes.push_back(m_bvhTree->m_root);
+          ntt->m_bvhNodes.insert(m_bvhTree->m_root);
         }
       }
     }
@@ -614,7 +614,7 @@ namespace ToolKit
         {
           node->m_lights.push_back(Cast<Light>(entity));
         }
-        entity->m_bvhNodes.push_back(node);
+        entity->m_bvhNodes.insert(node);
 
         UpdateLeaf(node, false);
       }
@@ -786,13 +786,13 @@ namespace ToolKit
       for (auto it = node->m_entites.begin(); it != node->m_entites.begin() + (node->m_entites.size() / 2); ++it)
       {
         left->m_aabb.UpdateBoundary((*it)->GetBoundingBox(true));
-        (*it)->m_bvhNodes.push_back(left);
+        (*it)->m_bvhNodes.insert(left);
         left->m_entites.push_back(*it);
       }
       for (auto it = node->m_entites.begin() + (node->m_entites.size() / 2); it != node->m_entites.end(); ++it)
       {
         right->m_aabb.UpdateBoundary((*it)->GetBoundingBox(true));
-        (*it)->m_bvhNodes.push_back(right);
+        (*it)->m_bvhNodes.insert(right);
         right->m_entites.push_back(*it);
       }
 
@@ -811,12 +811,12 @@ namespace ToolKit
           {
             if (BoxBoxIntersection(spot->m_boundingBoxCache, left->m_aabb))
             {
-              lightEntity->m_bvhNodes.push_back(left);
+              lightEntity->m_bvhNodes.insert(left);
               left->m_lights.push_back(lightEntity);
             }
             if (BoxBoxIntersection(spot->m_boundingBoxCache, right->m_aabb))
             {
-              lightEntity->m_bvhNodes.push_back(right);
+              lightEntity->m_bvhNodes.insert(right);
               right->m_lights.push_back(lightEntity);
             }
           }
@@ -824,12 +824,12 @@ namespace ToolKit
           {
             if (SphereBoxIntersection(point->m_boundingSphereCache, left->m_aabb))
             {
-              lightEntity->m_bvhNodes.push_back(left);
+              lightEntity->m_bvhNodes.insert(left);
               left->m_lights.push_back(lightEntity);
             }
             if (SphereBoxIntersection(point->m_boundingSphereCache, right->m_aabb))
             {
-              lightEntity->m_bvhNodes.push_back(right);
+              lightEntity->m_bvhNodes.insert(right);
               right->m_lights.push_back(lightEntity);
             }
           }
@@ -848,7 +848,7 @@ namespace ToolKit
           {
             if (nttNode == node)
             {
-              ntt->m_bvhNodes.erase(ntt->m_bvhNodes.begin() + i);
+              ntt->m_bvhNodes.erase(node);
               break;
             }
             ++i;
@@ -908,7 +908,7 @@ namespace ToolKit
         // Tell entities about the new conjuncted node
         for (EntityPtr ntt : parentNode->m_entites)
         {
-          ntt->m_bvhNodes.push_back(parentNode);
+          ntt->m_bvhNodes.insert(parentNode);
         }
 
         UpdateLeaf(parentNode, false);
@@ -919,7 +919,8 @@ namespace ToolKit
   BVHNode::BVHNode() {}
 
   BVHNode::~BVHNode()
-  { // Remove this node from all entities
+  { 
+    // Remove this node from all entities
     for (EntityPtr ntt : m_entites)
     {
       uint i = 0;
@@ -927,7 +928,7 @@ namespace ToolKit
       {
         if (bvhNode == this)
         {
-          ntt->m_bvhNodes.erase(ntt->m_bvhNodes.begin() + i);
+          ntt->m_bvhNodes.erase(bvhNode);
           break;
         }
         i++;
@@ -942,7 +943,7 @@ namespace ToolKit
       {
         if (bvhNode == this)
         {
-          ntt->m_bvhNodes.erase(ntt->m_bvhNodes.begin() + i);
+          ntt->m_bvhNodes.erase(bvhNode);
           break;
         }
         i++;

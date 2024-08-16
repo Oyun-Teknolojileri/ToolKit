@@ -208,8 +208,8 @@ namespace ToolKit
      */
     Entity* _prefabRootEntity;
 
-    BVHWeakPtr m_bvh;                 //!< BVH the entity belongs to.
-    std::vector<BVHNode*> m_bvhNodes; //!< BVHNodes that the entity is assigned.
+    BVHWeakPtr m_bvh;              //!< BVH the entity belongs to.
+    std::set<BVHNode*> m_bvhNodes; //!< BVHNodes that the entity is assigned.
 
     /** Internally used to mark the entity as being processed by bvh traverse algorithms. */
     bool m_isInBVHProcess  = false;
