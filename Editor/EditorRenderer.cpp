@@ -14,7 +14,6 @@
 #include "Gizmo.h"
 #include "LightMeshGenerator.h"
 
-#include <BVH.h>
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <EnvironmentComponent.h>
@@ -168,7 +167,7 @@ namespace ToolKit
 
       if (app->m_showBVHNodes)
       {
-        scene->m_bvh->GetDebugBVHBoxes(app->m_perFrameDebugObjects);
+        // scene->m_bvh->GetDebugBVHBoxes(app->m_perFrameDebugObjects);
       }
 
       if (app->m_showPickingDebug)

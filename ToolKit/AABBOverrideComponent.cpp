@@ -8,14 +8,11 @@
 #include "AABBOverrideComponent.h"
 
 #include "Animation.h"
-#include "BVH.h"
 #include "Entity.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "ToolKit.h"
-
-
 
 namespace ToolKit
 {

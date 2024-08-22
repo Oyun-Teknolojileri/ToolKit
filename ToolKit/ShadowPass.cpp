@@ -7,7 +7,6 @@
 
 #include "ShadowPass.h"
 
-#include "BVH.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Light.h"
@@ -263,7 +262,10 @@ namespace ToolKit
 
     RenderJobArray jobs;
     RenderData renderData;
-    RenderJobProcessor::CreateRenderJobs(renderData.jobs, m_params.scene->m_bvh, nullLights, cullCamera, nullEnv);
+
+    EntityRawPtrArray rawEntities;
+    ToEntityRawPtrArray(rawEntities, m_params.scene->GetEntities());
+    RenderJobProcessor::CreateRenderJobs(renderData.jobs, rawEntities, nullLights, cullCamera, nullEnv);
     RenderJobProcessor::SeperateRenderData(renderData, true);
 
     renderer->OverrideBlendState(true, BlendFunction::NONE); // Blending must be disabled for shadow map generation.

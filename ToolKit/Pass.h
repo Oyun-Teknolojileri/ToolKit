@@ -128,13 +128,6 @@ namespace ToolKit
                                  const EnvironmentComponentPtrArray& environments,
                                  bool ignoreVisibility = false);
 
-    static void CreateRenderJobs(RenderJobArray& jobArray,
-                                 BVHPtr bvh,
-                                 LightPtrArray& lights,
-                                 CameraPtr camera,
-                                 const EnvironmentComponentPtrArray& environments,
-                                 bool ignoreVisibility = false);
-
     /** This will drop the lights whose bounding volume does not intersect with camera. */
     static void CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance = TK_FLT_MAX);
 

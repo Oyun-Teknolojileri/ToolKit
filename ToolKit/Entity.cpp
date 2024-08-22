@@ -9,7 +9,6 @@
 
 #include "AABBOverrideComponent.h"
 #include "Audio.h"
-#include "BVH.h"
 #include "Camera.h"
 #include "Canvas.h"
 #include "DirectionComponent.h"
@@ -133,11 +132,6 @@ namespace ToolKit
     {
       dirComp->m_spatialCachesInvalidated = true;
     }
-
-    if (BVHPtr bvh = m_bvh.lock())
-    {
-      bvh->UpdateEntity(Self<Entity>());
-    }
   }
 
   Entity* Entity::CopyTo(Entity* other) const
@@ -150,8 +144,6 @@ namespace ToolKit
       ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
       other->m_components.push_back(copy);
     }
-
-    other->m_bvh = m_bvh;
 
     return other;
   }

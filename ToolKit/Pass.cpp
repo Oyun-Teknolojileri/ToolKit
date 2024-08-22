@@ -8,7 +8,6 @@
 #include "Pass.h"
 
 #include "AABBOverrideComponent.h"
-#include "BVH.h"
 #include "Camera.h"
 #include "DirectionComponent.h"
 #include "Material.h"
@@ -74,6 +73,13 @@ namespace ToolKit
                                             const EnvironmentComponentPtrArray& environments,
                                             bool ignoreVisibility)
   {
+    // Apply frustum cull.
+    EntityRawPtrArray unculledEntities = entities;
+    if (camera)
+    {
+      FrustumCull(unculledEntities, camera);
+    }
+
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
 
@@ -85,10 +91,11 @@ namespace ToolKit
     IntArray submeshIndexLookup;
     int size = 0;
 
+    // Apply ntt visibility check.
     EntityRawPtrArray rawNtties;
-    rawNtties.reserve(entities.size());
+    rawNtties.reserve(unculledEntities.size());
 
-    for (Entity* ntt : entities)
+    for (Entity* ntt : unculledEntities)
     {
       if (ntt->IsVisible() || ignoreVisibility)
       {
@@ -181,22 +188,6 @@ namespace ToolKit
                       AssignEnvironment(job, environments);
                     }
                   });
-  }
-
-  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
-                                            BVHPtr bvh,
-                                            LightPtrArray& lights,
-                                            CameraPtr camera,
-                                            const EnvironmentComponentPtrArray& environments,
-                                            bool ignoreVisibility)
-  {
-    Mat4 projectView = camera->GetProjectViewMatrix();
-    Frustum frustum  = ExtractFrustum(projectView, false);
-
-    EntityRawPtrArray nttiesInFrustum;
-    bvh->FrustumTest(frustum, nttiesInFrustum);
-
-    CreateRenderJobs(jobArray, nttiesInFrustum, lights, camera, environments, ignoreVisibility);
   }
 
   void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)
@@ -309,35 +300,31 @@ namespace ToolKit
       return;
     }
 
-    // Iterate lights that are inside of bvh nodes same with the job entity.
-    for (BVHNodePtr bvhNode : job.Entity->m_bvhNodes)
+    for (int i = startIndex; i < (int) lights.size(); i++)
     {
-      for (const EntityPtr& lightEntity : bvhNode->m_lights)
+      Light* light = lights[i].get();
+      if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
       {
-        if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
-        {
-          return;
-        }
+        return;
+      }
 
-        Light* light = static_cast<Light*>(lightEntity.get());
-        if (light->GetLightType() == Light::LightType::Spot)
+      if (light->GetLightType() == Light::LightType::Spot)
+      {
+        SpotLight* spot = static_cast<SpotLight*>(light);
+        if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
         {
-          SpotLight* spot = static_cast<SpotLight*>(light);
-          if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
-          {
-            job.lights.push_back(light);
-          }
+          job.lights.push_back(light);
         }
-        else
+      }
+      else
+      {
+        // Directional lights are not assigned to bvh nodes.
+        // The only light type that remains is point light.
+        assert(light->IsA<PointLight>());
+        PointLight* point = static_cast<PointLight*>(light);
+        if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
         {
-          // Directional lights are not assigned to bvh nodes.
-          // The only light type that remains is point light.
-          assert(light->IsA<PointLight>());
-          PointLight* point = static_cast<PointLight*>(light);
-          if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
-          {
-            job.lights.push_back(light);
-          }
+          job.lights.push_back(light);
         }
       }
     }

@@ -8,7 +8,6 @@
 #include "Light.h"
 
 #include "AABBOverrideComponent.h"
-#include "BVH.h"
 #include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
@@ -387,16 +386,8 @@ namespace ToolKit
     ParamPCFRadius().m_hint.increment = 0.02f;
     Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
     ParamRadius().m_onValueChangedFn.clear();
-    ParamRadius().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void
-        {
-          if (BVHPtr bvh = m_bvh.lock())
-          {
-            EntityPtr self = Self<PointLight>();
-            bvh->UpdateEntity(self);
-          }
-          m_invalidatedForLightCache = true;
-        });
+    ParamRadius().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
+                                               { m_invalidatedForLightCache = true; });
   }
 
   void PointLight::UpdateLocalBoundingBox()
@@ -478,11 +469,6 @@ namespace ToolKit
         {
           const float radius = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
-          if (BVHPtr bvh = m_bvh.lock())
-          {
-            EntityPtr self = Self<PointLight>();
-            bvh->UpdateEntity(self);
-          }
           m_invalidatedForLightCache = true;
         });
 
@@ -496,11 +482,6 @@ namespace ToolKit
         {
           const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
-          if (BVHPtr bvh = m_bvh.lock())
-          {
-            EntityPtr self = Self<PointLight>();
-            bvh->UpdateEntity(self);
-          }
           m_invalidatedForLightCache = true;
         });
   }

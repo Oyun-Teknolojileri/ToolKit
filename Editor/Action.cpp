@@ -66,8 +66,6 @@ namespace ToolKit
     {
       assert(m_ntt != nullptr);
 
-      m_ntt->m_markedForDelete = false;
-
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->AddEntity(m_ntt);
 

@@ -223,9 +223,6 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="BVH.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="LightDataBuffer.cpp">
       <Filter>Render</Filter>
     </ClCompile>
@@ -479,9 +476,6 @@
     </ClInclude>
     <ClInclude Include="GammaTonemapFxaaPass.h">
       <Filter>Render\PostProcessPass</Filter>
-    </ClInclude>
-    <ClInclude Include="BVH.h">
-      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="LightCache.h">
       <Filter>Render</Filter>

@@ -10,7 +10,6 @@
 #include "AABBOverrideComponent.h"
 #include "AnimationControllerComponent.h"
 #include "Audio.h"
-#include "BVH.h"
 #include "Camera.h"
 #include "Canvas.h"
 #include "DirectionComponent.h"
@@ -118,7 +117,6 @@ namespace ToolKit
     Register<Drawable>();
     Register<Entity>();
     Register<EntityNode>();
-    // Register<Light>();
     Register<DirectionalLight>();
     Register<PointLight>();
     Register<SpotLight>();
@@ -134,7 +132,6 @@ namespace ToolKit
     Register<Canvas>();
     Register<Button>();
     Register<Dpad>();
-    Register<BVH>();
     // Resources.
     Register<Animation>();
     Register<Audio>();

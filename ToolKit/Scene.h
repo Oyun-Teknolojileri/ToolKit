@@ -235,9 +235,6 @@ namespace ToolKit
     /** Removes all entities from the scene. */
     virtual void ClearEntities();
 
-    /** Rebuilds the BVH. */
-    void RebuildBVH();
-
     /** Returns scene boundary from the BVH. */
     const BoundingBox& GetSceneBoundary();
 
@@ -291,11 +288,11 @@ namespace ToolKit
 
    public:
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
-    BVHPtr m_bvh = nullptr;
 
    protected:
-    EntityPtrArray m_entities; //!< The entities in the scene.
-    bool m_isPrefab;           //!< Whether or not the scene is a prefab.
+    EntityPtrArray m_entities;   //!< The entities in the scene.
+    bool m_isPrefab;             //!< Whether or not the scene is a prefab.
+    BoundingBox m_sceneBoundary; //!< Bounding box that covers the whole scene.
 
     mutable LightPtrArray m_lightCache;                            //!< Cached light entities which is added to scene.
     mutable EnvironmentComponentPtrArray m_environmentVolumeCache; //!< Environment volumes in the scene.

@@ -7,7 +7,6 @@
 
 #include "Node.h"
 
-#include "BVH.h"
 #include "MathUtil.h"
 #include "Scene.h"
 #include "ToolKit.h"

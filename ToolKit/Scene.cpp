@@ -8,7 +8,6 @@
 #include "Scene.h"
 
 #include "AABBOverrideComponent.h"
-#include "BVH.h"
 #include "Component.h"
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
@@ -26,19 +25,9 @@ namespace ToolKit
 
   Scene::Scene() { m_name = "New Scene"; }
 
-  Scene::~Scene()
-  {
-    Destroy(false);
-    m_bvh = nullptr;
-  }
+  Scene::~Scene() { Destroy(false); }
 
-  void Scene::NativeConstruct()
-  {
-    Super::NativeConstruct();
-
-    ScenePtr self = Self<Scene>();
-    m_bvh         = MakeNewPtr<BVH>(self);
-  }
+  void Scene::NativeConstruct() { Super::NativeConstruct(); }
 
   void Scene::NativeConstruct(const String& file)
   {
@@ -155,15 +144,17 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
+    BoundingBox bbox;
+    for (EntityPtr ntt : m_entities)
+    {
+      bbox.UpdateBoundary(ntt->GetBoundingBox(true));
+    }
+    m_sceneBoundary = bbox;
+
     for (LightPtr& light : m_lightCache)
     {
-      // if (light->GetCastShadowVal())
-      {
-        light->UpdateShadowCamera();
-      }
+      light->UpdateShadowCamera();
     }
-
-    m_bvh->Update();
   }
 
   void Scene::Merge(ScenePtr other)
@@ -214,11 +205,7 @@ namespace ToolKit
     };
 
     pickFn(extraList);
-
-    if (pd.entity == nullptr)
-    {
-      m_bvh->PickObject(ray, pd, ignoreList, closestPickedDistance);
-    }
+    pickFn(m_entities);
 
     return pd;
   }
@@ -264,8 +251,7 @@ namespace ToolKit
     };
 
     pickFn(extraList);
-
-    m_bvh->PickObject(frustum, pickedObjects, ignoreList, pickPartiallyInside);
+    pickFn(m_entities);
   }
 
   EntityPtr Scene::GetEntity(ULongID id, int* index) const
@@ -321,10 +307,6 @@ namespace ToolKit
         {
           m_entities.insert(m_entities.begin() + index, entity);
         }
-
-        entity->m_bvh             = m_bvh;
-        entity->m_markedForDelete = false;
-        m_bvh->AddEntity(entity);
       }
     }
   }
@@ -340,9 +322,6 @@ namespace ToolKit
         RemoveEntity(childNtt->GetIdVal());
       }
     }
-
-    // Preserve parent - child relation.
-    // children.clear();
   }
 
   EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
@@ -366,12 +345,8 @@ namespace ToolKit
       EntityPtr removed = GetEntity(id, &indx);
     }
 
-    removed->m_markedForDelete = true;
-
     UpdateEntityCaches(removed, false);
     m_entities.erase(m_entities.begin() + indx);
-    m_bvh->RemoveEntity(removed);
-    removed->m_bvh.reset();
 
     if (deep)
     {
@@ -494,7 +469,6 @@ namespace ToolKit
     for (int i = maxCnt; i >= 0; i--)
     {
       EntityPtr ntt = m_entities[i];
-      ntt->m_bvh.reset();
 
       if (removeResources)
       {
@@ -503,7 +477,6 @@ namespace ToolKit
     }
 
     m_entities.clear();
-    m_bvh->Clean();
 
     m_loaded    = false;
     m_initiated = false;
@@ -534,15 +507,9 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  void Scene::ClearEntities()
-  {
-    m_entities.clear();
-    m_bvh->Clean();
-  }
+  void Scene::ClearEntities() { m_entities.clear(); }
 
-  void Scene::RebuildBVH() { m_bvh->ReBuild(); }
-
-  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->GetBVHBoundary(); }
+  const BoundingBox& Scene::GetSceneBoundary() { return m_sceneBoundary; }
 
   void Scene::CopyTo(Resource* other)
   {
@@ -557,11 +524,6 @@ namespace ToolKit
     for (EntityPtr ntt : roots)
     {
       DeepCopy(ntt, cpy->m_entities);
-    }
-
-    for (EntityPtr ntt : cpy->m_entities)
-    {
-      ntt->m_bvh = m_bvh;
     }
   }
 
@@ -824,9 +786,8 @@ namespace ToolKit
   {
     m_currentScene                     = scene;
 
-    // apply scene post processing effects
+    // Apply scene post processing effects.
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
-    m_currentScene->m_bvh->ReBuild(); // Build BVH with new parameters
   }
 
 } // namespace ToolKit

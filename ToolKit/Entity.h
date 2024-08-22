@@ -207,15 +207,6 @@ namespace ToolKit
      */
     Entity* _prefabRootEntity;
 
-    BVHWeakPtr m_bvh;                   //!< BVH the entity belongs to.
-    std::set<BVHNodePtr> m_bvhNodes; //!< BVHNodes that the entity is assigned.
-
-    /** Internally used to mark the entity as being processed by bvh traverse algorithms. */
-    bool m_isInBVHProcess  = false;
-
-    /** Used in bvh stating that the entity is removed from scene and should not be considered in queries. */
-    bool m_markedForDelete = false;
-
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;

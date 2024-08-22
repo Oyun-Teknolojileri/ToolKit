@@ -117,8 +117,10 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::SetPassParams()
   {
+    EntityRawPtrArray sceneEntities;
+    ToEntityRawPtrArray(sceneEntities, m_params.Scene->GetEntities());
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
-                                         m_params.Scene->m_bvh,
+                                         sceneEntities,
                                          m_params.Lights,
                                          m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes());
