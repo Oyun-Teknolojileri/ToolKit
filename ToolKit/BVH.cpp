@@ -19,13 +19,16 @@ namespace ToolKit
     return !ntt->IsA<SkyBase>() && !ntt->IsA<DirectionalLight>() && (ntt->IsDrawable() || ntt->IsA<Light>());
   }
 
-  BVH::BVH(Scene* scene)
-  {
-    m_bvhTree = new BVHTree(this);
-    m_scene   = scene;
-  }
+  BVH::BVH() {}
 
-  BVH::~BVH() { SafeDel(m_bvhTree); }
+  BVH::~BVH() { m_bvhTree = nullptr; }
+
+  void BVH::NativeConstruct(ScenePtr scene)
+  {
+    BVHPtr self = Self<BVH>();
+    m_bvhTree   = MakeNewPtr<BVHTree>(self);
+    m_scene     = scene;
+  }
 
   void BVH::SetParameters(const EngineSettings::GraphicSettings& settings)
   {
@@ -145,7 +148,7 @@ namespace ToolKit
   void BVH::Update()
   {
     // Removed entities
-    for (EntityPtr& entity : m_entitiesToRemove)
+    for (EntityPtr entity : m_entitiesToRemove)
     {
       m_bvhTree->Remove(entity);
     }
@@ -159,28 +162,17 @@ namespace ToolKit
     m_entitiesToRemove.clear();
 
     // Delete nodes that should be deleted
-    for (int i = 0; i < m_bvhTree->m_nodesToDelete.size(); ++i)
-    {
-      BVHNode* node = m_bvhTree->m_nodesToDelete[i];
-      SafeDel(node);
-    }
     m_bvhTree->m_nodesToDelete.clear();
 
-    for (EntityPtr& entity : m_entitiesToUpdate)
+    for (EntityPtr entity : m_entitiesToUpdate)
     {
       m_bvhTree->Remove(entity);
       AddEntity(entity);
     }
     m_entitiesToUpdate.clear();
-
-    for (int i = 0; i < m_bvhTree->m_nodesToDelete.size(); ++i)
-    {
-      BVHNode* node = m_bvhTree->m_nodesToDelete[i];
-      SafeDel(node);
-    }
     m_bvhTree->m_nodesToDelete.clear();
 
-    for (EntityPtr& entity : m_entitiesToAdd)
+    for (EntityPtr entity : m_entitiesToAdd)
     {
       if (m_bvhTree->Add(entity))
       {
@@ -197,7 +189,7 @@ namespace ToolKit
     m_bvhTree->m_nextNodes.push_front(m_bvhTree->m_root);
     while (!m_bvhTree->m_nextNodes.empty())
     {
-      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
+      BVHNodePtr currentNode = m_bvhTree->m_nextNodes.front();
       m_bvhTree->m_nextNodes.pop_front();
 
       float dist;
@@ -271,7 +263,7 @@ namespace ToolKit
 
     while (!m_bvhTree->m_nextNodes.empty())
     {
-      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
+      BVHNodePtr currentNode = m_bvhTree->m_nextNodes.front();
       m_bvhTree->m_nextNodes.pop_front();
 
       if (currentNode->IsRoot() || currentNode->IsOutsideFrustum())
@@ -332,11 +324,11 @@ namespace ToolKit
 
   void BVH::GetDebugBVHBoxes(EntityPtrArray& boxes)
   {
-    std::queue<BVHNode*> nextNodes;
+    std::queue<BVHNodePtr> nextNodes;
     nextNodes.push(m_bvhTree->m_root);
     while (nextNodes.size() > 0)
     {
-      BVHNode* bvhNode = nextNodes.front();
+      BVHNodePtr bvhNode = nextNodes.front();
       nextNodes.pop();
 
       if (!bvhNode->IsLeaf())
@@ -354,18 +346,6 @@ namespace ToolKit
     }
   }
 
-  void BVH::SanityCheck()
-  {
-    for (EntityPtr ntt : m_scene->GetEntities())
-    {
-      assert(ntt->m_bvhNodes.size() <= 1 || ntt->IsA<Light>());
-      for (BVHNode* node : ntt->m_bvhNodes)
-      {
-        assert(node->IsLeaf() && "Entities should not hold non-leaf bvh nodes");
-      }
-    }
-  }
-
   void BVH::DistributionQuality(int& totalNtties, int& assignedNtties, float& assignmentPerNtt)
   {
     m_bvhTree->m_nextNodes.clear();
@@ -374,7 +354,7 @@ namespace ToolKit
     assignedNtties = 0;
     while (!m_bvhTree->m_nextNodes.empty())
     {
-      BVHNode* currentNode = m_bvhTree->m_nextNodes.front();
+      BVHNodePtr currentNode = m_bvhTree->m_nextNodes.front();
       m_bvhTree->m_nextNodes.pop_front();
       if (currentNode != nullptr)
       {
@@ -394,10 +374,10 @@ namespace ToolKit
 
   const BoundingBox& BVH::GetBVHBoundary() { return m_bvhTree->m_root->m_aabb; }
 
-  BVHTree::BVHTree(BVH* owner)
+  BVHTree::BVHTree(BVHPtr owner)
   {
     m_bvh                      = owner;
-    m_root                     = new BVHNode();
+    m_root                     = MakeNewPtr<BVHNode>();
 
     m_maxEntityCountPerBVHNode = 5;
     m_minBBSize                = 10.0f;
@@ -406,10 +386,10 @@ namespace ToolKit
   BVHTree::~BVHTree()
   {
     Clean();
-    SafeDel(m_root);
+    m_root = nullptr;
   }
 
-  void BVHTree::ReAssignLightsFromParent(BVHNode* node)
+  void BVHTree::ReAssignLightsFromParent(BVHNodePtr node)
   {
     node->m_lights.clear();
     const LightPtrArray* lights;
@@ -447,7 +427,7 @@ namespace ToolKit
     }
   }
 
-  bool BVHTree::Add(EntityPtr& entity)
+  bool BVHTree::Add(EntityPtr entity)
   {
     entity->m_isInBVHProcess = false;
 
@@ -490,11 +470,11 @@ namespace ToolKit
 
     // Add entity to the bvh tree
 
-    std::queue<BVHNode*> nextNodes;
+    std::queue<BVHNodePtr> nextNodes;
     nextNodes.push(m_root);
     while (nextNodes.size() > 0)
     {
-      BVHNode* node = nextNodes.front();
+      BVHNodePtr node = nextNodes.front();
       nextNodes.pop();
 
       if (node->m_markedForDelete)
@@ -623,9 +603,9 @@ namespace ToolKit
     return false;
   }
 
-  void BVHTree::Remove(EntityPtr& entity)
+  void BVHTree::Remove(EntityPtr entity)
   {
-    for (BVHNode* bvhNode : entity->m_bvhNodes)
+    for (BVHNodePtr bvhNode : entity->m_bvhNodes)
     {
       uint i = 0;
       for (EntityPtr ntt : bvhNode->m_entites)
@@ -637,6 +617,7 @@ namespace ToolKit
         }
         i++;
       }
+
       i = 0;
       for (EntityPtr ntt : bvhNode->m_lights)
       {
@@ -649,7 +630,7 @@ namespace ToolKit
       }
     }
 
-    for (BVHNode* bvhNode : entity->m_bvhNodes)
+    for (BVHNodePtr bvhNode : entity->m_bvhNodes)
     {
       if (bvhNode->m_markedForDelete)
       {
@@ -664,11 +645,11 @@ namespace ToolKit
   void BVHTree::Clean()
   {
     // Clean bvh tree
-    std::queue<BVHNode*> nextNodes;
+    std::queue<BVHNodePtr> nextNodes;
     nextNodes.push(m_root);
     while (nextNodes.size() > 0)
     {
-      BVHNode* bvhNode = nextNodes.front();
+      BVHNodePtr bvhNode = nextNodes.front();
       nextNodes.pop();
 
       if (bvhNode->m_left != nullptr)
@@ -687,10 +668,6 @@ namespace ToolKit
         m_root->m_right = nullptr;
         m_root->m_entites.clear();
         m_root->m_lights.clear();
-      }
-      else
-      {
-        SafeDel(bvhNode);
       }
     }
   }
@@ -719,7 +696,7 @@ namespace ToolKit
     }
   }
 
-  void BVHTree::UpdateLeaf(BVHNode* node, bool removedFromThisNode)
+  void BVHTree::UpdateLeaf(BVHNodePtr node, bool removedFromThisNode)
   {
     if (!node->IsLeaf())
     {
@@ -768,8 +745,8 @@ namespace ToolKit
     {
       // split this node if entity number is big
 
-      BVHNode* left           = new BVHNode();
-      BVHNode* right          = new BVHNode();
+      BVHNodePtr left         = MakeNewPtr<BVHNode>();
+      BVHNodePtr right        = MakeNewPtr<BVHNode>();
       left->depth             = node->depth + 1;
       right->depth            = node->depth + 1;
 
@@ -800,8 +777,8 @@ namespace ToolKit
           left->m_aabb.GetDepth() < m_minBBSize || right->m_aabb.GetWidth() < m_minBBSize ||
           right->m_aabb.GetHeight() < m_minBBSize || right->m_aabb.GetDepth() < m_minBBSize)
       {
-        SafeDel(left);
-        SafeDel(right);
+        left  = nullptr;
+        right = nullptr;
       }
       else
       {
@@ -844,14 +821,15 @@ namespace ToolKit
         for (EntityPtr& ntt : node->m_entites)
         {
           uint i = 0;
-          for (BVHNode* nttNode : ntt->m_bvhNodes)
+
+          for (BVHNodePtr nttNode : ntt->m_bvhNodes)
           {
             if (nttNode == node)
             {
               ntt->m_bvhNodes.erase(node);
               break;
             }
-            ++i;
+            i++;
           }
         }
         node->m_entites.clear();
@@ -865,11 +843,11 @@ namespace ToolKit
     }
     else if (entityCount <= m_maxEntityCountPerBVHNode && node != m_root)
     {
-      BVHNode* parentNode = node->m_parent;
-      BVHNode* rightNode  = node->m_parent->m_right;
-      BVHNode* leftNode   = node->m_parent->m_left;
+      BVHNodePtr parentNode = node->m_parent;
+      BVHNodePtr rightNode  = node->m_parent->m_right;
+      BVHNodePtr leftNode   = node->m_parent->m_left;
 
-      bool conjunct       = false;
+      bool conjunct         = false;
       if (leftNode == node)
       {
         if (rightNode->IsLeaf() && rightNode->m_entites.size() + entityCount <= m_maxEntityCountPerBVHNode)
@@ -919,14 +897,14 @@ namespace ToolKit
   BVHNode::BVHNode() {}
 
   BVHNode::~BVHNode()
-  { 
+  {
     // Remove this node from all entities
     for (EntityPtr ntt : m_entites)
     {
       uint i = 0;
-      for (BVHNode* bvhNode : ntt->m_bvhNodes)
+      for (BVHNodePtr bvhNode : ntt->m_bvhNodes)
       {
-        if (bvhNode == this)
+        if (bvhNode.get() == this)
         {
           ntt->m_bvhNodes.erase(bvhNode);
           break;
@@ -939,9 +917,9 @@ namespace ToolKit
     for (EntityPtr ntt : m_lights)
     {
       uint i = 0;
-      for (BVHNode* bvhNode : ntt->m_bvhNodes)
+      for (BVHNodePtr bvhNode : ntt->m_bvhNodes)
       {
-        if (bvhNode == this)
+        if (bvhNode.get() == this)
         {
           ntt->m_bvhNodes.erase(bvhNode);
           break;

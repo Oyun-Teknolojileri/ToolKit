@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "EngineSettings.h"
 #include "GeometryTypes.h"
 #include "MathUtil.h"
 #include "Scene.h"
@@ -15,20 +16,23 @@
 namespace ToolKit
 {
 
+  // BVHNode
+  //////////////////////////////////////////
+
   class TK_API BVHNode
   {
    public:
     BVHNode();
     ~BVHNode();
 
-    int depth         = 0;
+    int depth           = 0;
 
     /** Parent bvh node. */
-    BVHNode* m_parent = nullptr;
+    BVHNodePtr m_parent = nullptr;
     /** Left bvh node. */
-    BVHNode* m_left   = nullptr;
+    BVHNodePtr m_left   = nullptr;
     /** Right bvh node. */
-    BVHNode* m_right  = nullptr;
+    BVHNodePtr m_right  = nullptr;
     /** Boundary of the node. */
     BoundingBox m_aabb;
     /** All entities inside this node. */
@@ -56,45 +60,52 @@ namespace ToolKit
     bool IsRoot() const { return m_parent == nullptr; }
   };
 
+  // BVHTree
+  //////////////////////////////////////////
+
   class TK_API BVHTree
   {
    public:
-    BVHTree(class BVH* owner);
+    BVHTree(BVHPtr owner);
     ~BVHTree();
 
     // Return true if rebuilding the bvh necessary
-    bool Add(EntityPtr& entity);
-    void Remove(EntityPtr& entity);
+    bool Add(EntityPtr entity);
+    void Remove(EntityPtr entity);
     void Clean();
-    void UpdateLeaf(BVHNode* node, bool removedFromThisNode);
+    void UpdateLeaf(BVHNodePtr node, bool removedFromThisNode);
 
    private:
     BVHTree() = delete;
 
-    void ReAssignLightsFromParent(BVHNode* node);
+    void ReAssignLightsFromParent(BVHNodePtr node);
 
    public:
-    BVHNode* m_root = nullptr;
-    std::vector<BVHNode*> m_nodesToDelete;
+    BVHNodePtr m_root = nullptr;
+    std::vector<BVHNodePtr> m_nodesToDelete;
 
     // Utility queue that used to iterate nodes
-    std::deque<BVHNode*> m_nextNodes;
+    std::deque<BVHNodePtr> m_nextNodes;
 
     int m_maxEntityCountPerBVHNode = 10;
     float m_minBBSize              = 0.0f;
     int m_maxDepth                 = 100;
 
    private:
-    class BVH* m_bvh = nullptr;
+    BVHPtr m_bvh = nullptr;
   };
 
-  class TK_API BVH
+  // BVH
+  //////////////////////////////////////////
+
+  class TK_API BVH : public Object
   {
     friend BVHTree;
 
    public:
-    BVH(Scene* scene);
-    ~BVH();
+    BVH();
+    virtual ~BVH();
+    virtual void NativeConstruct(ScenePtr scene);
 
     // IMPORTANT: This should be called before building the BVH (or call ReBuild after this function) otherwise
     // inconsistencies will occur in BVH nodes.
@@ -124,7 +135,6 @@ namespace ToolKit
 
     // Debug functions.
     void GetDebugBVHBoxes(EntityPtrArray& boxes); //!< Creates a debug box for each leaf node in the bvh.
-    void SanityCheck();                           //!< // Checks if any entity holds a node that is not leaf.
 
     /**
      * A quality measurement function for bvh settings. assignmentPerNtt must be close to 1. Higher ratio means the same
@@ -135,11 +145,10 @@ namespace ToolKit
     const BoundingBox& GetBVHBoundary();
 
    public:
-    BVHTree* m_bvhTree = nullptr;
+    BVHTreePtr m_bvhTree = nullptr;
 
    private:
-    BVH()          = delete;
-    Scene* m_scene = nullptr;
+    ScenePtr m_scene = nullptr;
 
     AtomicLock m_addLock;
     EntityPtrArray m_entitiesToAdd;

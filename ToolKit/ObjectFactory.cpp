@@ -10,6 +10,7 @@
 #include "AABBOverrideComponent.h"
 #include "AnimationControllerComponent.h"
 #include "Audio.h"
+#include "BVH.h"
 #include "Camera.h"
 #include "Canvas.h"
 #include "DirectionComponent.h"
@@ -33,8 +34,6 @@
 #include "SsaoPass.h"
 #include "Surface.h"
 #include "Texture.h"
-
-
 
 namespace ToolKit
 {
@@ -135,6 +134,7 @@ namespace ToolKit
     Register<Canvas>();
     Register<Button>();
     Register<Dpad>();
+    Register<BVH>();
     // Resources.
     Register<Animation>();
     Register<Audio>();

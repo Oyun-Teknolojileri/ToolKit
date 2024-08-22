@@ -45,15 +45,14 @@ namespace ToolKit
     /** The constructor for the Scene class. */
     Scene();
 
-    /**
-     * The constructor for the Scene class that loads a scene from a file.
-     *
-     * @param file The file path of the scene to load.
-     */
-    explicit Scene(const String& file);
-
     /** The destructor for the Scene class. */
     virtual ~Scene();
+
+    /** Constructs scene and ToolKit objects associated with scene.*/
+    virtual void NativeConstruct() override;
+
+    /** Constructs scene, sets file and creates ToolKit objects associated with scene.*/
+    virtual void NativeConstruct(const String& file);
 
     /** Loads the scene from its file. */
     void Load() override;

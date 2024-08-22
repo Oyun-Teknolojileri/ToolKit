@@ -310,7 +310,7 @@ namespace ToolKit
     }
 
     // Iterate lights that are inside of bvh nodes same with the job entity.
-    for (BVHNode* bvhNode : job.Entity->m_bvhNodes)
+    for (BVHNodePtr bvhNode : job.Entity->m_bvhNodes)
     {
       for (const EntityPtr& lightEntity : bvhNode->m_lights)
       {

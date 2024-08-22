@@ -21,7 +21,6 @@ namespace ToolKit
       TKDeclareClass(EditorScene, Scene);
 
       EditorScene();
-      explicit EditorScene(const String& file);
       virtual ~EditorScene();
 
       void Load() override;

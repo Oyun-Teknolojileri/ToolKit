@@ -24,18 +24,26 @@ namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
 
-  Scene::Scene()
-  {
-    m_name = "New Scene";
-    m_bvh  = MakeNewPtr<BVH>(this);
-  }
-
-  Scene::Scene(const String& file) : Scene() { SetFile(file); }
+  Scene::Scene() { m_name = "New Scene"; }
 
   Scene::~Scene()
   {
     Destroy(false);
     m_bvh = nullptr;
+  }
+
+  void Scene::NativeConstruct()
+  {
+    Super::NativeConstruct();
+
+    ScenePtr self = Self<Scene>();
+    m_bvh         = MakeNewPtr<BVH>(self);
+  }
+
+  void Scene::NativeConstruct(const String& file)
+  {
+    NativeConstruct();
+    SetFile(file);
   }
 
   void Scene::Load()

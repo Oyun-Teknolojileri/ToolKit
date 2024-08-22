@@ -18,13 +18,7 @@ namespace ToolKit
 
     TKDefineClass(EditorScene, Scene);
 
-    EditorScene::EditorScene() : Scene() { m_newScene = true; }
-
-    EditorScene::EditorScene(const String& file) : EditorScene()
-    {
-      SetFile(file);
-      m_newScene = false;
-    }
+    EditorScene::EditorScene() { m_newScene = false; }
 
     EditorScene::~EditorScene() { Destroy(false); }
 

@@ -180,6 +180,9 @@ namespace ToolKit
   typedef std::shared_ptr<class GammaTonemapFxaaPass> GammaTonemapFxaaPassPtr;
   typedef std::shared_ptr<class BVH> BVHPtr;
   typedef std::weak_ptr<class BVH> BVHWeakPtr;
+  typedef std::shared_ptr<class BVHTree> BVHTreePtr;
+  typedef std::shared_ptr<class BVHNode> BVHNodePtr;
+  typedef std::weak_ptr<class BVHNode> BVHNodeWeakPtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
