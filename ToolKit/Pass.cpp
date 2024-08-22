@@ -57,7 +57,7 @@ namespace ToolKit
   RenderPass::~RenderPass() {}
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
-                                            const EntityRawPtrArray& entities,
+                                            EntityRawPtrArray& entities,
                                             bool ignoreVisibility)
   {
     LightPtrArray nullLights;
@@ -66,25 +66,29 @@ namespace ToolKit
     CreateRenderJobs(jobArray, entities, nullLights, nullptr, nullEnvironments, ignoreVisibility);
   }
 
+  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
+  {
+    EntityRawPtrArray singleNtt = {entity.get()};
+    CreateRenderJobs(jobArray, singleNtt, true);
+  }
+
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
-                                            const EntityRawPtrArray& entities,
+                                            EntityRawPtrArray& entities,
                                             LightPtrArray& lights,
                                             CameraPtr camera,
                                             const EnvironmentComponentPtrArray& environments,
                                             bool ignoreVisibility)
   {
-    // Apply frustum cull.
-    EntityRawPtrArray unculledEntities = entities;
     if (camera)
     {
-      FrustumCull(unculledEntities, camera);
+      FrustumCull(entities, camera);
     }
 
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
 
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
-    // to find the index of the submehs for a given entity index.
+    // to find the index of the submesh for a given entity index.
     // Ex: Entity index is 4 and it has 3 submesh,
     // its submesh indexes would be = {4, 5, 6}
     // to look them up: {nttIndex + 0, nttIndex + 1, nttIndex + 3} formula is used.
@@ -92,34 +96,39 @@ namespace ToolKit
     int size = 0;
 
     // Apply ntt visibility check.
-    EntityRawPtrArray rawNtties;
-    rawNtties.reserve(unculledEntities.size());
+    erase_if(entities,
+             [&](Entity* ntt) -> bool
+             {
+               if (ntt->IsVisible() || ignoreVisibility)
+               {
+                 if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
+                 {
+                   meshComp->Init(false);
+                   submeshIndexLookup.push_back(size);
+                   size += meshComp->GetMeshVal()->GetMeshCount();
+                   return false;
+                 }
+               }
 
-    for (Entity* ntt : unculledEntities)
-    {
-      if (ntt->IsVisible() || ignoreVisibility)
-      {
-        if (MeshComponent* meshComp = ntt->GetComponentFast<MeshComponent>())
-        {
-          rawNtties.push_back(ntt);
-          meshComp->Init(false);
-          submeshIndexLookup.push_back(size);
-          size += meshComp->GetMeshVal()->GetMeshCount();
-        }
-      }
-    }
+               return true;
+             });
 
     jobArray.clear();
     jobArray.resize(size); // at least.
 
+    if (entities.empty())
+    {
+      return;
+    }
+
     // Construct jobs.
     using poolstl::iota_iter;
-    std::for_each(TKExecByConditional(rawNtties.size() > 100, WorkerManager::FramePool),
+    std::for_each(TKExecByConditional(entities.size() > 100, WorkerManager::FramePool),
                   iota_iter<size_t>(0),
-                  iota_iter<size_t>(rawNtties.size()),
+                  iota_iter<size_t>(entities.size()),
                   [&](size_t nttIndex)
                   {
-                    Entity* ntt                    = rawNtties[nttIndex];
+                    Entity* ntt                    = entities[nttIndex];
                     MaterialPtrArray* materialList = nullptr;
                     if (MaterialComponent* matComp = ntt->GetComponentFast<MaterialComponent>())
                     {

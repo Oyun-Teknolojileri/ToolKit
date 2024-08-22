@@ -136,7 +136,7 @@ namespace ToolKit
         }
 
         RenderJobArray jobs;
-        RenderJobProcessor::CreateRenderJobs(jobs, {ntt.get()});
+        RenderJobProcessor::CreateRenderJobs(jobs, ntt);
 
         if (!jobs.empty())
         {

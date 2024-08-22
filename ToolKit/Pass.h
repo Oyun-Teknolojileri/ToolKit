@@ -109,20 +109,23 @@ namespace ToolKit
   class TK_API RenderJobProcessor
   {
    public:
+    /** Constructs a render job for a single entity. */
+    static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
+
+    /** Constructs render jobs for all given entities. */
+    static void CreateRenderJobs(RenderJobArray& jobArray, EntityRawPtrArray& entities, bool ignoreVisibility = false);
+
     /**
-     * Constructs all render jobs from entities. Also constructs the bounding volume that covers all entities.
-     * Good candidate to use as shadow boundary.
-     * @param entities are the entities to construct render jobs for.
+     * Constructs all render jobs from entities.
      * @param jobArray is the array of constructed jobs.
-     * @param ingnoreVisibility when set true, construct jobs for objects that has visibility set to false.
-     * @return BoundingBox for jobs.
+     * @param entities are the entities to construct render jobs for.
+     * @param lights are the list of lights to consider.
+     * @param camera is used for frustum culling if not empty.
+     * @param environments are the environment volumes to consider.
+     * @param ingnoreVisibility when set true, construct jobs for entities that has visibility set to false.
      */
     static void CreateRenderJobs(RenderJobArray& jobArray,
-                                 const EntityRawPtrArray& entities,
-                                 bool ignoreVisibility = false);
-
-    static void CreateRenderJobs(RenderJobArray& jobArray,
-                                 const EntityRawPtrArray& entities,
+                                 EntityRawPtrArray& entities,
                                  LightPtrArray& lights,
                                  CameraPtr camera,
                                  const EnvironmentComponentPtrArray& environments,

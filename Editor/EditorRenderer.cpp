@@ -421,7 +421,7 @@ namespace ToolKit
           {
             static_cast<Billboard*>(billboard.get())->LookAt(viewportCamera, viewport->GetBillboardScale());
 
-            RenderJobProcessor::CreateRenderJobs(billboardJobs, {billboard.get()});
+            RenderJobProcessor::CreateRenderJobs(billboardJobs, billboard);
           }
         }
 
