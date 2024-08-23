@@ -25,7 +25,7 @@ namespace ToolKit
   const Vec3 aabb_margin          = Vec3(0.03f);
   constexpr float aabb_multiplier = 3.0f;
 
-  class AABBTree
+  class TK_API AABBTree
   {
    public:
     static constexpr inline int32 nullNode = -1;
@@ -56,10 +56,14 @@ namespace ToolKit
     AABBTree& operator=(const AABBTree&) = delete;
 
     void Reset();
+    NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
+    void Rebuild();
 
    private:
     NodeProxy AllocateNode();
     void FreeNode(NodeProxy node);
+    NodeProxy InsertLeaf(NodeProxy leaf);
+    void Rotate(NodeProxy node);
 
    private:
     NodeProxy root;

@@ -57,19 +57,19 @@ namespace ToolKit
      * Check if the bounding box is valid.
      * @return True if the bounding box is valid, false otherwise.
      */
-    bool IsValid() const { return !glm::isinf(Volume()); }
+    inline bool IsValid() const { return !glm::isinf(Volume()); }
 
     /**
      * Get the center point of the bounding box.
      * @return The center point of the bounding box.
      */
-    Vec3 GetCenter() const { return min + (max - min) * 0.5f; }
+    inline Vec3 GetCenter() const { return min + (max - min) * 0.5f; }
 
     /**
      * Update the boundary of the bounding box with a new point.
      * @param v The new point to include in the bounding box.
      */
-    void UpdateBoundary(const Vec3& v)
+    inline void UpdateBoundary(const Vec3& v)
     {
       max = glm::max(max, v);
       min = glm::min(min, v);
@@ -79,47 +79,53 @@ namespace ToolKit
      * Update the boundary of the bounding box with another bounding box.
      * @param bb The bounding box to include in the bounding box.
      */
-    void UpdateBoundary(const BoundingBox& bb)
+    inline void UpdateBoundary(const BoundingBox& bb)
     {
       UpdateBoundary(bb.max);
       UpdateBoundary(bb.min);
+    }
+
+    /** Creates a new bounding box that is union of the b1 and b2. */
+    inline static BoundingBox Union(const BoundingBox& b1, const BoundingBox& b2)
+    {
+      return BoundingBox(glm::min(b1.min, b2.min), glm::max(b1.max, b2.max));
     }
 
     /**
      * Get the volume of the bounding box.
      * @return The volume of the bounding box.
      */
-    float Volume() const { return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z)); }
+    inline float Volume() const { return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z)); }
 
     /**
      * Calculates the half surface area of the bounding box.
      */
-    float HalfSurfaceArea() const
+    inline float HalfSurfaceArea() const
     {
       const Vec3 e = max - min;
       return e.x * e.y + e.x * e.z + e.y * e.z;
     }
 
     /** Calculates surface area of the bounding box. */
-    float SurfaceArea() const { return 2.0f * HalfSurfaceArea(); }
+    inline float SurfaceArea() const { return 2.0f * HalfSurfaceArea(); }
 
     /**
      * Get the width of the bounding box.
      * @return The width of the bounding box.
      */
-    float GetWidth() const { return max.x - min.x; }
+    inline float GetWidth() const { return max.x - min.x; }
 
     /**
      * Get the height of the bounding box.
      * @return The height of the bounding box.
      */
-    float GetHeight() const { return max.y - min.y; }
+    inline float GetHeight() const { return max.y - min.y; }
 
     /**
      * Get the depth of the bounding box.
      * @return The depth of the bounding box.
      */
-    float GetDepth() const { return max.z - min.z; }
+    inline float GetDepth() const { return max.z - min.z; }
   };
 
   static const BoundingBox infinitesimalBox(Vec3(-TK_FLT_MIN), Vec3(TK_FLT_MIN));
