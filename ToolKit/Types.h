@@ -86,10 +86,13 @@ namespace ToolKit
   typedef char byte;
   typedef unsigned char ubyte;
   typedef std::vector<byte> ByteArray;
-  typedef unsigned short uint16;
-  typedef uint32_t uint;
   typedef uint8_t uint8;
+  typedef uint16_t uint16;
+  typedef uint32_t uint;
   typedef uint64_t uint64;
+  typedef int32_t int32;
+  typedef int64_t int64;
+  typedef float Real; // Floating point type with adjustable precision. Can be set as double or float.
   typedef uint64_t ULongID;
   typedef std::vector<ULongID> IDArray;
   typedef const int16_t SignalId;

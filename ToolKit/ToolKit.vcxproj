@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AABBTree.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationControllerComponent.cpp" />
     <ClCompile Include="Audio.cpp">
@@ -97,6 +98,7 @@
     <ClCompile Include="Viewport.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABBTree.h" />
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AnimationControllerComponent.h" />
     <ClInclude Include="Audio.h" />

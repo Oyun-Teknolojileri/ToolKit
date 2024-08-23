@@ -91,12 +91,16 @@ namespace ToolKit
      */
     float Volume() const { return glm::abs((max.x - min.x) * (max.y - min.y) * (max.z - min.z)); }
 
+    /**
+     * Calculates the half surface area of the bounding box.
+     */
     float HalfSurfaceArea() const
     {
       const Vec3 e = max - min;
       return e.x * e.y + e.x * e.z + e.y * e.z;
     }
 
+    /** Calculates surface area of the bounding box. */
     float SurfaceArea() const { return 2.0f * HalfSurfaceArea(); }
 
     /**
