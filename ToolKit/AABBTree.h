@@ -58,6 +58,7 @@ namespace ToolKit
     void Reset();
     NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
     void Rebuild();
+    void GetDebugBVHBoxes(EntityPtrArray& boundingBoxes);
 
    private:
     NodeProxy AllocateNode();

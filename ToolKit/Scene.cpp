@@ -307,6 +307,8 @@ namespace ToolKit
         {
           m_entities.insert(m_entities.begin() + index, entity);
         }
+
+        m_bvh.CreateNode(entity, entity->GetBoundingBox(true));
       }
     }
   }

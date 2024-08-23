@@ -11,6 +11,7 @@
  * @file Scene.h Header file for the Scene class.
  */
 
+#include "AABBTree.h"
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
 #include "Resource.h"
@@ -288,6 +289,7 @@ namespace ToolKit
 
    public:
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
+    AABBTree m_bvh;
 
    protected:
     EntityPtrArray m_entities;   //!< The entities in the scene.

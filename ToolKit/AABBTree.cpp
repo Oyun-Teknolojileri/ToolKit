@@ -171,6 +171,14 @@ namespace ToolKit
     return node;
   }
 
+  void AABBTree::GetDebugBVHBoxes(EntityPtrArray& boundingBoxes)
+  {
+    for (int i = 0; i < nodeCount; i++)
+    {
+      boundingBoxes.push_back(CreateBoundingBoxDebugObject(nodes[i].aabb, ZERO, 1.0f));
+    }
+  }
+
   void AABBTree::FreeNode(NodeProxy node)
   {
     assert(0 <= node && node <= nodeCapacity);
