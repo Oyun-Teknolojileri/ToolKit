@@ -39,7 +39,12 @@ namespace ToolKit
 
   NodeProxy AABBTree::CreateNode(EntityWeakPtr entity, const BoundingBox& aabb)
   {
-    NodeProxy newNode       = AllocateNode();
+    NodeProxy newNode = AllocateNode();
+
+    if (EntityPtr ntt = entity.lock())
+    {
+      ntt->m_aabbTreeNodeProxy = newNode;
+    }
 
     // Fatten the aabb
     nodes[newNode].aabb.max = aabb.max + aabb_margin;
@@ -192,6 +197,11 @@ namespace ToolKit
   {
     assert(0 <= node && node <= nodeCapacity);
     assert(0 < nodeCount);
+
+    if (EntityPtr ntt = nodes[node].entity.lock())
+    {
+      ntt->m_aabbTreeNodeProxy = nullNode;
+    }
 
     nodes[node].parent = node;
     nodes[node].next   = freeList;

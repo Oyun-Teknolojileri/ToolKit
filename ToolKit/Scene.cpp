@@ -308,7 +308,7 @@ namespace ToolKit
           m_entities.insert(m_entities.begin() + index, entity);
         }
 
-        m_bvh.CreateNode(entity, entity->GetBoundingBox(true));
+        m_aabbTree.CreateNode(entity, entity->GetBoundingBox(true));
       }
     }
   }
@@ -358,6 +358,8 @@ namespace ToolKit
     {
       removed->m_node->OrphanAllChildren(true);
     }
+
+    m_aabbTree.RemoveNode(removed->m_aabbTreeNodeProxy);
 
     return removed;
   }

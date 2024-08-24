@@ -11,6 +11,7 @@
  * @file Entity.h Header for Entity,
  */
 
+#include "AABBTree.h"
 #include "Animation.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
@@ -206,6 +207,9 @@ namespace ToolKit
      * Prefab Entity during Prefab::Init.
      */
     Entity* _prefabRootEntity;
+
+    /** Index into the bvh tree that points to the node for this entity. */
+    NodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
 
    protected:
     BoundingBox m_localBoundingBoxCache;

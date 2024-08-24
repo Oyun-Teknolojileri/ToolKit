@@ -289,7 +289,9 @@ namespace ToolKit
 
    public:
     EngineSettings::PostProcessingSettings m_postProcessSettings; //!< Post process settings that this scene uses
-    AABBTree m_bvh;
+
+    /** Bounding box binary tree that encapsulates all entities for this scene. */
+    AABBTree m_aabbTree;
 
    protected:
     EntityPtrArray m_entities;   //!< The entities in the scene.

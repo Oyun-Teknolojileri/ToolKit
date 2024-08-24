@@ -167,7 +167,7 @@ namespace ToolKit
 
       if (app->m_showBVHNodes)
       {
-        scene->m_bvh.GetDebugBoundingBoxes(app->m_perFrameDebugObjects);
+        scene->m_aabbTree.GetDebugBoundingBoxes(app->m_perFrameDebugObjects);
       }
 
       if (app->m_showPickingDebug)
