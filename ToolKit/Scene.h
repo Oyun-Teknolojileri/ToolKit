@@ -294,9 +294,8 @@ namespace ToolKit
     AABBTree m_aabbTree;
 
    protected:
-    EntityPtrArray m_entities;   //!< The entities in the scene.
-    bool m_isPrefab;             //!< Whether or not the scene is a prefab.
-    BoundingBox m_sceneBoundary; //!< Bounding box that covers the whole scene.
+    EntityPtrArray m_entities; //!< The entities in the scene.
+    bool m_isPrefab;           //!< Whether or not the scene is a prefab.
 
     mutable LightPtrArray m_lightCache;                            //!< Cached light entities which is added to scene.
     mutable EnvironmentComponentPtrArray m_environmentVolumeCache; //!< Environment volumes in the scene.

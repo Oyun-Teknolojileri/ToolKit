@@ -59,6 +59,7 @@ namespace ToolKit
     void RemoveNode(NodeProxy node);
     void Rebuild();
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);
+    const BoundingBox& GetRootBoundingBox();
 
    private:
     NodeProxy AllocateNode();

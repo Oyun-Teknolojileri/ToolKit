@@ -144,13 +144,6 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
-    BoundingBox bbox;
-    for (EntityPtr ntt : m_entities)
-    {
-      bbox.UpdateBoundary(ntt->GetBoundingBox(true));
-    }
-    m_sceneBoundary = bbox;
-
     for (LightPtr& light : m_lightCache)
     {
       light->UpdateShadowCamera();
@@ -515,7 +508,7 @@ namespace ToolKit
 
   void Scene::ClearEntities() { m_entities.clear(); }
 
-  const BoundingBox& Scene::GetSceneBoundary() { return m_sceneBoundary; }
+  const BoundingBox& Scene::GetSceneBoundary() { return m_aabbTree.GetRootBoundingBox(); }
 
   void Scene::CopyTo(Resource* other)
   {

@@ -173,6 +173,16 @@ namespace ToolKit
     }
   }
 
+  const BoundingBox& AABBTree::GetRootBoundingBox()
+  {
+    if (root != nullNode)
+    {
+      return nodes[root].aabb;
+    }
+
+    return infinitesimalBox;
+  }
+
   NodeProxy AABBTree::AllocateNode()
   {
     if (freeList == nullNode)
