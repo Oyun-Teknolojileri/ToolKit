@@ -53,6 +53,15 @@ namespace ToolKit
     return newNode;
   }
 
+  void AABBTree::RemoveNode(NodeProxy node)
+  {
+    assert(0 <= node && node < nodeCapacity);
+    assert(nodes[node].IsLeaf());
+
+    RemoveLeaf(node);
+    FreeNode(node);
+  }
+
   void AABBTree::Rebuild()
   {
     // Rebuild tree with bottom up approach
@@ -171,7 +180,7 @@ namespace ToolKit
     return node;
   }
 
-  void AABBTree::GetDebugBVHBoxes(EntityPtrArray& boundingBoxes)
+  void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes)
   {
     for (int i = 0; i < nodeCount; i++)
     {
@@ -389,6 +398,65 @@ namespace ToolKit
     }
 
     return leaf;
+  }
+
+  void AABBTree::RemoveLeaf(NodeProxy leaf)
+  {
+    assert(0 <= leaf && leaf < nodeCapacity);
+    assert(nodes[leaf].IsLeaf());
+
+    NodeProxy parent = nodes[leaf].parent;
+    if (parent == nullNode) // node is root
+    {
+      assert(root == leaf);
+      root = nullNode;
+      return;
+    }
+
+    NodeProxy grandParent = nodes[parent].parent;
+    NodeProxy sibling;
+    if (nodes[parent].child1 == leaf)
+    {
+      sibling = nodes[parent].child2;
+    }
+    else
+    {
+      sibling = nodes[parent].child1;
+    }
+
+    FreeNode(parent);
+
+    if (grandParent != nullNode) // node has grandparent
+    {
+      nodes[sibling].parent = grandParent;
+
+      if (nodes[grandParent].child1 == parent)
+      {
+        nodes[grandParent].child1 = sibling;
+      }
+      else
+      {
+        nodes[grandParent].child2 = sibling;
+      }
+
+      NodeProxy ancestor = grandParent;
+      while (ancestor != nullNode)
+      {
+        NodeProxy child1     = nodes[ancestor].child1;
+        NodeProxy child2     = nodes[ancestor].child2;
+
+        nodes[ancestor].aabb = BoundingBox::Union(nodes[child1].aabb, nodes[child2].aabb);
+
+        Rotate(ancestor);
+
+        ancestor = nodes[ancestor].parent;
+      }
+    }
+    else // node has no grandparent
+    {
+      root                  = sibling;
+      nodes[sibling].parent = nullNode;
+    }
   }
 
 } // namespace ToolKit

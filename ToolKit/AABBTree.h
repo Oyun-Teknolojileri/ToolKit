@@ -57,13 +57,15 @@ namespace ToolKit
 
     void Reset();
     NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
+    void RemoveNode(NodeProxy node);
     void Rebuild();
-    void GetDebugBVHBoxes(EntityPtrArray& boundingBoxes);
+    void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);
 
    private:
     NodeProxy AllocateNode();
     void FreeNode(NodeProxy node);
     NodeProxy InsertLeaf(NodeProxy leaf);
+    void RemoveLeaf(NodeProxy leaf);
     void Rotate(NodeProxy node);
 
    private:
