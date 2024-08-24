@@ -20,6 +20,7 @@
 #include "Node.h"
 #include "Prefab.h"
 #include "Primative.h"
+#include "Scene.h"
 #include "Skeleton.h"
 #include "Sky.h"
 #include "Surface.h"
@@ -97,7 +98,7 @@ namespace ToolKit
 
   BoundingBox Entity::GetBoundingBox(bool inWorld)
   {
-    if (!m_boundingBoxCacheInvalidated)
+    if (!m_transformCacheInvalidated)
     {
       return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
     }
@@ -121,7 +122,12 @@ namespace ToolKit
 
   void Entity::InvalidateSpatialCaches()
   {
-    m_boundingBoxCacheInvalidated = true;
+    m_transformCacheInvalidated = true;
+
+    if (ScenePtr scene = m_scene.lock())
+    {
+      scene->m_aabbTree.UpdateNode(m_aabbTreeNodeProxy);
+    }
 
     if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
     {
@@ -364,7 +370,7 @@ namespace ToolKit
     m_worldBoundingBoxCache = m_localBoundingBoxCache;
     TransformAABB(m_worldBoundingBoxCache, m_node->GetTransform());
 
-    m_boundingBoxCacheInvalidated = false;
+    m_transformCacheInvalidated = false;
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }

@@ -141,6 +141,7 @@ namespace ToolKit
   typedef std::shared_ptr<class GpuProgram> GpuProgramPtr;
   typedef std::shared_ptr<class SkinMesh> SkinMeshPtr;
   typedef std::shared_ptr<class Scene> ScenePtr;
+  typedef std::weak_ptr<class Scene> SceneWeakPtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
   typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;

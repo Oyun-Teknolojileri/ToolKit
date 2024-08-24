@@ -309,6 +309,7 @@ namespace ToolKit
         }
 
         m_aabbTree.CreateNode(entity, entity->GetBoundingBox(true));
+        entity->m_scene = Self<Scene>();
       }
     }
   }
@@ -360,6 +361,7 @@ namespace ToolKit
     }
 
     m_aabbTree.RemoveNode(removed->m_aabbTreeNodeProxy);
+    removed->m_scene.reset();
 
     return removed;
   }
@@ -685,6 +687,8 @@ namespace ToolKit
       prefab->Link();
     }
 
+    m_aabbTree.Rebuild();
+
     return nullptr;
   }
 
@@ -751,6 +755,8 @@ namespace ToolKit
       prefab->Init(this);
       prefab->Link();
     }
+
+    m_aabbTree.Rebuild();
   }
 
   ULongID Scene::GetBiggestEntityId()

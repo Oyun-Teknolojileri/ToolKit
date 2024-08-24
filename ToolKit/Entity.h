@@ -211,12 +211,15 @@ namespace ToolKit
     /** Index into the bvh tree that points to the node for this entity. */
     NodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
 
+    /** The Scene that entity belongs to. */
+    SceneWeakPtr m_scene;
+
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
 
-    /** If true, bounding box caches are updated upon access. */
-    bool m_boundingBoxCacheInvalidated = true;
+    /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
+    bool m_transformCacheInvalidated = true;
 
    private:
     /**

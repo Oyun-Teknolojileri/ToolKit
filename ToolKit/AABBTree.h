@@ -35,15 +35,13 @@ namespace ToolKit
       bool IsLeaf() const { return child1 == nullNode; }
 
       BoundingBox aabb;
+      EntityWeakPtr entity;
 
       NodeProxy parent;
       NodeProxy child1;
       NodeProxy child2;
-
       NodeProxy next;
       bool moved;
-
-      EntityWeakPtr entity;
     };
 
     typedef std::vector<AABBTree::Node> NodeArray;
@@ -57,6 +55,7 @@ namespace ToolKit
 
     void Reset();
     NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
+    void UpdateNode(NodeProxy node); /** Updates the tree via reinserting the provided node. */
     void RemoveNode(NodeProxy node);
     void Rebuild();
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);

@@ -58,6 +58,24 @@ namespace ToolKit
     return newNode;
   }
 
+  void AABBTree::UpdateNode(NodeProxy node)
+  {
+    assert(0 <= node && node < nodeCapacity);
+    assert(nodes[node].IsLeaf());
+
+    BoundingBox aabb;
+    if (EntityPtr ntt = nodes[node].entity.lock())
+    {
+      aabb = ntt->GetBoundingBox(true);
+    }
+
+    RemoveLeaf(node);
+
+    nodes[node].aabb = aabb;
+
+    InsertLeaf(node);
+  }
+
   void AABBTree::RemoveNode(NodeProxy node)
   {
     assert(0 <= node && node < nodeCapacity);
@@ -148,8 +166,11 @@ namespace ToolKit
       --count;
     }
 
-    root = leaves[0];
-    leaves.clear();
+    if (!leaves.empty())
+    {
+      root = leaves[0];
+      leaves.clear();
+    }
   }
 
   NodeProxy AABBTree::AllocateNode()
