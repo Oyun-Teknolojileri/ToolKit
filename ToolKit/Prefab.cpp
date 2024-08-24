@@ -21,6 +21,19 @@ namespace ToolKit
 
   Prefab::~Prefab() { UnInit(); }
 
+  bool Prefab::IsDrawable() const
+  {
+    for (int i = 0; i < (int) m_instanceEntities.size(); i++)
+    {
+      if (m_instanceEntities[i]->IsDrawable())
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   void Prefab::UnInit()
   {
     Unlink();
@@ -131,6 +144,8 @@ namespace ToolKit
 
     return nullptr;
   }
+
+  const EntityPtrArray& Prefab::GetInstancedEntities() { return m_instanceEntities; }
 
   void Prefab::Init(Scene* curScene)
   {

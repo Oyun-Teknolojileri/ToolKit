@@ -27,6 +27,8 @@ namespace ToolKit
     Prefab();
     virtual ~Prefab();
 
+    bool IsDrawable() const override;
+
     /** Initiates prefab scene and link to the current scene. */
     void Init(Scene* currentScene);
 
@@ -56,6 +58,9 @@ namespace ToolKit
      * @return First entity with given tag. Null pointer if the entity is not found or the prefab is not linked.
      */
     EntityPtr GetFirstByTag(const String& tag);
+
+    /** Returns entity list instantiated for this prefab. */
+    const EntityPtrArray& GetInstancedEntities();
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;

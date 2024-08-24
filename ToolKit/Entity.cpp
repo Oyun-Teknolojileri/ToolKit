@@ -70,7 +70,6 @@ namespace ToolKit
   {
     if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
     {
-      // meshComp->Init(false);
       if (const MeshPtr& mesh = meshComp->GetMeshVal())
       {
         return mesh->TotalVertexCount() > 0;

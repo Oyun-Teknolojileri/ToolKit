@@ -256,12 +256,28 @@ namespace ToolKit
       // Missing data reporter.
       if (ntt->IsDrawable())
       {
-        MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
+        MeshRawPtrArray meshes;
+        if (Prefab* prefab = ntt->As<Prefab>())
+        {
+          const EntityPtrArray subEntities = prefab->GetInstancedEntities();
+          for (EntityPtr subNtt : subEntities)
+          {
+            if (subNtt->IsDrawable())
+            {
+              MeshPtr mesh = subNtt->GetComponent<MeshComponent>()->GetMeshVal();
+              MeshRawPtrArray subMeshes;
+              mesh->GetAllMeshes(subMeshes);
+              meshes.insert(meshes.end(), subMeshes.begin(), subMeshes.end());
+            }
+          }
+        }
+        else
+        {
+          MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
+          mesh->GetAllMeshes(meshes);
+        }
 
         StringArray missingData;
-        MeshRawPtrArray meshes;
-        mesh->GetAllMeshes(meshes);
-
         for (const Mesh* subMesh : meshes)
         {
           if (!subMesh->_missingFile.empty())
