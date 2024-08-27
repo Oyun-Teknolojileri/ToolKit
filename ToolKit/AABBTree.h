@@ -55,9 +55,11 @@ namespace ToolKit
 
     void Reset();
     NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
-    void UpdateNode(NodeProxy node); /** Updates the tree via reinserting the provided node. */
+    /** Updates the tree via reinserting the provided node. */
+    void UpdateNode(NodeProxy node);
     void RemoveNode(NodeProxy node);
     void Traverse(std::function<void(const Node*)> callback) const;
+    /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);
     const BoundingBox& GetRootBoundingBox();

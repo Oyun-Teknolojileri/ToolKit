@@ -137,7 +137,6 @@ namespace ToolKit
       }
     }
 
-    m_aabbTree.Rebuild();
     m_initiated = true;
   }
 
