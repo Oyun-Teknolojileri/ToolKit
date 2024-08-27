@@ -339,7 +339,7 @@ namespace ToolKit
       for (ULongID id : m_selectedEntities)
       {
         EntityPtr ntt = GetEntity(id);
-        assert(ntt != nullptr && "Null entity found in the scene.");
+        assert(ntt != nullptr && "Null entity found in the selection.");
 
         entities.push_back(ntt);
       }

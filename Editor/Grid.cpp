@@ -38,6 +38,8 @@ namespace ToolKit
 
     Grid::Grid()
     {
+      m_partOfAABBTree           = false;
+
       Vec3 m_horizontalAxisColor = g_gridAxisRed;
       Vec3 m_verticalAxisColor   = g_gridAxisBlue;
 

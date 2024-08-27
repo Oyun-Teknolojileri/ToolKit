@@ -123,9 +123,12 @@ namespace ToolKit
   {
     m_transformCacheInvalidated = true;
 
-    if (ScenePtr scene = m_scene.lock())
+    if (m_aabbTreeNodeProxy != AABBTree::nullNode)
     {
-      scene->m_aabbTree.UpdateNode(m_aabbTreeNodeProxy);
+      if (ScenePtr scene = m_scene.lock())
+      {
+        scene->m_aabbTree.UpdateNode(m_aabbTreeNodeProxy);
+      }
     }
 
     if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
@@ -417,7 +420,7 @@ namespace ToolKit
     }
   }
 
-  EntityNode::EntityNode() {}
+  EntityNode::EntityNode() { m_partOfAABBTree = false; }
 
   EntityNode::EntityNode(const String& name) { SetNameVal(name); }
 

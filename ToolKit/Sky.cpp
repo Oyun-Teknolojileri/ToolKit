@@ -19,7 +19,7 @@ namespace ToolKit
 
   TKDefineClass(SkyBase, Entity);
 
-  SkyBase::SkyBase() {}
+  SkyBase::SkyBase() { m_partOfAABBTree = false; }
 
   void SkyBase::NativeConstruct() { Super::NativeConstruct(); }
 

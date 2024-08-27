@@ -137,6 +137,7 @@ namespace ToolKit
       }
     }
 
+    m_aabbTree.Rebuild();
     m_initiated = true;
   }
 
@@ -301,8 +302,12 @@ namespace ToolKit
           m_entities.insert(m_entities.begin() + index, entity);
         }
 
-        m_aabbTree.CreateNode(entity, entity->GetBoundingBox(true));
         entity->m_scene = Self<Scene>();
+
+        if (entity->m_partOfAABBTree)
+        {
+          m_aabbTree.CreateNode(entity, entity->GetBoundingBox(true));
+        }
       }
     }
   }
@@ -353,8 +358,11 @@ namespace ToolKit
       removed->m_node->OrphanAllChildren(true);
     }
 
-    m_aabbTree.RemoveNode(removed->m_aabbTreeNodeProxy);
-    removed->m_scene.reset();
+    if (removed->m_aabbTreeNodeProxy != AABBTree::nullNode)
+    {
+      m_aabbTree.RemoveNode(removed->m_aabbTreeNodeProxy);
+      removed->m_scene.reset();
+    }
 
     return removed;
   }
@@ -680,8 +688,6 @@ namespace ToolKit
       prefab->Link();
     }
 
-    m_aabbTree.Rebuild();
-
     return nullptr;
   }
 
@@ -703,8 +709,9 @@ namespace ToolKit
 
       ntt->DeSerialize(info, node);
 
-      if (ntt->IsA<Prefab>())
+      if (Prefab* prefab = ntt->As<Prefab>())
       {
+        prefab->Init(this);
         prefabList.push_back(ntt);
       }
 
@@ -745,11 +752,8 @@ namespace ToolKit
     for (EntityPtr ntt : prefabList)
     {
       PrefabPtr prefab = std::static_pointer_cast<Prefab>(ntt);
-      prefab->Init(this);
       prefab->Link();
     }
-
-    m_aabbTree.Rebuild();
   }
 
   ULongID Scene::GetBiggestEntityId()
