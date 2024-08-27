@@ -95,18 +95,18 @@ namespace ToolKit
       return;
     }
 
-    std::queue<NodeProxy> stack;
-    stack.emplace(root);
+    std::deque<NodeProxy> stack;
+    stack.emplace_back(root);
 
     while (stack.size() != 0)
     {
       NodeProxy current = stack.back();
-      stack.pop();
+      stack.pop_back();
 
       if (nodes[current].IsLeaf() == false)
       {
-        stack.emplace(nodes[current].child1);
-        stack.emplace(nodes[current].child2);
+        stack.emplace_back(nodes[current].child1);
+        stack.emplace_back(nodes[current].child2);
       }
 
       const Node* node = &nodes[current];
@@ -390,14 +390,14 @@ namespace ToolKit
       Candidate(NodeProxy node, float inheritedCost) : node(node), inheritedCost(inheritedCost) {}
     };
 
-    std::queue<Candidate> stack;
-    stack.emplace(root, 0.0f);
+    std::deque<Candidate> stack;
+    stack.emplace_back(root, 0.0f);
 
     while (stack.size() != 0)
     {
       NodeProxy current   = stack.back().node;
       float inheritedCost = stack.back().inheritedCost;
-      stack.pop();
+      stack.pop_back();
 
       BoundingBox combined = BoundingBox::Union(nodes[current].aabb, aabb);
       float directCost     = combined.SurfaceArea();
@@ -416,8 +416,8 @@ namespace ToolKit
       {
         if (nodes[current].IsLeaf() == false)
         {
-          stack.emplace(nodes[current].child1, inheritedCost);
-          stack.emplace(nodes[current].child2, inheritedCost);
+          stack.emplace_back(nodes[current].child1, inheritedCost);
+          stack.emplace_back(nodes[current].child2, inheritedCost);
         }
       }
     }
