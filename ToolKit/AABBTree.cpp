@@ -88,6 +88,32 @@ namespace ToolKit
     FreeNode(node);
   }
 
+  void AABBTree::Traverse(std::function<void(const Node*)> callback) const
+  {
+    if (root == nullNode)
+    {
+      return;
+    }
+
+    std::queue<NodeProxy> stack;
+    stack.emplace(root);
+
+    while (stack.size() != 0)
+    {
+      NodeProxy current = stack.back();
+      stack.pop();
+
+      if (nodes[current].IsLeaf() == false)
+      {
+        stack.emplace(nodes[current].child1);
+        stack.emplace(nodes[current].child2);
+      }
+
+      const Node* node = &nodes[current];
+      callback(node);
+    }
+  }
+
   void AABBTree::Rebuild()
   {
     // Rebuild tree with bottom up approach
@@ -221,10 +247,8 @@ namespace ToolKit
 
   void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes)
   {
-    for (int i = 0; i < nodeCount; i++)
-    {
-      boundingBoxes.push_back(CreateBoundingBoxDebugObject(nodes[i].aabb, ZERO, 1.0f));
-    }
+    Traverse([&](const AABBTree::Node* node) -> void
+             { boundingBoxes.push_back(CreateBoundingBoxDebugObject(node->aabb, ZERO, 1.0f)); });
   }
 
   void AABBTree::FreeNode(NodeProxy node)

@@ -57,6 +57,7 @@ namespace ToolKit
     NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
     void UpdateNode(NodeProxy node); /** Updates the tree via reinserting the provided node. */
     void RemoveNode(NodeProxy node);
+    void Traverse(std::function<void(const Node*)> callback) const;
     void Rebuild();
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);
     const BoundingBox& GetRootBoundingBox();
