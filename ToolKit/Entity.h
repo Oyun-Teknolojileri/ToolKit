@@ -217,12 +217,12 @@ namespace ToolKit
     /** The Scene that entity belongs to. */
     SceneWeakPtr m_scene;
 
+    /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
+    bool m_transformCacheInvalidated = true;
+
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
-
-    /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
-    bool m_transformCacheInvalidated = true;
 
    private:
     /**

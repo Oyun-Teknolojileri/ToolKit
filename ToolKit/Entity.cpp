@@ -121,6 +121,18 @@ namespace ToolKit
 
   void Entity::InvalidateSpatialCaches()
   {
+    if (DirectionComponent* dirComp = GetComponentFast<DirectionComponent>())
+    {
+      // Get access wrongly clears the spatial invalidation.
+      // The better fix is, invalidate all at frame 0 and update all at the beginning on frame 1.
+      dirComp->m_spatialCachesInvalidated = true;
+    }
+
+    if (m_transformCacheInvalidated)
+    {
+      return;
+    }
+
     m_transformCacheInvalidated = true;
 
     if (m_aabbTreeNodeProxy != AABBTree::nullNode)
@@ -134,11 +146,6 @@ namespace ToolKit
     if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
     {
       envComp->m_spatialCachesInvalidated = true;
-    }
-
-    if (DirectionComponent* dirComp = GetComponentFast<DirectionComponent>())
-    {
-      dirComp->m_spatialCachesInvalidated = true;
     }
   }
 
