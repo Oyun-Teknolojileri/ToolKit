@@ -63,11 +63,14 @@ namespace ToolKit
     assert(0 <= node && node < nodeCapacity);
     assert(nodes[node].IsLeaf());
 
-    BoundingBox aabb;
+    BoundingBox aabb = nodes[node].aabb;
     if (EntityPtr ntt = nodes[node].entity.lock())
     {
       aabb = ntt->GetBoundingBox(true);
     }
+
+    aabb.max = aabb.max + aabb_margin;
+    aabb.min = aabb.min - aabb_margin;
 
     RemoveLeaf(node);
 
