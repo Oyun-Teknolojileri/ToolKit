@@ -125,6 +125,7 @@ namespace ToolKit
     {
       // Get access wrongly clears the spatial invalidation.
       // The better fix is, invalidate all at frame 0 and update all at the beginning on frame 1.
+      // TODO: Post Transform Update.
       dirComp->m_spatialCachesInvalidated = true;
     }
 
