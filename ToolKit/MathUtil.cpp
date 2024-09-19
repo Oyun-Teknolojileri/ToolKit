@@ -334,19 +334,14 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
-    float bbDist               = 0.0f;
-
+    float bbDist;
     if (RayBoxIntersection(rayInObjectSpace, entity->GetBoundingBox(), bbDist))
     {
       dist             = TK_FLT_MAX;
       uint submeshIndx = FindMeshIntersection(entity, ray, dist);
 
       // There was no tracing possible object, so hit should be true
-      if (dist == 0.0f && submeshIndx == TK_UINT_MAX)
-      {
-        hit = true;
-      }
-      else if (dist != TK_FLT_MAX && submeshIndx != TK_UINT_MAX)
+      if (submeshIndx != TK_UINT_MAX)
       {
         hit = true;
       }
@@ -425,7 +420,7 @@ namespace ToolKit
 
   bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponentPtr skelComp)
   {
-    float closestPickedDistance = FLT_MAX;
+    float closestPickedDistance = TK_FLT_MAX;
     bool hit                    = false;
     bool isAnimated             = true;
 
@@ -484,7 +479,7 @@ namespace ToolKit
                                                             isAnimated);
                       }
                     }
-                    float dist = FLT_MAX;
+                    float dist = TK_FLT_MAX;
                     if (RayTriangleIntersection(ray, positions[0], positions[1], positions[2], dist))
                     {
                       std::lock_guard<std::mutex> guard(updateHit);
@@ -502,13 +497,13 @@ namespace ToolKit
 
   uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
-    SkeletonComponentPtr skel = ntt->GetComponent<SkeletonComponent>();
-
     MeshRawPtrArray meshes;
     if (MeshComponentPtr meshComp = ntt->GetComponent<MeshComponent>())
     {
       meshComp->GetMeshVal()->GetAllMeshes(meshes);
     }
+
+    SkeletonComponentPtr skel = ntt->GetComponent<SkeletonComponent>();
 
     struct MeshTrace
     {
@@ -521,13 +516,13 @@ namespace ToolKit
     {
       // There is a special case for SkinMeshes, because
       // m_clientSideVertices.size() here always accesses to Mesh's vertex
-      // array (Vertex*) but it should've access to SkinMesh's vertex
+      // array (Vertex*) but it should access to SkinMesh's vertex
       // array (SkinVertex*). That's why SkinMeshes checked with a cast
       const Mesh* const mesh = meshes[i];
-      if (mesh->IsSkinned())
+      if (mesh->IsSkinned() && skel != nullptr)
       {
         SkinMesh* skinMesh = (SkinMesh*) mesh;
-        if (skinMesh->m_clientSideVertices.size() && skel != nullptr)
+        if (skinMesh->m_clientSideVertices.size())
         {
           meshTraces.push_back({TK_FLT_MAX, i});
         }
@@ -538,9 +533,9 @@ namespace ToolKit
       }
     }
 
-    if (meshTraces.size() == 0)
+    if (meshTraces.empty())
     {
-      t = 0.0f;
+      t = TK_FLT_MAX;
       return TK_UINT_MAX;
     }
 
@@ -554,14 +549,14 @@ namespace ToolKit
                   meshTraces.end(),
                   [rayInObjectSpace, skel, &meshes](MeshTrace& trace)
                   {
-                    float t = TK_FLT_MAX;
-
-                    if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
+                    float meshDist = TK_FLT_MAX;
+                    if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, meshDist, skel))
                     {
-                      trace.dist = t;
+                      trace.dist = meshDist;
                     }
                   });
 
+    // Pick the submesh intersection.
     t                = TK_FLT_MAX;
     uint closestIndx = TK_UINT_MAX;
     for (const MeshTrace& trace : meshTraces)
@@ -572,6 +567,7 @@ namespace ToolKit
         closestIndx = trace.indx;
       }
     }
+
     return closestIndx;
   }
 

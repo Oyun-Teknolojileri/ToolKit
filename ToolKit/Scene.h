@@ -116,14 +116,11 @@ namespace ToolKit
      * operation.
      * @param extraList A list of extra entity pointers to include in the
      * culling operation.
-     * @param pickPartiallyInside If true, objects that are partially contained
-     * within the frustum will also be included.
      */
     virtual void PickObject(const Frustum& frustum,
                             PickDataArray& pickedObjects,
                             const IDArray& ignoreList       = {},
-                            const EntityPtrArray& extraList = {},
-                            bool pickPartiallyInside        = true);
+                            const EntityPtrArray& extraList = {});
 
     /**
      * Gets the entity with the given ID from the scene.

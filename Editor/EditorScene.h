@@ -70,8 +70,7 @@ namespace ToolKit
       void PickObject(const Frustum& frustum,
                       PickDataArray& pickedObjects,
                       const IDArray& ignoreList       = {},
-                      const EntityPtrArray& extraList = {},
-                      bool pickPartiallyInside        = true) override;
+                      const EntityPtrArray& extraList = {}) override;
 
       // Gizmo operations
       void AddBillboard(EntityPtr entity);

@@ -371,15 +371,14 @@ namespace ToolKit
     void EditorScene::PickObject(const Frustum& frustum,
                                  PickDataArray& pickedObjects,
                                  const IDArray& ignoreList,
-                                 const EntityPtrArray& extraList,
-                                 bool pickPartiallyInside)
+                                 const EntityPtrArray& extraList)
     {
       // Add billboards to scene
       EntityPtrArray temp = extraList;
       temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
       UpdateBillboardsForPicking();
 
-      Scene::PickObject(frustum, pickedObjects, ignoreList, temp, pickPartiallyInside);
+      Scene::PickObject(frustum, pickedObjects, ignoreList, temp);
 
       // If the billboards are picked, pick the entity.
       pickedObjects.erase(std::remove_if(pickedObjects.begin(),

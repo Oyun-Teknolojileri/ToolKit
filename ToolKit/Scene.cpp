@@ -168,9 +168,9 @@ namespace ToolKit
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
 
-    float closestPickedDistance = FLT_MAX;
+    float closestPickedDistance = TK_FLT_MAX;
 
-    auto pickFn = [&ignoreList, &ray, &pd, &closestPickedDistance](const EntityPtrArray& entities) -> void
+    auto pickFn                 = [&](const EntityPtrArray& entities) -> void
     {
       for (EntityPtr ntt : entities)
       {
@@ -198,7 +198,15 @@ namespace ToolKit
     };
 
     pickFn(extraList);
-    pickFn(m_entities);
+
+    float dist          = TK_FLT_MAX;
+    EntityPtr pickedNtt = m_aabbTree.RayQuery(ray, true, &dist);
+
+    if (dist < closestPickedDistance)
+    {
+      pd.entity  = pickedNtt;
+      pd.pickPos = PointOnRay(ray, dist);
+    }
 
     return pd;
   }
@@ -206,10 +214,9 @@ namespace ToolKit
   void Scene::PickObject(const Frustum& frustum,
                          PickDataArray& pickedObjects,
                          const IDArray& ignoreList,
-                         const EntityPtrArray& extraList,
-                         bool pickPartiallyInside)
+                         const EntityPtrArray& extraList)
   {
-    auto pickFn = [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside](const EntityPtrArray& entities) -> void
+    auto pickFn = [&](const EntityPtrArray& entities, bool skipTest) -> void
     {
       for (EntityPtr ntt : entities)
       {
@@ -223,28 +230,30 @@ namespace ToolKit
           continue;
         }
 
+        IntersectResult res = IntersectResult::Inside;
         BoundingBox bb      = ntt->GetBoundingBox(true);
-        IntersectResult res = FrustumBoxIntersection(frustum, bb);
+
+        if (!skipTest)
+        {
+          res = FrustumBoxIntersection(frustum, bb);
+        }
+
         if (res != IntersectResult::Outside)
         {
           PickData pd;
           pd.pickPos = (bb.max + bb.min) * 0.5f;
           pd.entity  = ntt;
 
-          if (res == IntersectResult::Inside)
-          {
-            pickedObjects.push_back(pd);
-          }
-          else if (pickPartiallyInside)
-          {
-            pickedObjects.push_back(pd);
-          }
+          pickedObjects.push_back(pd);
         }
       }
     };
 
-    pickFn(extraList);
-    pickFn(m_entities);
+    pickFn(extraList, false);
+
+    EntityPtrArray entitiesInTheFrustum = m_aabbTree.FrustumQuery(frustum);
+
+    pickFn(entitiesInTheFrustum, true);
   }
 
   EntityPtr Scene::GetEntity(ULongID id, int* index) const

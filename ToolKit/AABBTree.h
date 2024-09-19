@@ -64,6 +64,15 @@ namespace ToolKit
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);
     const BoundingBox& GetRootBoundingBox();
 
+    /** Checks entities inside the aabb tree and return the ones inside the frustum or intersecting with it. */
+    EntityPtrArray FrustumQuery(const Frustum& frustum);
+
+    /**
+     * Checks entities inside the aabb tree and return the nearest one that hits the ray and the hit distance t.
+     * If the deep parameter passed as true, it checks mesh level intersection.
+     */
+    EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr);
+
    private:
     NodeProxy AllocateNode();
     void FreeNode(NodeProxy node);

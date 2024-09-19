@@ -88,9 +88,11 @@ namespace ToolKit
                                   float& t,
                                   const SkeletonComponentPtr skelComp = nullptr);
 
-  // @return TK_UINT_MAX = no intersection, otherwise submesh index
-  // If there is no tracing possible object, t set as 0.0
-  // Tracing possible object: Vertex positions should be in memory
+  /**
+   * For both skinned and mesh objects, finds the ray mesh intersection.
+   * If there are sub meshes, in case of a hit returns the sub mesh index and intersection distance t.
+   * If there is no intersection, returns TK_UINT_MAX and sets t to TK_FLT_MAX.
+   */
   TK_API uint FindMeshIntersection(const EntityPtr ntt, const Ray& ray, float& t);
 
   TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box);

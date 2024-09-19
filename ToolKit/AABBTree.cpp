@@ -245,6 +245,100 @@ namespace ToolKit
     return node;
   }
 
+  EntityPtrArray AABBTree::FrustumQuery(const Frustum& frustum)
+  {
+    EntityPtrArray entities;
+
+    if (root == nullNode)
+    {
+      return entities;
+    }
+
+    std::deque<NodeProxy> stack;
+    stack.emplace_back(root);
+
+    while (stack.size() != 0)
+    {
+      NodeProxy current = stack.back();
+      stack.pop_back();
+
+      if (FrustumBoxIntersection(frustum, nodes[current].aabb) != IntersectResult::Outside)
+      {
+        if (nodes[current].IsLeaf())
+        {
+          entities.push_back(nodes[current].entity.lock());
+        }
+        else
+        {
+          stack.emplace_back(nodes[current].child1);
+          stack.emplace_back(nodes[current].child2);
+        }
+      }
+    }
+
+    return entities;
+  }
+
+  EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t)
+  {
+    if (root == nullNode)
+    {
+      return nullptr;
+    }
+
+    std::deque<NodeProxy> stack;
+    stack.emplace_back(root);
+
+    float hitDist = TK_FLT_MAX;
+    EntityPtr hitEntity;
+
+    while (stack.size() != 0)
+    {
+      NodeProxy current = stack.back();
+      stack.pop_back();
+
+      float intersecLen;
+      if (RayBoxIntersection(ray, nodes[current].aabb, intersecLen))
+      {
+        if (nodes[current].IsLeaf())
+        {
+          EntityPtr candidate = nodes[current].entity.lock();
+
+          if (deep)
+          {
+            float meshDist;
+            if (RayEntityIntersection(ray, candidate, meshDist))
+            {
+              intersecLen = meshDist;
+            }
+            else
+            {
+              intersecLen = TK_FLT_MAX;
+            }
+          }
+
+          if (intersecLen < hitDist)
+          {
+            hitDist   = intersecLen;
+            hitEntity = candidate;
+          }
+        }
+        else
+        {
+          stack.emplace_back(nodes[current].child1);
+          stack.emplace_back(nodes[current].child2);
+        }
+      }
+    }
+
+    if (t != nullptr)
+    {
+      *t = hitDist;
+    }
+
+    return hitEntity;
+  }
+
   void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes)
   {
     Traverse([&](const AABBTree::Node* node) -> void
