@@ -8,6 +8,7 @@
 #include "ForwardSceneRenderPath.h"
 
 #include "Material.h"
+#include "MathUtil.h"
 #include "Scene.h"
 #include "Shader.h"
 
@@ -117,12 +118,12 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::SetPassParams()
   {
-    EntityRawPtrArray sceneEntities;
-    ToEntityRawPtrArray(sceneEntities, m_params.Scene->GetEntities());
+    Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
+    EntityRawPtrArray entities = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
+
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
-                                         sceneEntities,
+                                         entities,
                                          m_params.Lights,
-                                         m_params.Cam,
                                          m_params.Scene->GetEnvironmentVolumes());
 
     m_shadowPass->m_params.scene      = m_params.Scene;

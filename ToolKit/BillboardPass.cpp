@@ -34,10 +34,8 @@ namespace ToolKit
     {
       m_renderData.jobs.clear();
 
-      EntityRawPtrArray rawBillboards;
-      ToEntityRawPtrArray(rawBillboards, billboards);
+      EntityRawPtrArray rawBillboards = ToEntityRawPtrArray(billboards);
       RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, rawBillboards);
-
       RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
       renderer->RenderWithProgramFromMaterial(m_renderData.jobs);

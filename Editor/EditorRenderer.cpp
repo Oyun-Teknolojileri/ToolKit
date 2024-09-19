@@ -265,8 +265,7 @@ namespace ToolKit
 
       // Editor pass.
       m_renderData.jobs.clear();
-      EntityRawPtrArray rawNtties;
-      ToEntityRawPtrArray(rawNtties, editorEntities);
+      EntityRawPtrArray rawNtties = ToEntityRawPtrArray(editorEntities);
       RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, rawNtties);
       RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
@@ -286,8 +285,7 @@ namespace ToolKit
 
       for (const UILayerPtr& layer : layers)
       {
-        EntityRawPtrArray rawNtties;
-        ToEntityRawPtrArray(rawNtties, layer->m_scene->GetEntities());
+        EntityRawPtrArray rawNtties = ToEntityRawPtrArray(layer->m_scene->GetEntities());
         RenderJobProcessor::CreateRenderJobs(m_uiRenderData.jobs, rawNtties);
       }
 
@@ -425,9 +423,7 @@ namespace ToolKit
           }
         }
 
-        EntityRawPtrArray rawNtties;
-        ToEntityRawPtrArray(rawNtties, highlightList);
-
+        EntityRawPtrArray rawNtties = ToEntityRawPtrArray(highlightList);
         RenderJobProcessor::CreateRenderJobs(renderJobs, rawNtties, true);
         renderJobs.insert(renderJobs.end(), billboardJobs.begin(), billboardJobs.end());
 

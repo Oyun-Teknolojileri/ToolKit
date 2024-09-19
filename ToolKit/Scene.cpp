@@ -251,9 +251,9 @@ namespace ToolKit
 
     pickFn(extraList, false);
 
-    EntityPtrArray entitiesInTheFrustum = m_aabbTree.FrustumQuery(frustum);
-
-    pickFn(entitiesInTheFrustum, true);
+    EntityRawPtrArray entitiesInTheFrustum = m_aabbTree.FrustumQuery(frustum);
+    EntityPtrArray entityPtrs              = ToEntityPtrArray(entitiesInTheFrustum);
+    pickFn(entityPtrs, true);
   }
 
   EntityPtr Scene::GetEntity(ULongID id, int* index) const

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "AABBTree.h"
 #include "GeometryTypes.h"
 
 namespace ToolKit
@@ -152,6 +153,7 @@ namespace ToolKit
   TK_API void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera);
   TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices);
   TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs);
+  TK_API EntityRawPtrArray FrustumCull(const AABBTree& aabbTree, const CameraPtr camera);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

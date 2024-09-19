@@ -50,9 +50,7 @@ namespace ToolKit
     {
       const EntityPtrArray& uiNtties = layer->m_scene->GetEntities();
 
-      EntityRawPtrArray rawUINtties;
-      ToEntityRawPtrArray(rawUINtties, uiNtties);
-
+      EntityRawPtrArray rawUINtties  = ToEntityRawPtrArray(uiNtties);
       RenderJobProcessor::CreateRenderJobs(m_uiRenderData.jobs, rawUINtties);
     }
 

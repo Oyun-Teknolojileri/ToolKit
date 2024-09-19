@@ -843,22 +843,42 @@ namespace ToolKit
     return lb;
   }
 
-  void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray)
+  IDArray ToEntityIdArray(const EntityPtrArray& ptrArray)
   {
-    idArray.reserve(ptrArray.size());
-    for (EntityPtr ntt : ptrArray)
+    IDArray idArray;
+    idArray.resize(ptrArray.size());
+
+    for (uint i = 0; i < ptrArray.size(); i++)
     {
-      idArray.push_back(ntt->GetIdVal());
+      idArray[i] = ptrArray[i]->GetIdVal();
     }
+
+    return idArray;
   }
 
-  void ToEntityRawPtrArray(EntityRawPtrArray& rawPtrArray, const EntityPtrArray& ptrArray)
+  EntityRawPtrArray ToEntityRawPtrArray(const EntityPtrArray& ptrArray)
   {
+    EntityRawPtrArray rawPtrArray;
     rawPtrArray.resize(ptrArray.size());
+
     for (size_t i = 0; i < ptrArray.size(); i++)
     {
       rawPtrArray[i] = ptrArray[i].get();
     }
+
+    return rawPtrArray;
+  }
+
+  EntityPtrArray ToEntityPtrArray(const EntityRawPtrArray& rawPtrArray)
+  {
+    EntityPtrArray ptrArray;
+    ptrArray.reserve(rawPtrArray.size());
+    for (Entity* ntt : rawPtrArray)
+    {
+      ptrArray.push_back(ntt->Self<Entity>());
+    }
+
+    return ptrArray;
   }
 
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt)

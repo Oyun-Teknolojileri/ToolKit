@@ -227,8 +227,7 @@ namespace ToolKit
 
     void EditorScene::AddToSelection(const EntityPtrArray& entities, bool additive)
     {
-      IDArray ids;
-      ToEntityIdArray(ids, entities);
+      IDArray ids = ToEntityIdArray(entities);
       AddToSelection(ids, additive);
     }
 

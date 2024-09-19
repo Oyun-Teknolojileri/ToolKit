@@ -63,7 +63,7 @@ namespace ToolKit
     LightPtrArray nullLights;
     EnvironmentComponentPtrArray nullEnvironments;
 
-    CreateRenderJobs(jobArray, entities, nullLights, nullptr, nullEnvironments, ignoreVisibility);
+    CreateRenderJobs(jobArray, entities, nullLights, nullEnvironments, ignoreVisibility);
   }
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
@@ -75,15 +75,9 @@ namespace ToolKit
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,
                                             LightPtrArray& lights,
-                                            CameraPtr camera,
                                             const EnvironmentComponentPtrArray& environments,
                                             bool ignoreVisibility)
   {
-    if (camera)
-    {
-      FrustumCull(entities, camera);
-    }
-
     // Sort lights for disc.
     int directionalEndIndx = PreSortLights(lights);
 

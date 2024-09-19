@@ -732,21 +732,19 @@ namespace ToolKit
 
   void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera)
   {
-    // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
+    // Frustum cull.
+    Mat4 projectView = camera->GetProjectViewMatrix();
+    Frustum frustum  = ExtractFrustum(projectView, false);
 
-    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetBoundingBox(true)); };
+    auto delFn       = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetBoundingBox(true)); };
     erase_if(entities, delFn);
   }
 
   void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera)
   {
     // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
+    Mat4 projectView = camera->GetProjectViewMatrix();
+    Frustum frustum  = ExtractFrustum(projectView, false);
 
     for (int i = 0; i < (int) jobs.size(); i++)
     {
@@ -758,9 +756,8 @@ namespace ToolKit
   void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices)
   {
     // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
+    Mat4 projectView = camera->GetProjectViewMatrix();
+    Frustum frustum  = ExtractFrustum(projectView, false);
 
     resultIndices.clear();
     resultIndices.reserve(jobs.size());
@@ -777,9 +774,8 @@ namespace ToolKit
   void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs)
   {
     // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
+    Mat4 projectView = camera->GetProjectViewMatrix();
+    Frustum frustum  = ExtractFrustum(projectView, false);
 
     unCulledJobs.clear();
     unCulledJobs.reserve(jobs.size());
@@ -791,6 +787,15 @@ namespace ToolKit
         unCulledJobs.push_back(jobs[i]);
       }
     }
+  }
+
+  EntityRawPtrArray FrustumCull(const AABBTree& aabbTree, const CameraPtr camera) 
+  {
+    Mat4 projectView                = camera->GetProjectViewMatrix();
+    Frustum frustum                 = ExtractFrustum(projectView, false);
+
+    EntityRawPtrArray insideFrustum = aabbTree.FrustumQuery(frustum);
+    return EntityRawPtrArray(); 
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

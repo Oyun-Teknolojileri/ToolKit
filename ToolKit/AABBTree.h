@@ -14,8 +14,7 @@
 
 #pragma once
 
-#include "MathUtil.h"
-#include "Types.h"
+#include "GeometryTypes.h"
 
 namespace ToolKit
 {
@@ -61,17 +60,17 @@ namespace ToolKit
     void Traverse(std::function<void(const Node*)> callback) const;
     /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
-    void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);
-    const BoundingBox& GetRootBoundingBox();
+    void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const;
+    const BoundingBox& GetRootBoundingBox() const;
 
-    /** Checks entities inside the aabb tree and return the ones inside the frustum or intersecting with it. */
-    EntityPtrArray FrustumQuery(const Frustum& frustum);
+    /** Checks frustum against the tree and returns the entities intersecting with the frustum. */
+    EntityRawPtrArray FrustumQuery(const Frustum& frustum) const;
 
     /**
      * Checks entities inside the aabb tree and return the nearest one that hits the ray and the hit distance t.
      * If the deep parameter passed as true, it checks mesh level intersection.
      */
-    EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr);
+    EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr) const;
 
    private:
     NodeProxy AllocateNode();

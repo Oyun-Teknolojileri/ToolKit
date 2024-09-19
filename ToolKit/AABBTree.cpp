@@ -7,6 +7,8 @@
 
 #include "AABBTree.h"
 
+#include "MathUtil.h"
+
 namespace ToolKit
 {
 
@@ -202,7 +204,7 @@ namespace ToolKit
     }
   }
 
-  const BoundingBox& AABBTree::GetRootBoundingBox()
+  const BoundingBox& AABBTree::GetRootBoundingBox() const
   {
     if (root != nullNode)
     {
@@ -245,9 +247,9 @@ namespace ToolKit
     return node;
   }
 
-  EntityPtrArray AABBTree::FrustumQuery(const Frustum& frustum)
+  EntityRawPtrArray AABBTree::FrustumQuery(const Frustum& frustum) const
   {
-    EntityPtrArray entities;
+    EntityRawPtrArray entities;
 
     if (root == nullNode)
     {
@@ -266,7 +268,10 @@ namespace ToolKit
       {
         if (nodes[current].IsLeaf())
         {
-          entities.push_back(nodes[current].entity.lock());
+          if (EntityPtr ntt = nodes[current].entity.lock())
+          {
+            entities.push_back(ntt.get());
+          }
         }
         else
         {
@@ -279,7 +284,7 @@ namespace ToolKit
     return entities;
   }
 
-  EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t)
+  EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t) const
   {
     if (root == nullNode)
     {
@@ -339,7 +344,7 @@ namespace ToolKit
     return hitEntity;
   }
 
-  void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes)
+  void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const
   {
     Traverse([&](const AABBTree::Node* node) -> void
              { boundingBoxes.push_back(CreateBoundingBoxDebugObject(node->aabb, ZERO, 1.0f)); });

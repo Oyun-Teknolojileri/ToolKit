@@ -279,7 +279,7 @@ namespace ToolKit
         }
       }
 
-      ToEntityIdArray(m_ignoreList, ignores);
+      m_ignoreList = ToEntityIdArray(ignores);
       m_ignoreList.push_back(g_app->m_grid->GetIdVal());
     }
 

@@ -166,8 +166,9 @@ namespace ToolKit
                                          float size        = 2.0f);
 
   // Entity operations.
-  TK_API void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray);
-  TK_API void ToEntityRawPtrArray(EntityRawPtrArray& rawPtrArray, const EntityPtrArray& ptrArray);
+  TK_API IDArray ToEntityIdArray(const EntityPtrArray& ptrArray);
+  TK_API EntityRawPtrArray ToEntityRawPtrArray(const EntityPtrArray& ptrArray);
+  TK_API EntityPtrArray ToEntityPtrArray(const EntityRawPtrArray& rawPtrArray);
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
 
