@@ -20,6 +20,7 @@ namespace ToolKit
 {
 
   typedef int32 NodeProxy;
+  typedef std::unordered_set<NodeProxy> NodeProxySet;
 
   const Vec3 aabb_margin          = Vec3(0.03f);
   constexpr float aabb_multiplier = 3.0f;
@@ -41,6 +42,8 @@ namespace ToolKit
       NodeProxy child2;
       NodeProxy next;
       bool moved;
+
+      NodeProxySet leafs;
     };
 
     typedef std::vector<AABBTree::Node> NodeArray;
@@ -60,7 +63,13 @@ namespace ToolKit
     void Traverse(std::function<void(const Node*)> callback) const;
     /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
+    
+    /** Return debug boxes for each node in the tree. */
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const;
+
+    /** Prints each node and the leaf entities under the node to the console. */
+    void PrintTree();
+
     const BoundingBox& GetRootBoundingBox() const;
 
     /** Checks frustum against the tree and returns the entities intersecting with the frustum. */

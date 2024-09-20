@@ -32,6 +32,7 @@ namespace ToolKit
     {
       nodes[i].next   = i + 1;
       nodes[i].parent = i;
+      nodes[i].leafs.clear();
     }
     nodes[nodeCapacity - 1].next   = nullNode;
     nodes[nodeCapacity - 1].parent = nodeCapacity - 1;
@@ -242,6 +243,7 @@ namespace ToolKit
     nodes[node].child1 = nullNode;
     nodes[node].child2 = nullNode;
     nodes[node].moved  = false;
+    nodes[node].entity.reset();
     ++nodeCount;
 
     return node;
@@ -350,6 +352,26 @@ namespace ToolKit
              { boundingBoxes.push_back(CreateBoundingBoxDebugObject(node->aabb, ZERO, 1.0f)); });
   }
 
+  void AABBTree::PrintTree()
+  {
+    Traverse(
+        [&](const Node* node) -> void
+        {
+          if (!node->IsLeaf())
+          {
+            TK_LOG("Child Of %d", node->parent);
+          }
+
+          for (NodeProxy leaf : node->leafs)
+          {
+            if (EntityPtr ntt = nodes[leaf].entity.lock())
+            {
+              TK_LOG("\t%s", ntt->GetNameVal().c_str());
+            }
+          }
+        });
+  }
+
   void AABBTree::FreeNode(NodeProxy node)
   {
     assert(0 <= node && node <= nodeCapacity);
@@ -362,7 +384,9 @@ namespace ToolKit
 
     nodes[node].parent = node;
     nodes[node].next   = freeList;
-    freeList           = node;
+    nodes[node].entity.reset();
+    nodes[node].leafs.clear();
+    freeList = node;
 
     --nodeCount;
   }
@@ -408,12 +432,39 @@ namespace ToolKit
       return;
     }
 
+    auto leafCacheUpdate = [&](NodeProxy child1, NodeProxy child2) -> void
+    {
+      // swap leafs of child1
+      for (NodeProxy leaf : nodes[child1].leafs)
+      {
+        nodes[nodes[child1].parent].leafs.erase(leaf);
+      }
+
+      for (NodeProxy leaf : nodes[child2].leafs)
+      {
+        nodes[nodes[child1].parent].leafs.insert(leaf);
+      }
+
+      // swap leafs of child2
+      for (NodeProxy leaf : nodes[child2].leafs)
+      {
+        nodes[nodes[child2].parent].leafs.erase(leaf);
+      }
+
+      for (NodeProxy leaf : nodes[child1].leafs)
+      {
+        nodes[nodes[child2].parent].leafs.insert(leaf);
+      }
+    };
+
     // printf("Tree rotation occurred: %d\n", bestDiffIndex);
     switch (bestDiffIndex)
     {
     case 0:
     {
       // Swap(child2, nodes[child1].child2);
+      leafCacheUpdate(child2, nodes[child1].child2);
+
       nodes[nodes[child1].child2].parent = node;
       nodes[node].child2                 = nodes[child1].child2;
 
@@ -426,6 +477,8 @@ namespace ToolKit
     case 1:
     {
       // Swap(child2, nodes[child1].child1);
+      leafCacheUpdate(child2, nodes[child1].child1);
+
       nodes[nodes[child1].child1].parent = node;
       nodes[node].child2                 = nodes[child1].child1;
 
@@ -438,6 +491,8 @@ namespace ToolKit
     case 2:
     {
       // Swap(child1, nodes[child2].child2);
+      leafCacheUpdate(child1, nodes[child2].child2);
+
       nodes[nodes[child2].child2].parent = node;
       nodes[node].child1                 = nodes[child2].child2;
 
@@ -450,6 +505,8 @@ namespace ToolKit
     case 3:
     {
       // Swap(child1, nodes[child2].child1);
+      leafCacheUpdate(child1, nodes[child2].child1);
+
       nodes[nodes[child2].child1].parent = node;
       nodes[node].child1                 = nodes[child2].child1;
 
@@ -522,11 +579,10 @@ namespace ToolKit
     }
 
     // Create a new parent
-    NodeProxy oldParent     = nodes[bestSibling].parent;
-    NodeProxy newParent     = AllocateNode();
-    nodes[newParent].aabb   = BoundingBox::Union(aabb, nodes[bestSibling].aabb);
-    nodes[newParent].parent = oldParent;
-    nodes[newParent].entity.reset();
+    NodeProxy oldParent       = nodes[bestSibling].parent;
+    NodeProxy newParent       = AllocateNode();
+    nodes[newParent].aabb     = BoundingBox::Union(aabb, nodes[bestSibling].aabb);
+    nodes[newParent].parent   = oldParent;
 
     // Connect new leaf and sibling to new parent
     nodes[newParent].child1   = leaf;
@@ -550,10 +606,14 @@ namespace ToolKit
       root = newParent;
     }
 
+    nodes[newParent].leafs.insert(bestSibling); // Insert the sibling. This does not need to propagated up.
+
     // Walk back up the tree refitting ancestors' AABB and applying rotations
     NodeProxy ancestor = newParent;
     while (ancestor != nullNode)
     {
+      nodes[ancestor].leafs.insert(leaf); // Insert to all ancestors.
+
       NodeProxy child1     = nodes[ancestor].child1;
       NodeProxy child2     = nodes[ancestor].child2;
 
@@ -609,6 +669,8 @@ namespace ToolKit
       NodeProxy ancestor = grandParent;
       while (ancestor != nullNode)
       {
+        nodes[ancestor].leafs.erase(leaf); // Remove from all ancestors.
+
         NodeProxy child1     = nodes[ancestor].child1;
         NodeProxy child2     = nodes[ancestor].child2;
 

@@ -612,6 +612,14 @@ namespace ToolKit
       scene->RemoveEntity(selection, isDeep);
     }
 
+    void PrintBVH(TagArgArray tagArgs)
+    {
+      if (EditorScenePtr scene = g_app->GetCurrentScene())
+      {
+        scene->m_aabbTree.PrintTree();
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -675,6 +683,7 @@ namespace ToolKit
       CreateCommand(g_showSceneBoundary, ShowSceneBoundary);
       CreateCommand(g_showBVHNodes, ShowBVHNodes);
       CreateCommand(g_deleteSelection, DeleteSelection);
+      CreateCommand(g_printBvh, PrintBVH);
     }
 
     ConsoleWindow::~ConsoleWindow() {}
