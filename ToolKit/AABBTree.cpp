@@ -354,22 +354,37 @@ namespace ToolKit
 
   void AABBTree::PrintTree()
   {
-    Traverse(
-        [&](const Node* node) -> void
-        {
-          if (!node->IsLeaf())
-          {
-            TK_LOG("Child Of %d", node->parent);
-          }
+    if (root == nullNode)
+    {
+      return;
+    }
 
-          for (NodeProxy leaf : node->leafs)
-          {
-            if (EntityPtr ntt = nodes[leaf].entity.lock())
-            {
-              TK_LOG("\t%s", ntt->GetNameVal().c_str());
-            }
-          }
-        });
+    std::deque<NodeProxy> stack;
+    stack.emplace_back(root);
+
+    while (stack.size() != 0)
+    {
+      NodeProxy current = stack.back();
+      stack.pop_back();
+
+      if (nodes[current].IsLeaf() == false)
+      {
+        stack.emplace_back(nodes[current].child1);
+        stack.emplace_back(nodes[current].child2);
+      }
+
+      const Node* node = &nodes[current];
+      TK_LOG("Parent %d - Child %d", node->parent, current);
+      String ntts;
+      for (NodeProxy l : node->leafs)
+      {
+        if (EntityPtr ntt = nodes[l].entity.lock())
+        {
+          ntts += ", " + ntt->GetNameVal();
+        }
+      }
+      TK_LOG("%s", ntts.c_str());
+    }
   }
 
   void AABBTree::FreeNode(NodeProxy node)
@@ -600,9 +615,16 @@ namespace ToolKit
     }
 
     // Construct new parent's leaf cache.
-    for (NodeProxy sibLeaf : nodes[bestSibling].leafs)
+    if (nodes[bestSibling].IsLeaf())
     {
-      nodes[newParent].leafs.insert(sibLeaf);
+      nodes[newParent].leafs.insert(bestSibling);
+    }
+    else
+    {
+      for (NodeProxy sibLeaf : nodes[bestSibling].leafs)
+      {
+        nodes[newParent].leafs.insert(sibLeaf);
+      }
     }
 
     // Walk back up the tree refitting ancestors' AABB and applying rotations
