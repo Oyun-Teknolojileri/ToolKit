@@ -56,6 +56,9 @@ namespace ToolKit
     nodes[newNode].parent   = nullNode;
     nodes[newNode].moved    = true;
 
+    // Insert a reference to self to create leafs struct properly in the tree.
+    nodes[newNode].leafs.insert(newNode);
+
     InsertLeaf(newNode);
 
     return newNode;
@@ -244,6 +247,7 @@ namespace ToolKit
     nodes[node].child2 = nullNode;
     nodes[node].moved  = false;
     nodes[node].entity.reset();
+    nodes[node].leafs.clear();
     ++nodeCount;
 
     return node;
