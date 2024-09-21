@@ -270,8 +270,11 @@ namespace ToolKit
       NodeProxy current = stack.back();
       stack.pop_back();
 
-      if (FrustumBoxIntersection(frustum, nodes[current].aabb) != IntersectResult::Outside)
+      IntersectResult intResult = FrustumBoxIntersection(frustum, nodes[current].aabb);
+
+      if (intResult == IntersectResult::Intersect)
       {
+        // Volume is partially inside, check all internal volumes.
         if (nodes[current].IsLeaf())
         {
           if (EntityPtr ntt = nodes[current].entity.lock())
@@ -283,6 +286,17 @@ namespace ToolKit
         {
           stack.emplace_back(nodes[current].child1);
           stack.emplace_back(nodes[current].child2);
+        }
+      }
+      else if (intResult == IntersectResult::Inside)
+      {
+        // Volume is fully inside, get all entities from cache.
+        for (NodeProxy leaf : nodes[current].leafs)
+        {
+          if (EntityPtr ntt = nodes[leaf].entity.lock())
+          {
+            entities.push_back(ntt.get());
+          }
         }
       }
     }
