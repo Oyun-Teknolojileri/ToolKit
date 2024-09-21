@@ -599,7 +599,11 @@ namespace ToolKit
       root = newParent;
     }
 
-    nodes[newParent].leafs.insert(bestSibling); // Insert the sibling. This does not need to propagated up.
+    // Construct new parent's leaf cache.
+    for (NodeProxy sibLeaf : nodes[bestSibling].leafs)
+    {
+      nodes[newParent].leafs.insert(sibLeaf);
+    }
 
     // Walk back up the tree refitting ancestors' AABB and applying rotations
     NodeProxy ancestor = newParent;
