@@ -432,28 +432,21 @@ namespace ToolKit
       return;
     }
 
-    auto leafCacheUpdate = [&](NodeProxy child1, NodeProxy child2) -> void
+    // n0 does not invalidate its parent leaf cache, n1 does due to depth difference.
+    // n0 is at a lower depth, moving it a higher depth does not alter n's leafs.
+    auto leafCacheUpdate = [&](NodeProxy n0, NodeProxy n1) -> void
     {
-      // swap leafs of child1
-      for (NodeProxy leaf : nodes[child1].leafs)
+      NodeProxy n0sibling = nodes[n1].parent;
+      assert(n0sibling != nullNode);
+
+      for (NodeProxy leaf : nodes[n1].leafs)
       {
-        nodes[nodes[child1].parent].leafs.erase(leaf);
+        nodes[n0sibling].leafs.erase(leaf);
       }
 
-      for (NodeProxy leaf : nodes[child2].leafs)
+      for (NodeProxy leaf : nodes[n0].leafs)
       {
-        nodes[nodes[child1].parent].leafs.insert(leaf);
-      }
-
-      // swap leafs of child2
-      for (NodeProxy leaf : nodes[child2].leafs)
-      {
-        nodes[nodes[child2].parent].leafs.erase(leaf);
-      }
-
-      for (NodeProxy leaf : nodes[child1].leafs)
-      {
-        nodes[nodes[child2].parent].leafs.insert(leaf);
+        nodes[n0sibling].leafs.insert(leaf);
       }
     };
 
