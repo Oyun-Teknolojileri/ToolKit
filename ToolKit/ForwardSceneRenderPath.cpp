@@ -118,8 +118,23 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::SetPassParams()
   {
-    Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
-    EntityRawPtrArray entities = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
+    Frustum frustum             = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
+
+    static double avg           = 0;
+    static int cnt              = 1;
+
+    float t1                    = GetElapsedMilliSeconds();
+    EntityRawPtrArray entities  = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
+    float t2                    = GetElapsedMilliSeconds();
+
+    avg                        += (t2 - t1);
+    TK_LOG("Cull time %f", avg / cnt++);
+
+    if (cnt > 60)
+    {
+      cnt = 1;
+      avg = 0;
+    }
 
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
                                          entities,

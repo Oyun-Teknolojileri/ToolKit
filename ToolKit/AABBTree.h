@@ -63,7 +63,7 @@ namespace ToolKit
     void Traverse(std::function<void(const Node*)> callback) const;
     /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
-    
+
     /** Return debug boxes for each node in the tree. */
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const;
 
@@ -88,16 +88,19 @@ namespace ToolKit
     void RemoveLeaf(NodeProxy leaf);
     void Rotate(NodeProxy node);
 
-    void TraverseParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root, std::atomic<int>& thredCount) const;
+    void FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const;
+    void FrustumCull(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const;
 
    private:
     NodeProxy root;
+    NodeProxy freeList;
 
     NodeArray nodes;
     int32 nodeCapacity;
     int32 nodeCount;
 
-    NodeProxy freeList;
+    /** Internally used to keep track of parallel traverse thread count. */
+    mutable std::atomic<int> m_threadCount;
   };
 
 } // namespace ToolKit

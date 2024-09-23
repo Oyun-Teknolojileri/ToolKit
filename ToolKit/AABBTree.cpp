@@ -262,30 +262,27 @@ namespace ToolKit
       return entities;
     }
 
+    if (!Main::GetInstance()->m_threaded)
+    {
+      FrustumCull(frustum, entities, root);
+      return entities;
+    }
+
     entities.resize(nodeCapacity);
     memset(entities.data(), 0, sizeof(Entity*) * nodeCapacity);
 
-    std::atomic<int> threadCount(1);
+    m_threadCount.store(1, std::memory_order_relaxed);
 
-    TraverseParallel(frustum, entities, root, threadCount);
+    FrustumCullParallel(frustum, entities, root);
 
-    while (threadCount.load(std::memory_order_acquire) > 0)
+    while (m_threadCount.load(std::memory_order_relaxed) > 0)
     {
       HyperThreadPause();
     };
 
-    EntityRawPtrArray x;
-    for (int i = 0; i < entities.size(); i++)
-    {
-      if (entities[i] != nullptr)
-      {
-        x.push_back(entities[i]);
-      }
-    }
+    erase_if(entities, [](Entity* ntt) -> bool { return ntt == nullptr; });
 
-    // erase_if(entities, [](Entity* ntt) -> bool { return ntt == nullptr; });
-
-    return x;
+    return entities;
   }
 
   EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t) const
@@ -529,10 +526,7 @@ namespace ToolKit
     }
   }
 
-  void AABBTree::TraverseParallel(const Frustum& frustum,
-                                  EntityRawPtrArray& unculled,
-                                  NodeProxy root,
-                                  std::atomic<int>& threadCount) const
+  void AABBTree::FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const
   {
     std::deque<NodeProxy> stack;
     stack.emplace_back(root);
@@ -563,14 +557,14 @@ namespace ToolKit
               return;
             }
 
-            int tc = threadCount.load();
-            if (tc < 4)
+            int currentCount = m_threadCount.load(std::memory_order_relaxed);
+            if (currentCount < 4)
             {
-              if (threadCount.compare_exchange_strong(tc, tc + 1))
+              if (m_threadCount.compare_exchange_weak(currentCount, currentCount + 1, std::memory_order_relaxed))
               {
                 TKAsyncTask(WorkerManager::FramePool,
-                            [this, node, &frustum, &unculled, &threadCount]() -> void
-                            { TraverseParallel(frustum, unculled, node, threadCount); });
+                            [this, node, &frustum, &unculled]() -> void
+                            { FrustumCullParallel(frustum, unculled, node); });
 
                 return;
               }
@@ -596,7 +590,54 @@ namespace ToolKit
       }
     }
 
-    threadCount.fetch_sub(1);
+    m_threadCount.fetch_sub(1, std::memory_order_relaxed);
+  }
+
+  void AABBTree::FrustumCull(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const
+  {
+    if (root == nullNode)
+    {
+      return;
+    }
+
+    std::deque<NodeProxy> stack;
+    stack.emplace_back(root);
+
+    while (stack.size() != 0)
+    {
+      NodeProxy current = stack.back();
+      stack.pop_back();
+
+      IntersectResult intResult = FrustumBoxIntersection(frustum, nodes[current].aabb);
+
+      if (intResult == IntersectResult::Intersect)
+      {
+        // Volume is partially inside, check all internal volumes.
+        if (nodes[current].IsLeaf())
+        {
+          if (EntityPtr ntt = nodes[current].entity.lock())
+          {
+            unculled.push_back(ntt.get());
+          }
+        }
+        else
+        {
+          stack.emplace_back(nodes[current].child1);
+          stack.emplace_back(nodes[current].child2);
+        }
+      }
+      else if (intResult == IntersectResult::Inside)
+      {
+        // Volume is fully inside, get all entities from cache.
+        for (NodeProxy leaf : nodes[current].leafs)
+        {
+          if (EntityPtr ntt = nodes[leaf].entity.lock())
+          {
+            unculled.push_back(ntt.get());
+          }
+        }
+      }
+    }
   }
 
   NodeProxy AABBTree::InsertLeaf(NodeProxy leaf)
