@@ -262,46 +262,30 @@ namespace ToolKit
       return entities;
     }
 
-    std::deque<NodeProxy> stack;
-    stack.emplace_back(root);
+    entities.resize(nodeCapacity);
+    memset(entities.data(), 0, sizeof(Entity*) * nodeCapacity);
 
-    while (stack.size() != 0)
+    std::atomic<int> threadCount(1);
+
+    TraverseParallel(frustum, entities, root, threadCount);
+
+    while (threadCount.load(std::memory_order_acquire) > 0)
     {
-      NodeProxy current = stack.back();
-      stack.pop_back();
+      HyperThreadPause();
+    };
 
-      IntersectResult intResult = FrustumBoxIntersection(frustum, nodes[current].aabb);
-
-      if (intResult == IntersectResult::Intersect)
+    EntityRawPtrArray x;
+    for (int i = 0; i < entities.size(); i++)
+    {
+      if (entities[i] != nullptr)
       {
-        // Volume is partially inside, check all internal volumes.
-        if (nodes[current].IsLeaf())
-        {
-          if (EntityPtr ntt = nodes[current].entity.lock())
-          {
-            entities.push_back(ntt.get());
-          }
-        }
-        else
-        {
-          stack.emplace_back(nodes[current].child1);
-          stack.emplace_back(nodes[current].child2);
-        }
-      }
-      else if (intResult == IntersectResult::Inside)
-      {
-        // Volume is fully inside, get all entities from cache.
-        for (NodeProxy leaf : nodes[current].leafs)
-        {
-          if (EntityPtr ntt = nodes[leaf].entity.lock())
-          {
-            entities.push_back(ntt.get());
-          }
-        }
+        x.push_back(entities[i]);
       }
     }
 
-    return entities;
+    // erase_if(entities, [](Entity* ntt) -> bool { return ntt == nullptr; });
+
+    return x;
   }
 
   EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t) const
@@ -543,6 +527,76 @@ namespace ToolKit
     }
     break;
     }
+  }
+
+  void AABBTree::TraverseParallel(const Frustum& frustum,
+                                  EntityRawPtrArray& unculled,
+                                  NodeProxy root,
+                                  std::atomic<int>& threadCount) const
+  {
+    std::deque<NodeProxy> stack;
+    stack.emplace_back(root);
+
+    while (stack.size() != 0)
+    {
+      NodeProxy current = stack.back();
+      stack.pop_back();
+
+      IntersectResult intResult = FrustumBoxIntersection(frustum, nodes[current].aabb);
+
+      if (intResult == IntersectResult::Intersect)
+      {
+        // Volume is partially inside, check all internal volumes.
+        if (nodes[current].IsLeaf())
+        {
+          if (EntityPtr ntt = nodes[current].entity.lock())
+          {
+            unculled[current] = ntt.get();
+          }
+        }
+        else
+        {
+          auto parallelProcessFn = [&](NodeProxy node) -> void
+          {
+            if (node == nullNode)
+            {
+              return;
+            }
+
+            int tc = threadCount.load();
+            if (tc < 4)
+            {
+              if (threadCount.compare_exchange_strong(tc, tc + 1))
+              {
+                TKAsyncTask(WorkerManager::FramePool,
+                            [this, node, &frustum, &unculled, &threadCount]() -> void
+                            { TraverseParallel(frustum, unculled, node, threadCount); });
+
+                return;
+              }
+            }
+
+            stack.emplace_back(node);
+          };
+
+          parallelProcessFn(nodes[current].child1);
+          parallelProcessFn(nodes[current].child2);
+        }
+      }
+      else if (intResult == IntersectResult::Inside)
+      {
+        // Volume is fully inside, get all entities from cache.
+        for (NodeProxy leaf : nodes[current].leafs)
+        {
+          if (EntityPtr ntt = nodes[leaf].entity.lock())
+          {
+            unculled[leaf] = ntt.get();
+          }
+        }
+      }
+    }
+
+    threadCount.fetch_sub(1);
   }
 
   NodeProxy AABBTree::InsertLeaf(NodeProxy leaf)

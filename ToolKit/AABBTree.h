@@ -88,6 +88,8 @@ namespace ToolKit
     void RemoveLeaf(NodeProxy leaf);
     void Rotate(NodeProxy node);
 
+    void TraverseParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root, std::atomic<int>& thredCount) const;
+
    private:
     NodeProxy root;
 
