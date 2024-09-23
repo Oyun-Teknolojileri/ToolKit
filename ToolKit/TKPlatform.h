@@ -48,31 +48,18 @@ namespace ToolKit
   #define TK_PLUGIN_API
 #endif
 
-  inline void HyperThreadPause()
-  {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) // x86/x64 architecture
-
-  #if defined(_MSC_VER)                         // MSVC compiler
-    _mm_pause();                                // MSVC intrinsic for x86/x64
-  #elif defined(__clang__) || defined(__GNUC__) // Clang or GCC compiler
-    __builtin_ia32_pause(); // GCC/Clang intrinsic for x86/x64
+#ifdef _MSC_VER
+  #if defined(__aarch64__) || defined(__arm__)
+    #define HyperThreadPause() __yield()
   #else
-    #error Unsupported compiler for x86/x64 architecture
+    #define HyperThreadPause() _mm_pause()
   #endif
-
-#elif defined(__aarch64__) || defined(__arm__) // ARM architecture
-
-  #if defined(_MSC_VER)                         // MSVC compiler for ARM (rare, but possible)
-    __yield(); // MSVC intrinsic for ARM
-  #elif defined(__clang__) || defined(__GNUC__) // Clang or GCC compiler
-    asm volatile("yield"); // Inline assembly for ARM (Clang/GCC)
-  #else
-    #error Unsupported compiler for ARM architecture
-  #endif
-
 #else
-  #error Unsupported architecture
+  #if defined(__aarch64__) || defined(__arm__)
+    #define HyperThreadPause() asm volatile("yield");
+  #else
+    #define HyperThreadPause() __builtin_ia32_pause()
+  #endif
 #endif
-  }
 
 } // namespace ToolKit
