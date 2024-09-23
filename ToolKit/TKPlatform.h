@@ -48,4 +48,10 @@ namespace ToolKit
   #define TK_PLUGIN_API
 #endif
 
+#ifdef _MSC_VER
+  #define HyperThreadPause() _mm_pause()
+#else
+  #define HyperThreadPause() __builtin_ia32_pause()
+#endif
+
 } // namespace ToolKit
