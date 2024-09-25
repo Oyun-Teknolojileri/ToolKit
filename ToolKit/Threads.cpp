@@ -6,10 +6,9 @@
  */
 
 #include "Threads.h"
-#include "ToolKit.h"
+
 #include "TKPlatform.h"
-
-
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -20,7 +19,9 @@ namespace ToolKit
 
   void WorkerManager::Init()
   {
-    uint coreCount = std::thread::hardware_concurrency();
+    m_experimetalPool1 = new ThreadPoolExp1<8>();
+
+    uint coreCount     = std::thread::hardware_concurrency();
     if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
     {
       m_frameWorkers = new ThreadPool(glm::min(coreCount, 4u));
@@ -34,7 +35,11 @@ namespace ToolKit
                                                     { ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex); });
   }
 
-  void WorkerManager::UnInit() { SafeDel(m_frameWorkers); }
+  void WorkerManager::UnInit()
+  {
+    SafeDel(m_frameWorkers);
+    SafeDel(m_experimetalPool1);
+  }
 
   ThreadPool& WorkerManager::GetPool(Executor executor)
   {

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Common/concurrentqueue.h"
 #include "Types.h"
 
 #include <poolSTL/poolstl.hpp>
@@ -63,6 +64,102 @@ namespace ToolKit
 
   typedef std::queue<std::packaged_task<void()>> TaskQueue;
 
+  typedef std::function<void()> Task;
+
+  template <int ThreadCount>
+  class ThreadPoolExp1
+  {
+   public:
+    ThreadPoolExp1()
+    {
+      for (int i = 0; i < ThreadCount; i++)
+      {
+        m_threads[i] = std::thread(
+            [this, i]() -> void
+            {
+              const int threadIndex     = i;
+              constexpr int maxTryCount = 100000;
+              int tryCount              = 0;
+
+              while (!m_quit)
+              {
+                Task t;
+                if (m_taskQueues[threadIndex].try_dequeue(t))
+                {
+                  t();
+                }
+                else
+                {
+                  // steal task
+                  for (int j = 0; j < ThreadCount; j++)
+                  {
+                    Task t;
+                    if (m_taskQueues[j].try_dequeue(t))
+                    {
+                      t();
+                      break;
+                    }
+                  }
+                }
+                //else
+                //{
+                //  if (tryCount >= maxTryCount)
+                //  {
+                //    tryCount = 0;
+                //    std::unique_lock<std::mutex> lock(m_threadLocks[threadIndex]);
+                //    m_threadSignals[threadIndex].wait(
+                //        lock,
+                //        [this, threadIndex]() -> bool
+                //        { return (m_taskQueues[threadIndex].size_approx() | (size_t) m_quit) > 0; });
+                //  }
+                //  else
+                //  {
+                //    tryCount++;
+                //  }
+                //}
+              }
+            });
+      }
+    }
+
+    ~ThreadPoolExp1()
+    {
+      m_quit = true;
+      for (int i = 0; i < ThreadCount; i++)
+      {
+        m_threadSignals[i].notify_one();
+        m_threads[i].join();
+      }
+    }
+
+    // Approximately load balanced task assignment.
+    void Push(Task&& t)
+    {
+      // While looking for the minimum, task queue statues may change.
+      int mini    = 0;
+      size_t mins = 0;
+      for (int i = 0; i < ThreadCount; i++)
+      {
+        size_t size = m_taskQueues[i].size_approx();
+        if (size < mins)
+        {
+          mini = i;
+          mins = size;
+        }
+      }
+
+      m_taskQueues[mini].enqueue(std::forward<Task>(t));
+      //m_threadSignals[mini].notify_one();
+    }
+
+   private:
+    std::array<std::thread, ThreadCount> m_threads;
+    std::array<moodycamel::ConcurrentQueue<Task>, ThreadCount> m_taskQueues;
+    std::array<std::mutex, ThreadCount> m_threadLocks;
+    std::array<std::condition_variable, ThreadCount> m_threadSignals;
+    bool m_quit = false;
+  };
+
   /** This is the class that keeps the thread pools and manages async tasks. */
   class TK_API WorkerManager
   {
@@ -71,7 +168,8 @@ namespace ToolKit
     enum Executor
     {
       MainThread, //!< Tasks in this executor runs in sync with main thread at the end of the current frame.
-      FramePool   //!< Tasks that need to be completed within the frame should use this pool.
+      FramePool,  //!< Tasks that need to be completed within the frame should use this pool.
+      ExperimentalPool1
     };
 
    public:
@@ -100,6 +198,10 @@ namespace ToolKit
       {
         return m_frameWorkers->submit(func, std::forward<A>(args)...);
       }
+      else if (exec == ExperimentalPool1)
+      {
+        m_experimetalPool1->Push(std::forward<F>(func));
+      }
       else if (exec == MainThread)
       {
         std::shared_ptr<std::packaged_task<R()>> ptask =
@@ -119,7 +221,9 @@ namespace ToolKit
 
    public:
     /** Task that suppose to complete in a frame should be using this pool. */
-    ThreadPool* m_frameWorkers = nullptr;
+    ThreadPool* m_frameWorkers            = nullptr;
+
+    ThreadPoolExp1<8>* m_experimetalPool1 = nullptr;
 
     /** Tasks that will be executed at the main thread frame end is stored here. */
     TaskQueue m_mainThreadTasks;

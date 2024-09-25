@@ -562,7 +562,7 @@ namespace ToolKit
             {
               if (m_threadCount.compare_exchange_weak(currentCount, currentCount + 1, std::memory_order_relaxed))
               {
-                TKAsyncTask(WorkerManager::FramePool,
+                TKAsyncTask(WorkerManager::ExperimentalPool1,
                             [this, node, &frustum, &unculled]() -> void
                             { FrustumCullParallel(frustum, unculled, node); });
 
