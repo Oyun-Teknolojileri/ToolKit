@@ -130,7 +130,7 @@ namespace ToolKit
     avg                        += (t2 - t1);
     TK_LOG("Cull time %f", avg / cnt++);
 
-    if (cnt > 60)
+    if (cnt > 99999)
     {
       cnt = 1;
       avg = 0;

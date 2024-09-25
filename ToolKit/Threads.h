@@ -66,7 +66,7 @@ namespace ToolKit
 
   typedef std::function<void()> Task;
 
-  template <int ThreadCount>
+template <int ThreadCount>
   class ThreadPoolExp1
   {
    public:
@@ -78,7 +78,7 @@ namespace ToolKit
             [this, i]() -> void
             {
               const int threadIndex     = i;
-              constexpr int maxTryCount = 100000;
+              constexpr int maxTryCount = 100;
               int tryCount              = 0;
 
               while (!m_quit)
@@ -90,33 +90,30 @@ namespace ToolKit
                 }
                 else
                 {
-                  // steal task
-                  for (int j = 0; j < ThreadCount; j++)
+                  if (tryCount < maxTryCount)
                   {
-                    Task t;
-                    if (m_taskQueues[j].try_dequeue(t))
+                    tryCount++;
+                    // steal task
+                    for (int j = 0; j < ThreadCount; j++)
                     {
-                      t();
-                      break;
+                      Task t;
+                      if (m_taskQueues[j].try_dequeue(t))
+                      {
+                        t();
+                        break;
+                      }
                     }
                   }
+                  else
+                  {
+                    tryCount = 0;
+                    std::unique_lock<std::mutex> lock(m_threadLocks[threadIndex]);
+                    m_threadSignals[threadIndex].wait(
+                        lock,
+                        [this, threadIndex]() -> bool
+                        { return (m_taskQueues[threadIndex].size_approx() | (size_t) m_quit) > 0; });
+                  }
                 }
-                //else
-                //{
-                //  if (tryCount >= maxTryCount)
-                //  {
-                //    tryCount = 0;
-                //    std::unique_lock<std::mutex> lock(m_threadLocks[threadIndex]);
-                //    m_threadSignals[threadIndex].wait(
-                //        lock,
-                //        [this, threadIndex]() -> bool
-                //        { return (m_taskQueues[threadIndex].size_approx() | (size_t) m_quit) > 0; });
-                //  }
-                //  else
-                //  {
-                //    tryCount++;
-                //  }
-                //}
               }
             });
       }
@@ -135,21 +132,29 @@ namespace ToolKit
     // Approximately load balanced task assignment.
     void Push(Task&& t)
     {
-      // While looking for the minimum, task queue statues may change.
-      int mini    = 0;
-      size_t mins = 0;
-      for (int i = 0; i < ThreadCount; i++)
-      {
-        size_t size = m_taskQueues[i].size_approx();
-        if (size < mins)
-        {
-          mini = i;
-          mins = size;
-        }
-      }
+      //// While looking for the minimum, task queue statues may change.
+      //int mini    = 0;
+      //size_t mins = 0;
+      //for (int i = 0; i < ThreadCount; i++)
+      //{
+      //  size_t size = m_taskQueues[i].size_approx();
+      //  if (size < mins)
+      //  {
+      //    mini = i;
+      //    mins = size;
+      //  }
+      //}
+
+      // this is the best configuration at startup,
+      // than tasks are accumulating on certain threads which worsen the performance
+      // a dynamic schedular can actively seek for waking up and load balance instead of
+      // balancing at push ? which has poor performance.
+
+      static int next = 0;
+      int mini        = ++next % ThreadCount;
 
       m_taskQueues[mini].enqueue(std::forward<Task>(t));
-      //m_threadSignals[mini].notify_one();
+      m_threadSignals[mini].notify_one();
     }
 
    private:

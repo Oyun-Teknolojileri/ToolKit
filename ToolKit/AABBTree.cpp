@@ -558,11 +558,11 @@ namespace ToolKit
             }
 
             int currentCount = m_threadCount.load(std::memory_order_relaxed);
-            if (currentCount < 4)
+            if (currentCount < 8)
             {
               if (m_threadCount.compare_exchange_weak(currentCount, currentCount + 1, std::memory_order_relaxed))
               {
-                TKAsyncTask(WorkerManager::ExperimentalPool1,
+                TKAsyncTask(WorkerManager::FramePool,
                             [this, node, &frustum, &unculled]() -> void
                             { FrustumCullParallel(frustum, unculled, node); });
 
