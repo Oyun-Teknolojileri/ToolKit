@@ -11,6 +11,7 @@
 #include "MathUtil.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 
 namespace ToolKit
 {
@@ -118,29 +119,22 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::SetPassParams()
   {
-    Frustum frustum             = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
+    Frustum frustum = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
 
-    static double avg           = 0;
-    static int cnt              = 1;
+    TKBeginTimer(CullTime);
 
-    float t1                    = GetElapsedMilliSeconds();
-    EntityRawPtrArray entities  = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
-    float t2                    = GetElapsedMilliSeconds();
+    EntityRawPtrArray entities = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
 
-    float d                     = t2 - t1;
-    avg                        += d;
-    TK_LOG("Cull time avg: %f  - t: %f", avg / cnt++, d);
+    TKEndTimer(CullTime);
 
-    if (cnt > 99999)
-    {
-      cnt = 1;
-      avg = 0;
-    }
+    TKBeginTimer(CreateRenderJob);
 
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
                                          entities,
                                          m_params.Lights,
                                          m_params.Scene->GetEnvironmentVolumes());
+
+    TKEndTimer(CreateRenderJob);
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;
