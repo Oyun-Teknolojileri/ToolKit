@@ -87,7 +87,7 @@ namespace ToolKit
     void RemoveLeaf(NodeProxy leaf);
     void Rotate(NodeProxy node);
 
-    void FrustumCullParallel(const Frustum& frustum, BoolArray& unculled, NodeProxy root) const;
+    void FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const;
 
    private:
     NodeProxy root;

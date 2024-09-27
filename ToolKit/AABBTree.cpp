@@ -262,9 +262,9 @@ namespace ToolKit
       return entities;
     }
 
-    static BoolArray unculled;
+    static EntityRawPtrArray unculled;
     unculled.resize(nodeCapacity);
-    std::fill(unculled.begin(), unculled.end(), false);
+    std::fill(unculled.begin(), unculled.end(), nullptr);
 
     m_threadCount.store(1, std::memory_order_relaxed);
     m_maxThreadCount = GetWorkerManager()->GetThreadCount(WorkerManager::FramePool);
@@ -279,10 +279,7 @@ namespace ToolKit
     {
       if (unculled[i])
       {
-        if (!nodes[i].entity.expired())
-        {
-          entities.push_back(nodes[i].entity.lock().get());
-        }
+        entities.push_back(nodes[i].entity.lock().get());
       }
     }
 
@@ -495,7 +492,7 @@ namespace ToolKit
     }
   }
 
-  void AABBTree::FrustumCullParallel(const Frustum& frustum, BoolArray& unculled, NodeProxy root) const
+  void AABBTree::FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const
   {
     std::deque<NodeProxy> stack;
     stack.emplace_back(root);
@@ -512,7 +509,10 @@ namespace ToolKit
         // Volume is partially inside, check all internal volumes.
         if (nodes[current].IsLeaf())
         {
-          unculled[current] = true;
+          if (!nodes[current].entity.expired())
+          {
+            unculled[current] = nodes[current].entity.lock().get();
+          }
         }
         else
         {
@@ -548,7 +548,10 @@ namespace ToolKit
         // Volume is fully inside, get all entities from cache.
         for (NodeProxy leaf : nodes[current].leafs)
         {
-          unculled[leaf] = true;
+          if (!nodes[leaf].entity.expired())
+          {
+            unculled[leaf] = nodes[leaf].entity.lock().get();
+          }
         }
       }
     }
