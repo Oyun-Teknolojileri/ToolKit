@@ -198,20 +198,23 @@ namespace ToolKit
   TK_API int IndexOf(EntityPtr ntt, const EntityPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
 
-  template <typename T, typename Predicate>
+template <typename T, typename Predicate>
   void move_values(std::vector<T>& from, std::vector<T>& to, Predicate p)
   {
-    auto it = std::remove_if(from.begin(),
+    to.reserve(from.size()); // Reserve space for potential moved elements
+
+    auto it = std::partition(from.begin(),
                              from.end(),
-                             [&](const T& val)
+                             [&to, &p](T& val)
                              {
                                if (p(val))
                                {
-                                 to.push_back(std::move(val));
-                                 return true;
+                                 to.emplace_back(std::move(val));
+                                 return false; // Keep elements that satisfy the predicate
                                }
-                               return false;
+                               return true; // Remove elements that don't satisfy the predicate
                              });
+
     from.erase(it, from.end());
   }
 

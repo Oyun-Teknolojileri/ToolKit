@@ -262,17 +262,29 @@ namespace ToolKit
       return entities;
     }
 
-    entities.resize(nodeCapacity);
-    memset(entities.data(), 0, sizeof(Entity*) * nodeCapacity);
+    static BoolArray unculled;
+    unculled.resize(nodeCapacity);
+    std::fill(unculled.begin(), unculled.end(), false);
 
     m_threadCount.store(1, std::memory_order_relaxed);
     m_maxThreadCount = GetWorkerManager()->GetThreadCount(WorkerManager::FramePool);
 
-    FrustumCullParallel(frustum, entities, root);
+    FrustumCullParallel(frustum, unculled, root);
 
     HyperThreadSpinWait(m_threadCount.load(std::memory_order_relaxed) > 0);
 
-    erase_if(entities, [](Entity* ntt) -> bool { return ntt == nullptr; });
+    entities.reserve(nodeCapacity);
+
+    for (int i = 0; i < (int) unculled.size(); i++)
+    {
+      if (unculled[i])
+      {
+        if (!nodes[i].entity.expired())
+        {
+          entities.push_back(nodes[i].entity.lock().get());
+        }
+      }
+    }
 
     return entities;
   }
@@ -483,7 +495,7 @@ namespace ToolKit
     }
   }
 
-  void AABBTree::FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const
+  void AABBTree::FrustumCullParallel(const Frustum& frustum, BoolArray& unculled, NodeProxy root) const
   {
     std::deque<NodeProxy> stack;
     stack.emplace_back(root);
@@ -500,10 +512,7 @@ namespace ToolKit
         // Volume is partially inside, check all internal volumes.
         if (nodes[current].IsLeaf())
         {
-          if (EntityPtr ntt = nodes[current].entity.lock())
-          {
-            unculled[current] = ntt.get();
-          }
+          unculled[current] = true;
         }
         else
         {
@@ -539,10 +548,7 @@ namespace ToolKit
         // Volume is fully inside, get all entities from cache.
         for (NodeProxy leaf : nodes[current].leafs)
         {
-          if (EntityPtr ntt = nodes[leaf].entity.lock())
-          {
-            unculled[leaf] = ntt.get();
-          }
+          unculled[leaf] = true;
         }
       }
     }

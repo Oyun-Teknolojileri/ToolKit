@@ -127,8 +127,9 @@ namespace ToolKit
     EntityRawPtrArray entities  = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
     float t2                    = GetElapsedMilliSeconds();
 
-    avg                        += (t2 - t1);
-    TK_LOG("Cull time %f", avg / cnt++);
+    float d                     = t2 - t1;
+    avg                        += d;
+    TK_LOG("Cull time avg: %f  - t: %f", avg / cnt++, d);
 
     if (cnt > 99999)
     {

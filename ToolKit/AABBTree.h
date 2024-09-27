@@ -21,6 +21,7 @@ namespace ToolKit
 
   typedef int32 NodeProxy;
   typedef std::unordered_set<NodeProxy> NodeProxySet;
+  typedef std::vector<NodeProxy> NodeProxyArray;
 
   const Vec3 aabb_margin          = Vec3(0.03f);
   constexpr float aabb_multiplier = 3.0f;
@@ -86,7 +87,7 @@ namespace ToolKit
     void RemoveLeaf(NodeProxy leaf);
     void Rotate(NodeProxy node);
 
-    void FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const;
+    void FrustumCullParallel(const Frustum& frustum, BoolArray& unculled, NodeProxy root) const;
 
    private:
     NodeProxy root;
