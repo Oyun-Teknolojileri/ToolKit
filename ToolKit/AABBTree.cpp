@@ -277,9 +277,9 @@ namespace ToolKit
 
     for (int i = 0; i < (int) unculled.size(); i++)
     {
-      if (unculled[i])
+      if (unculled[i] != nullptr)
       {
-        entities.push_back(nodes[i].entity.lock().get());
+        entities.push_back(unculled[i]);
       }
     }
 
