@@ -7,163 +7,18 @@
 
 #pragma once
 
-#include "Common/concurrentqueue.h"
 #include "Types.h"
 
-#include <poolSTL/poolstl.hpp>
+#include <poolstl/poolstl.hpp>
 
 #include <future>
-#include <type_traits>
 
 namespace ToolKit
 {
 
-  /**
-   * A lock that busy waits.
-   * if contention is low, busy waiting locks much more performant than context switching locks
-   * such as mutexes.
-   * Refrence: https://rigtorp.se/spinlock/
-   */
-  struct Spinlock
-  {
-    void Lock() noexcept
-    {
-      for (;;)
-      {
-        // Optimistically assume the lock is free on the first try
-        if (!m_lock.exchange(true, std::memory_order_acquire))
-        {
-          return;
-        }
-        // Wait for lock to be released without generating cache misses
-        while (m_lock.load(std::memory_order_relaxed))
-        {
-          // Issue X86 PAUSE or ARM YIELD instruction to reduce contention between
-          // hyper-threads
-          HyperThreadPause();
-        }
-      }
-    }
-
-    bool TryLock() noexcept
-    {
-      // First do a relaxed load to check if lock is free in order to prevent
-      // unnecessary cache misses if someone does while(!TryLock())
-      return !m_lock.load(std::memory_order_relaxed) && !m_lock.exchange(true, std::memory_order_acquire);
-    }
-
-    void Unlock() noexcept { m_lock.store(false, std::memory_order_release); }
-
-   private:
-    std::atomic<bool> m_lock = {0};
-  };
-
   typedef task_thread_pool::task_thread_pool ThreadPool;
-
-  typedef std::function<void()> Task;
-
   typedef std::queue<std::packaged_task<void()>> TaskQueue;
-
   typedef std::function<void()> Task;
-
-template <int ThreadCount>
-  class ThreadPoolExp1
-  {
-   public:
-    ThreadPoolExp1()
-    {
-      for (int i = 0; i < ThreadCount; i++)
-      {
-        m_threads[i] = std::thread(
-            [this, i]() -> void
-            {
-              const int threadIndex     = i;
-              constexpr int maxTryCount = 100;
-              int tryCount              = 0;
-
-              while (!m_quit)
-              {
-                Task t;
-                if (m_taskQueues[threadIndex].try_dequeue(t))
-                {
-                  t();
-                }
-                else
-                {
-                  if (tryCount < maxTryCount)
-                  {
-                    tryCount++;
-                    // steal task
-                    for (int j = 0; j < ThreadCount; j++)
-                    {
-                      Task t;
-                      if (m_taskQueues[j].try_dequeue(t))
-                      {
-                        t();
-                        break;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    tryCount = 0;
-                    std::unique_lock<std::mutex> lock(m_threadLocks[threadIndex]);
-                    m_threadSignals[threadIndex].wait(
-                        lock,
-                        [this, threadIndex]() -> bool
-                        { return (m_taskQueues[threadIndex].size_approx() | (size_t) m_quit) > 0; });
-                  }
-                }
-              }
-            });
-      }
-    }
-
-    ~ThreadPoolExp1()
-    {
-      m_quit = true;
-      for (int i = 0; i < ThreadCount; i++)
-      {
-        m_threadSignals[i].notify_one();
-        m_threads[i].join();
-      }
-    }
-
-    // Approximately load balanced task assignment.
-    void Push(Task&& t)
-    {
-      //// While looking for the minimum, task queue statues may change.
-      //int mini    = 0;
-      //size_t mins = 0;
-      //for (int i = 0; i < ThreadCount; i++)
-      //{
-      //  size_t size = m_taskQueues[i].size_approx();
-      //  if (size < mins)
-      //  {
-      //    mini = i;
-      //    mins = size;
-      //  }
-      //}
-
-      // this is the best configuration at startup,
-      // than tasks are accumulating on certain threads which worsen the performance
-      // a dynamic schedular can actively seek for waking up and load balance instead of
-      // balancing at push ? which has poor performance.
-
-      static int next = 0;
-      int mini        = ++next % ThreadCount;
-
-      m_taskQueues[mini].enqueue(std::forward<Task>(t));
-      m_threadSignals[mini].notify_one();
-    }
-
-   private:
-    std::array<std::thread, ThreadCount> m_threads;
-    std::array<moodycamel::ConcurrentQueue<Task>, ThreadCount> m_taskQueues;
-    std::array<std::mutex, ThreadCount> m_threadLocks;
-    std::array<std::condition_variable, ThreadCount> m_threadSignals;
-    bool m_quit = false;
-  };
 
   /** This is the class that keeps the thread pools and manages async tasks. */
   class TK_API WorkerManager
@@ -173,8 +28,7 @@ template <int ThreadCount>
     enum Executor
     {
       MainThread, //!< Tasks in this executor runs in sync with main thread at the end of the current frame.
-      FramePool,  //!< Tasks that need to be completed within the frame should use this pool.
-      ExperimentalPool1
+      FramePool   //!< Tasks that need to be completed within the frame should use this pool.
     };
 
    public:
@@ -203,10 +57,6 @@ template <int ThreadCount>
       {
         return m_frameWorkers->submit(func, std::forward<A>(args)...);
       }
-      else if (exec == ExperimentalPool1)
-      {
-        m_experimetalPool1->Push(std::forward<F>(func));
-      }
       else if (exec == MainThread)
       {
         std::shared_ptr<std::packaged_task<R()>> ptask =
@@ -226,9 +76,7 @@ template <int ThreadCount>
 
    public:
     /** Task that suppose to complete in a frame should be using this pool. */
-    ThreadPool* m_frameWorkers            = nullptr;
-
-    ThreadPoolExp1<8>* m_experimetalPool1 = nullptr;
+    ThreadPool* m_frameWorkers = nullptr;
 
     /** Tasks that will be executed at the main thread frame end is stored here. */
     TaskQueue m_mainThreadTasks;

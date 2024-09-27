@@ -19,9 +19,7 @@ namespace ToolKit
 
   void WorkerManager::Init()
   {
-    m_experimetalPool1 = new ThreadPoolExp1<8>();
-
-    uint coreCount     = std::thread::hardware_concurrency();
+    uint coreCount = std::thread::hardware_concurrency();
     if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
     {
       m_frameWorkers = new ThreadPool(glm::min(coreCount, 4u));
@@ -38,7 +36,6 @@ namespace ToolKit
   void WorkerManager::UnInit()
   {
     SafeDel(m_frameWorkers);
-    SafeDel(m_experimetalPool1);
   }
 
   ThreadPool& WorkerManager::GetPool(Executor executor)

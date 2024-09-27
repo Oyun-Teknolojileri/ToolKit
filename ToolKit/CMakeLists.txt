@@ -25,6 +25,7 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}/Dependency/RapidXml"
 	"${CMAKE_SOURCE_DIR}/Dependency/stb"
 	"${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/include"
+	"${CMAKE_SOURCE_DIR}/Dependency/poolSTL/include"
 )
 
 file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/ToolKit/*.cpp")
