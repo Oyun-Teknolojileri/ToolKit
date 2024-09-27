@@ -33,10 +33,7 @@ namespace ToolKit
                                                     { ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex); });
   }
 
-  void WorkerManager::UnInit()
-  {
-    SafeDel(m_frameWorkers);
-  }
+  void WorkerManager::UnInit() { SafeDel(m_frameWorkers); }
 
   ThreadPool& WorkerManager::GetPool(Executor executor)
   {
@@ -47,6 +44,11 @@ namespace ToolKit
       return *m_frameWorkers;
       break;
     }
+  }
+
+  int WorkerManager::GetThreadCount(Executor executor)
+  {
+    return Main::GetInstance()->m_threaded ? GetPool(executor).get_num_threads() : 0;
   }
 
   void WorkerManager::Flush()

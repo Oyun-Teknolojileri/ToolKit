@@ -67,9 +67,7 @@ namespace ToolKit
     /** Return debug boxes for each node in the tree. */
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const;
 
-    /** Prints each node and the leaf entities under the node to the console. */
-    void PrintTree();
-
+    /** Returns the bounding box that covers all entities. */
     const BoundingBox& GetRootBoundingBox() const;
 
     /** Checks frustum against the tree and returns the entities intersecting with the frustum. */
@@ -89,7 +87,6 @@ namespace ToolKit
     void Rotate(NodeProxy node);
 
     void FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const;
-    void FrustumCull(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const;
 
    private:
     NodeProxy root;
@@ -101,6 +98,9 @@ namespace ToolKit
 
     /** Internally used to keep track of parallel traverse thread count. */
     mutable std::atomic<int> m_threadCount;
+
+    /** Internally used to get max available thread count. */
+    mutable int m_maxThreadCount;
   };
 
 } // namespace ToolKit

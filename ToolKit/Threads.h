@@ -16,6 +16,11 @@
 namespace ToolKit
 {
 
+  /** Spin waits until the cond become false. Release cpu resources for hyper threading. */
+#define HyperThreadSpinWait(cond)                                                                                      \
+  while (cond)                                                                                                         \
+    HyperThreadPause();
+
   typedef task_thread_pool::task_thread_pool ThreadPool;
   typedef std::queue<std::packaged_task<void()>> TaskQueue;
   typedef std::function<void()> Task;
@@ -46,6 +51,9 @@ namespace ToolKit
 
     /** Returns the thread pool corresponding to the executor. */
     ThreadPool& GetPool(Executor executor);
+
+    /** Returns available threads for given executor. */
+    int GetThreadCount(Executor executor);
 
     /** Stops waiting tasks and completes ongoing tasks on all pools and threads. */
     void Flush();
@@ -86,17 +94,17 @@ namespace ToolKit
     std::mutex m_mainTaskMutex;
   };
 
-  /**
-   * Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on.
-   * Allows to decide to run for loop sequential or parallel based on the given condition.
-   */
+/**
+ * Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on.
+ * Allows to decide to run for loop sequential or parallel based on the given condition.
+ */
 #define TKExecByConditional(Condition, Target)                                                                         \
   poolstl::par_if((Condition) && Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
-  /** Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on. */
+/** Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on. */
 #define TKExecBy(Target)         poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
-  /** Insert an async task to given target. */
+/** Insert an async task to given target. */
 #define TKAsyncTask(Target, ...) GetWorkerManager()->AsyncTask(Target, __VA_ARGS__);
 
 } // namespace ToolKit
