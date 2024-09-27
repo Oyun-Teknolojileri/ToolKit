@@ -12,3 +12,6 @@
 [submodule "Dependency/assimp"]
 	path = Dependency/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "Dependency/poolSTL"]
+	path = Dependency/poolSTL
+	url = https://github.com/alugowski/poolSTL.git
