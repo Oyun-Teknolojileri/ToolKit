@@ -19,35 +19,32 @@
 namespace ToolKit
 {
 
-  typedef int32 NodeProxy;
-  typedef std::unordered_set<NodeProxy> NodeProxySet;
-  typedef std::vector<NodeProxy> NodeProxyArray;
-
-  const Vec3 aabb_margin          = Vec3(0.03f);
-  constexpr float aabb_multiplier = 3.0f;
+  typedef int AABBNodeProxy;
+  typedef std::unordered_set<AABBNodeProxy> AABBNodeProxySet;
+  typedef std::vector<AABBNodeProxy> NodeProxyArray;
 
   class TK_API AABBTree
   {
    public:
     static constexpr inline int32 nullNode = -1;
 
-    struct Node
+    struct AABBNode
     {
       bool IsLeaf() const { return child1 == nullNode; }
 
       BoundingBox aabb;
       EntityWeakPtr entity;
 
-      NodeProxy parent;
-      NodeProxy child1;
-      NodeProxy child2;
-      NodeProxy next;
+      AABBNodeProxy parent;
+      AABBNodeProxy child1;
+      AABBNodeProxy child2;
+      AABBNodeProxy next;
       bool moved;
 
-      NodeProxySet leafs;
+      AABBNodeProxySet leafs;
     };
 
-    typedef std::vector<AABBTree::Node> NodeArray;
+    typedef std::vector<AABBNode> AABBNodeArray;
 
    public:
     AABBTree();
@@ -57,11 +54,11 @@ namespace ToolKit
     AABBTree& operator=(const AABBTree&) = delete;
 
     void Reset();
-    NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
+    AABBNodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
     /** Updates the tree via reinserting the provided node. */
-    void UpdateNode(NodeProxy node);
-    void RemoveNode(NodeProxy node);
-    void Traverse(std::function<void(const Node*)> callback) const;
+    void UpdateNode(AABBNodeProxy node);
+    void RemoveNode(AABBNodeProxy node);
+    void Traverse(std::function<void(const AABBNode*)> callback) const;
     /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
 
@@ -81,21 +78,21 @@ namespace ToolKit
     EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr) const;
 
    private:
-    NodeProxy AllocateNode();
-    void FreeNode(NodeProxy node);
-    NodeProxy InsertLeaf(NodeProxy leaf);
-    void RemoveLeaf(NodeProxy leaf);
-    void Rotate(NodeProxy node);
+    AABBNodeProxy AllocateNode();
+    void FreeNode(AABBNodeProxy node);
+    AABBNodeProxy InsertLeaf(AABBNodeProxy leaf);
+    void RemoveLeaf(AABBNodeProxy leaf);
+    void Rotate(AABBNodeProxy node);
 
-    void FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, NodeProxy root) const;
+    void FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, AABBNodeProxy root) const;
 
    private:
-    NodeProxy root;
-    NodeProxy freeList;
+    AABBNodeProxy m_root;
+    AABBNodeProxy m_freeList;
 
-    NodeArray nodes;
-    int32 nodeCapacity;
-    int32 nodeCount;
+    AABBNodeArray m_nodes;
+    int m_nodeCapacity;
+    int m_nodeCount;
 
     /** Internally used to keep track of parallel traverse thread count. */
     mutable std::atomic<int> m_threadCount;

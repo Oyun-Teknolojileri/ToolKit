@@ -209,7 +209,7 @@ namespace ToolKit
     Entity* _prefabRootEntity;
 
     /** Index into the bvh tree that points to the node for this entity. */
-    NodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
+    AABBNodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
 
     /** Entity causes AABBTree to be updated when added removed to the scene. */
     bool m_partOfAABBTree         = true;
