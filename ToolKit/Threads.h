@@ -11,8 +11,6 @@
 
 #include <poolstl/poolstl.hpp>
 
-#include <future>
-
 namespace ToolKit
 {
 
