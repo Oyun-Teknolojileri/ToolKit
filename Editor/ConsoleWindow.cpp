@@ -15,6 +15,7 @@
 #include <Drawable.h>
 #include <Mesh.h>
 #include <PluginManager.h>
+#include <TKProfiler.h>
 
 #include <DebugNew.h>
 
@@ -50,6 +51,21 @@ namespace ToolKit
     }
 
     // Executors
+    bool BoolCheck(const TagArg& arg)
+    {
+      if (arg.second.empty())
+      {
+        return false;
+      }
+
+      if (arg.second.front() == "1")
+      {
+        return true;
+      }
+
+      return false;
+    }
+
     void BoolCheck(const TagArgArray& tagArgs, bool* val)
     {
       if (tagArgs.empty())
@@ -57,22 +73,7 @@ namespace ToolKit
         return;
       }
 
-      if (tagArgs.front().second.empty())
-      {
-        return;
-      }
-
-      String args = tagArgs.front().second.front();
-
-      if (args == "1")
-      {
-        *val = true;
-      }
-
-      if (args == "0")
-      {
-        *val = false;
-      }
+      *val = BoolCheck(tagArgs.front());
     }
 
     void ShowPickDebugExec(TagArgArray tagArgs)
@@ -612,6 +613,42 @@ namespace ToolKit
       scene->RemoveEntity(selection, isDeep);
     }
 
+    void ShowProfileTimer(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+
+      for (auto& arg : tagArgs)
+      {
+        if (arg.first == "all")
+        {
+          bool val = BoolCheck(tagArgs.front());
+          for (auto itr = g_profileTimerMap.begin(); itr != g_profileTimerMap.end(); itr++)
+          {
+            itr->second = val;
+          }
+
+          return;
+        }
+        else if (arg.first == "list")
+        {
+          for (auto itr = g_profileTimerMap.begin(); itr != g_profileTimerMap.end(); itr++)
+          {
+            TK_LOG("%s", itr->first.c_str());
+          }
+        }
+        else
+        {
+          if (g_profileTimerMap.find(arg.first) != g_profileTimerMap.end())
+          {
+            g_profileTimerMap[arg.first] = BoolCheck(arg);
+          }
+        }
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -675,6 +712,7 @@ namespace ToolKit
       CreateCommand(g_showSceneBoundary, ShowSceneBoundary);
       CreateCommand(g_showBVHNodes, ShowBVHNodes);
       CreateCommand(g_deleteSelection, DeleteSelection);
+      CreateCommand(g_showProfileTimer, ShowProfileTimer);
     }
 
     ConsoleWindow::~ConsoleWindow() {}
