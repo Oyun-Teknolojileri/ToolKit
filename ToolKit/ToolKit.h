@@ -207,7 +207,7 @@ namespace ToolKit
     String m_resourceRoot;
     String m_cfgPath;
     EventPool m_eventPool;
-    std::unordered_map<String, bool> m_profileTimerMap;
+    std::unordered_map<String, int> m_profileTimerMap;
 
    private:
     static Main* m_proxy;

@@ -40,7 +40,7 @@ namespace ToolKit
   if (Name##_i_l)                                                                                                      \
   {                                                                                                                    \
     if (TKProfileTimerMap.find(#Name) == TKProfileTimerMap.end())                                                      \
-      TKProfileTimerMap[#Name] = true;                                                                                 \
+      TKProfileTimerMap[#Name] = 1;                                                                                    \
     Name##_i_l = false;                                                                                                \
   }                                                                                                                    \
   float Name##_t_start = GetElapsedMilliSeconds();
@@ -52,6 +52,12 @@ namespace ToolKit
   Name##_t_t              += Name##_t_d;                                                                               \
   if (TKProfileTimerMap[#Name])                                                                                        \
   {                                                                                                                    \
+    if (TKProfileTimerMap[#Name] == 2)                                                                                 \
+    { /* Average time reset requested. */                                                                              \
+      Name##_t_t               = Name##_t_d;                                                                           \
+      Name##_s_cnt             = 0;                                                                                    \
+      TKProfileTimerMap[#Name] = 1;                                                                                    \
+    }                                                                                                                  \
     TK_LOG(#Name " avg t: %f -- t: %f", Name##_t_t / (float) ++Name##_s_cnt, Name##_t_d);                              \
   }
 
