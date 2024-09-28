@@ -641,24 +641,11 @@ namespace ToolKit
         }
         else if (arg.first == "reset")
         {
-          for (const String& val : arg.second)
+          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
           {
-            if (val == "all")
+            if (itr->second) // Reset all shown timers.
             {
-              for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
-              {
-                if (itr->second)
-                {
-                  itr->second = 2; // This indicates a reset for the average time accumulator.
-                }
-              }
-            }
-            else
-            {
-              if (TKProfileTimerMap.find(arg.first) != TKProfileTimerMap.end())
-              {
-                TKProfileTimerMap[arg.first] = 2;
-              }
+              itr->second = 2; // This indicates a reset for the average time accumulator.
             }
           }
         }
