@@ -28,8 +28,7 @@ namespace ToolKit
   //  Profile timer
   //////////////////////////////////////////
 
-  /** Global profile timer set. Timer macro access this set to display / hide timers. */
-  static std::unordered_map<String, bool> g_profileTimerMap;
+#define TKProfileTimerMap (Main::GetInstance()->m_profileTimerMap)
 
 /**
  * Start point of a region based timer that measures time between two matching call.
@@ -40,8 +39,8 @@ namespace ToolKit
   static bool Name##_i_l   = true;                                                                                     \
   if (Name##_i_l)                                                                                                      \
   {                                                                                                                    \
-    if (g_profileTimerMap.find(#Name) == g_profileTimerMap.end())                                                      \
-      g_profileTimerMap[#Name] = true;                                                                                 \
+    if (TKProfileTimerMap.find(#Name) == TKProfileTimerMap.end())                                                      \
+      TKProfileTimerMap[#Name] = true;                                                                                 \
     Name##_i_l = false;                                                                                                \
   }                                                                                                                    \
   float Name##_t_start = GetElapsedMilliSeconds();
@@ -51,7 +50,7 @@ namespace ToolKit
   float Name##_t_d         = GetElapsedMilliSeconds() - Name##_t_start;                                                \
   static float Name##_t_t  = 0.0f;                                                                                     \
   Name##_t_t              += Name##_t_d;                                                                               \
-  if (g_profileTimerMap[#Name])                                                                                        \
+  if (TKProfileTimerMap[#Name])                                                                                        \
   {                                                                                                                    \
     TK_LOG(#Name " avg t: %f -- t: %f", Name##_t_t / (float) ++Name##_s_cnt, Name##_t_d);                              \
   }

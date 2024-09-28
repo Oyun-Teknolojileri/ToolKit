@@ -191,7 +191,7 @@ namespace ToolKit
 
     // TODO: This data does not need to be read, write always. It can be disabled enabled based on a config.
     XmlNode* profileTimerNode = CreateXmlNode(doc, "ProfileTimer", settingsNode);
-    for (const std::pair<String, bool>& timer : g_profileTimerMap)
+    for (const std::pair<String, bool>& timer : TKProfileTimerMap)
     {
       WriteAttr(profileTimerNode, doc, timer.first, std::to_string(timer.second));
     }
@@ -212,7 +212,7 @@ namespace ToolKit
       XmlAttribute* timer = timerNode->first_attribute();
       while (timer)
       {
-        g_profileTimerMap[timer->name()] = (bool) std::atoi(timer->value());
+        TKProfileTimerMap[timer->name()] = (bool) std::atoi(timer->value());
         timer                            = timer->next_attribute();
       }
     }

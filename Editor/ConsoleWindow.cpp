@@ -625,7 +625,7 @@ namespace ToolKit
         if (arg.first == "all")
         {
           bool val = BoolCheck(tagArgs.front());
-          for (auto itr = g_profileTimerMap.begin(); itr != g_profileTimerMap.end(); itr++)
+          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
           {
             itr->second = val;
           }
@@ -634,16 +634,16 @@ namespace ToolKit
         }
         else if (arg.first == "list")
         {
-          for (auto itr = g_profileTimerMap.begin(); itr != g_profileTimerMap.end(); itr++)
+          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
           {
             TK_LOG("%s", itr->first.c_str());
           }
         }
         else
         {
-          if (g_profileTimerMap.find(arg.first) != g_profileTimerMap.end())
+          if (TKProfileTimerMap.find(arg.first) != TKProfileTimerMap.end())
           {
-            g_profileTimerMap[arg.first] = BoolCheck(arg);
+            TKProfileTimerMap[arg.first] = BoolCheck(arg);
           }
         }
       }
@@ -1008,11 +1008,6 @@ namespace ToolKit
         String tag;
         tag = values.front();
         pop_front(values);
-
-        if (values.empty())
-        {
-          continue;
-        }
 
         TagArg input(tag, values);
         tagArgs.push_back(input);

@@ -166,6 +166,8 @@ namespace ToolKit
                                          float size        = 2.0f);
 
   // Entity operations.
+  //////////////////////////////////////////
+
   TK_API IDArray ToEntityIdArray(const EntityPtrArray& ptrArray);
   TK_API EntityRawPtrArray ToEntityRawPtrArray(const EntityPtrArray& ptrArray);
   TK_API EntityPtrArray ToEntityPtrArray(const EntityRawPtrArray& rawPtrArray);
