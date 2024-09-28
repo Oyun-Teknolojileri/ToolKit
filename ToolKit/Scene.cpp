@@ -492,6 +492,7 @@ namespace ToolKit
     }
 
     m_entities.clear();
+    m_aabbTree.Reset();
 
     m_loaded    = false;
     m_initiated = false;
