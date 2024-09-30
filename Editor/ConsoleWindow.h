@@ -128,6 +128,7 @@ namespace ToolKit
 
       // Buffers.
       StringArray m_items;
+      std::mutex m_itemMutex;
       StringArray m_commands;
       std::unordered_map<String, std::function<void(TagArgArray&)>> m_commandExecutors;
 

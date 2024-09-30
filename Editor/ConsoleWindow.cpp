@@ -905,10 +905,10 @@ namespace ToolKit
       {
         prefixed = "[" + tag + "] " + log;
       }
-
-      m_items.push_back(prefixed);
       m_scrollToBottom = true;
 
+      std::unique_lock<std::mutex> lock(m_itemMutex);
+      m_items.push_back(prefixed);
       if (m_items.size() > 1024)
       {
         ClearLog();
