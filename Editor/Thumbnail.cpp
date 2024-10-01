@@ -174,7 +174,7 @@ namespace ToolKit
       Mat4 camTs = m_cam->m_node->GetTransform();
       m_lightSystem->m_parentNode->SetTransform(camTs);
 
-      m_params.Lights          = m_lightSystem->m_lights;
+      m_params.overrideLights  = m_lightSystem->m_lights;
       m_params.Scene           = m_thumbnailScene;
       m_params.Cam             = m_cam;
       m_params.MainFramebuffer = m_thumbnailBuffer;

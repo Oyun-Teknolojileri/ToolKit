@@ -130,7 +130,7 @@ namespace ToolKit
     TKBeginTimer(AssignLight);
 
     LightRawPtrArray lights;
-    if (m_params.Lights.empty())
+    if (m_params.overrideLights.empty())
     {
       // Select non culled scene lights.
       MoveByType(entities, lights);
@@ -138,7 +138,7 @@ namespace ToolKit
     else
     {
       // or use override lights.
-      for (LightPtr light : m_params.Lights)
+      for (LightPtr light : m_params.overrideLights)
       {
         lights.push_back(light.get());
       }
@@ -156,7 +156,7 @@ namespace ToolKit
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;
-    m_shadowPass->m_params.lights     = m_params.Lights;
+    m_shadowPass->m_params.lights     = m_params.Scene->GetLights();
 
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::SortByMaterial(m_renderData);
@@ -184,7 +184,7 @@ namespace ToolKit
     }
 
     m_forwardRenderPass->m_params.renderData        = &m_renderData;
-    m_forwardRenderPass->m_params.Lights            = m_params.Lights;
+    m_forwardRenderPass->m_params.Lights            = lights;
     m_forwardRenderPass->m_params.Cam               = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.SsaoTexture       = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;

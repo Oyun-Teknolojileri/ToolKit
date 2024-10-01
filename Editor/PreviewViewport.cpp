@@ -64,8 +64,7 @@ namespace ToolKit
     void PreviewViewport::SetScene(ScenePtr scene)
     {
       scene->Update(0.0f);
-      m_previewRenderer->m_params.Scene  = scene;
-      m_previewRenderer->m_params.Lights = scene->GetLights();
+      m_previewRenderer->m_params.Scene = scene;
     }
 
     void PreviewViewport::ResetCamera()

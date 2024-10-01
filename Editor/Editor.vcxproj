@@ -138,7 +138,6 @@
     <ClCompile Include="PropInspectorWindow.cpp" />
     <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="RenderSettingsWindow.cpp" />
-    <ClCompile Include="SingleMaterialPass.cpp" />
     <ClCompile Include="StatsWindow.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="Thumbnail.cpp" />
@@ -200,7 +199,6 @@
     <ClInclude Include="PreviewViewport.h" />
     <ClInclude Include="PublishManager.h" />
     <ClInclude Include="RenderSettingsWindow.h" />
-    <ClInclude Include="SingleMaterialPass.h" />
     <ClInclude Include="StatsWindow.h" />
     <ClInclude Include="StatusBar.h" />
     <ClInclude Include="Thumbnail.h" />

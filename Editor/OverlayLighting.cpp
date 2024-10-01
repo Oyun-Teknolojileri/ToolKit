@@ -9,8 +9,6 @@
 
 #include "App.h"
 
-
-
 namespace ToolKit
 {
   namespace Editor
@@ -54,7 +52,7 @@ namespace ToolKit
           ImGui::TableSetColumnIndex(nextItemIndex++);
           ImGui::PushItemWidth(160);
           uint lightModeIndx      = (int) g_app->m_sceneLightingMode;
-          const char* itemNames[] = {"Editor Lit", "Unlit", "Full Lit", "Light Complexity", "Lighting Only", "Game"};
+          const char* itemNames[] = {"Editor Lit", "Full Lit", "Lighting Only", "Game"};
 
           uint itemCount          = sizeof(itemNames) / sizeof(itemNames[0]);
           if (ImGui::BeginCombo("", itemNames[lightModeIndx]))
