@@ -346,11 +346,6 @@ namespace ToolKit
 
   void RenderJobProcessor::AssignLight(LightRawPtrArray& lights, ScenePtr scene)
   {
-    if (lights.empty())
-    {
-      return;
-    }
-
     // Partition directionals at front.
     auto dirEndItr =
         std::partition(lights.begin(),

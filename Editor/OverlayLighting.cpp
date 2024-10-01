@@ -45,23 +45,23 @@ namespace ToolKit
         ImGui::BeginTable("##SettingsBar", m_editorLitModeOn ? 1 : 2, ImGuiTableFlags_SizingStretchProp);
 
         ImGui::TableNextRow();
-        unsigned int nextItemIndex = 0;
+        uint nextItemIndex = 0;
 
         if (!m_editorLitModeOn)
         {
           ImGui::TableSetColumnIndex(nextItemIndex++);
           ImGui::PushItemWidth(160);
-          uint lightModeIndx      = (int) g_app->m_sceneLightingMode;
-          const char* itemNames[] = {"Editor Lit", "Full Lit", "Lighting Only", "Game"};
+          uint lightModeIndx     = (uint) g_app->m_sceneLightingMode;
+          StringView itemNames[] = {"Editor Lit", "Full Lit", "Lighting Only", "Game"};
 
-          uint itemCount          = sizeof(itemNames) / sizeof(itemNames[0]);
-          if (ImGui::BeginCombo("", itemNames[lightModeIndx]))
+          uint itemCount         = sizeof(itemNames) / sizeof(itemNames[0]);
+          if (ImGui::BeginCombo("", itemNames[lightModeIndx].data()))
           {
             for (uint itemIndx = 1; itemIndx < itemCount; itemIndx++)
             {
-              bool isSelected      = false;
-              const char* itemName = itemNames[itemIndx];
-              ImGui::Selectable(itemName, &isSelected);
+              bool isSelected     = false;
+              StringView itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName.data(), &isSelected);
               if (isSelected)
               {
                 // 0 is EditorLit
