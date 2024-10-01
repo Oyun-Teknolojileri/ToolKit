@@ -129,20 +129,28 @@ namespace ToolKit
 
     TKBeginTimer(AssignLight);
 
-    // Select unculled lights and perform job assignment.
     LightRawPtrArray lights;
-    MoveByType(entities, lights);
+    if (m_params.Lights.empty())
+    {
+      // Select non culled scene lights.
+      MoveByType(entities, lights);
+    }
+    else
+    {
+      // or use override lights.
+      for (LightPtr light : m_params.Lights)
+      {
+        lights.push_back(light.get());
+      }
+    }
 
-    RenderJobProcessor::AssignLight(lights, m_params.Scene->m_aabbTree);
+    RenderJobProcessor::AssignLight(lights, m_params.Scene);
 
     TKEndTimer(AssignLight);
 
     TKBeginTimer(CreateRenderJob);
 
-    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
-                                         entities,
-                                         m_params.Lights,
-                                         m_params.Scene->GetEnvironmentVolumes());
+    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, m_params.Scene->GetEnvironmentVolumes());
 
     TKEndTimer(CreateRenderJob);
 

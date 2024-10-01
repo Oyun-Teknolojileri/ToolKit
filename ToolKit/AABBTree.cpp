@@ -255,13 +255,13 @@ namespace ToolKit
   }
 
   /** Test tree against a frustum. */
-  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const Frustum& frustum) const;
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const Frustum& frustum, bool threaded) const;
 
   /** Test tree against a box. */
-  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const BoundingBox& box) const;
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const BoundingBox& box, bool threaded) const;
 
   template <typename VolumeType>
-  EntityRawPtrArray AABBTree::VolumeQuery(const VolumeType& vol) const
+  EntityRawPtrArray AABBTree::VolumeQuery(const VolumeType& vol, bool threaded) const
   {
 
     EntityRawPtrArray entities;
@@ -270,12 +270,12 @@ namespace ToolKit
       return entities;
     }
 
-    static EntityRawPtrArray entitiesInVolume;
+    EntityRawPtrArray entitiesInVolume;
     entitiesInVolume.resize(m_nodeCapacity);
     std::fill(entitiesInVolume.begin(), entitiesInVolume.end(), nullptr);
 
     m_maxThreadCount =
-        m_nodeCount > m_threadTreshold ? GetWorkerManager()->GetThreadCount(WorkerManager::FramePool) : 0;
+        m_nodeCount > m_threadTreshold && threaded ? GetWorkerManager()->GetThreadCount(WorkerManager::FramePool) : 0;
 
     std::atomic_int availableThreadCount(glm::max(0, m_maxThreadCount - 1));
 

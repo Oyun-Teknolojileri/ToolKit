@@ -15,6 +15,7 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include "TKProfiler.h"
 #include "Threads.h"
 #include "ToolKit.h"
@@ -60,10 +61,9 @@ namespace ToolKit
                                             EntityRawPtrArray& entities,
                                             bool ignoreVisibility)
   {
-    LightPtrArray nullLights;
     EnvironmentComponentPtrArray nullEnvironments;
 
-    CreateRenderJobs(jobArray, entities, nullLights, nullEnvironments, ignoreVisibility);
+    CreateRenderJobs(jobArray, entities, nullEnvironments, ignoreVisibility);
   }
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
@@ -74,13 +74,9 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,
-                                            LightPtrArray& lights,
                                             const EnvironmentComponentPtrArray& environments,
                                             bool ignoreVisibility)
   {
-    // Sort lights for disc.
-    int directionalEndIndx = PreSortLights(lights);
-
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
     // to find the index of the submesh for a given entity index.
     // Ex: Entity index is 4 and it has 3 submesh,
@@ -187,7 +183,12 @@ namespace ToolKit
                         job.animData = skComp->GetAnimData(); // copy
                       }
 
-                      AssignLight(job, lights, directionalEndIndx);
+                      for (Light* light : ntt->m_effectingLights)
+                      {
+                        job.lights.push_back(light);
+                      }
+
+                      // AssignLight(job, lights, directionalEndIndx);
                       AssignEnvironment(job, environments);
                     }
                   });
@@ -343,17 +344,44 @@ namespace ToolKit
     }
   }
 
-  void RenderJobProcessor::AssignLight(const LightRawPtrArray& lights, const AABBTree& aabbTree)
+  void RenderJobProcessor::AssignLight(LightRawPtrArray& lights, ScenePtr scene)
   {
+    if (lights.empty())
+    {
+      return;
+    }
+
+    // Partition directionals at front.
+    auto dirEndItr =
+        std::partition(lights.begin(),
+                       lights.end(),
+                       [](Light* light) -> bool { return light->GetLightType() == Light::LightType::Directional; });
+
+    size_t dirEndIndex             = std::distance(lights.begin(), dirEndItr);
+
+    // Push all directionals.
+    const EntityPtrArray& entities = scene->GetEntities();
+    for (const EntityPtr& ntt : entities)
+    {
+      ntt->m_effectingLights.clear();
+      for (size_t i = 0; i < dirEndIndex; i++)
+      {
+        ntt->m_effectingLights.push_back(lights[i]);
+      }
+    }
+
+    // Query tree to find which point & spot lights effects which entities.
     std::for_each(TKExecBy(WorkerManager::FramePool),
                   lights.begin(),
                   lights.end(),
                   [&](Light* light) -> void
                   {
                     const BoundingBox& box     = light->GetBoundingBox(true);
-                    EntityRawPtrArray entities = aabbTree.VolumeQuery(box);
-                    LightRawPtrArray filteredLights;
-                    MoveByType(entities, filteredLights);
+                    EntityRawPtrArray entities = scene->m_aabbTree.VolumeQuery(box);
+                    for (Entity* ntt : entities)
+                    {
+                      ntt->m_effectingLights.push_back(light);
+                    }
                   });
   }
 

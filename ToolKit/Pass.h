@@ -125,7 +125,6 @@ namespace ToolKit
      */
     static void CreateRenderJobs(RenderJobArray& jobArray,
                                  EntityRawPtrArray& entities,
-                                 LightPtrArray& lights,
                                  const EnvironmentComponentPtrArray& environments,
                                  bool ignoreVisibility = false);
 
@@ -145,7 +144,7 @@ namespace ToolKit
 
     static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
 
-    static void AssignLight(const LightRawPtrArray& lights, const AABBTree& aabbTree);
+    static void AssignLight(LightRawPtrArray& lights, ScenePtr scene);
 
     /**
      * Makes sure that first elements are directional lights.
