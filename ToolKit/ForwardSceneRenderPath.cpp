@@ -123,9 +123,13 @@ namespace ToolKit
 
     TKBeginTimer(CullTime);
 
-    EntityRawPtrArray entities = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
+    EntityRawPtrArray entities = m_params.Scene->m_aabbTree.VolumeQuery(frustum);
 
     TKEndTimer(CullTime);
+
+    // Select unculled lights and perform job assignment.
+    LightRawPtrArray lights;
+    MoveByType(entities, lights);
 
     TKBeginTimer(CreateRenderJob);
 
@@ -135,6 +139,8 @@ namespace ToolKit
                                          m_params.Scene->GetEnvironmentVolumes());
 
     TKEndTimer(CreateRenderJob);
+
+    // RenderJobProcessor::AssignLight(m_renderData.jobs, )
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;

@@ -12,7 +12,7 @@
 namespace ToolKit
 {
 
-  AABBTree::AABBTree() : m_root {nullNode}, m_nodeCapacity {32}, m_nodeCount {0} { Reset(); }
+  AABBTree::AABBTree() : m_root {nullNode}, m_nodeCapacity {32}, m_nodeCount {0}, m_threadTreshold(1000) { Reset(); }
 
   AABBTree::~AABBTree()
   {
@@ -253,33 +253,63 @@ namespace ToolKit
     return node;
   }
 
-  EntityRawPtrArray AABBTree::FrustumQuery(const Frustum& frustum) const
-  {
-    EntityRawPtrArray entities;
+  /** Test tree against a frustum. */
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const Frustum& frustum) const;
 
+  /** Test tree against a box. */
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const BoundingBox& box) const;
+
+  template <typename VolumeType>
+  EntityRawPtrArray AABBTree::VolumeQuery(const VolumeType& vol) const
+  {
+
+    EntityRawPtrArray entities;
     if (m_root == nullNode)
     {
       return entities;
     }
 
-    static EntityRawPtrArray unculled;
-    unculled.resize(m_nodeCapacity);
-    std::fill(unculled.begin(), unculled.end(), nullptr);
+    static EntityRawPtrArray entitiesInVolume;
+    entitiesInVolume.resize(m_nodeCapacity);
+    std::fill(entitiesInVolume.begin(), entitiesInVolume.end(), nullptr);
 
-    m_threadCount.store(1, std::memory_order_relaxed);
-    m_maxThreadCount = GetWorkerManager()->GetThreadCount(WorkerManager::FramePool);
+    m_maxThreadCount =
+        m_nodeCount > m_threadTreshold ? GetWorkerManager()->GetThreadCount(WorkerManager::FramePool) : 0;
 
-    FrustumCullParallel(frustum, unculled, m_root);
+    std::atomic_int availableThreadCount(glm::max(0, m_maxThreadCount - 1));
 
-    HyperThreadSpinWait(m_threadCount.load(std::memory_order_relaxed) > 0);
+    if constexpr (std::is_same_v<VolumeType, Frustum>)
+    {
+      VolumeQuery(entitiesInVolume,
+                  availableThreadCount,
+                  m_root,
+                  [this, &vol](AABBNodeProxy root) -> IntersectResult
+                  { return FrustumBoxIntersection(vol, m_nodes[root].aabb); });
+    }
+    else if constexpr (std::is_same_v<VolumeType, BoundingBox>)
+    {
+      VolumeQuery(entitiesInVolume,
+                  availableThreadCount,
+                  m_root,
+                  [this, &vol](AABBNodeProxy root) -> IntersectResult
+                  { return BoxBoxIntersection(vol, m_nodes[root].aabb); });
+    }
+    else
+    {
+      assert(0 && "Volume query is not implemented.");
+      return entities;
+    }
+
+    // If there are threads in work, wait for them.
+    HyperThreadSpinWait(availableThreadCount.load() < m_maxThreadCount);
 
     entities.reserve(m_nodeCapacity);
 
-    for (int i = 0; i < (int) unculled.size(); i++)
+    for (int i = 0; i < (int) entitiesInVolume.size(); i++)
     {
-      if (unculled[i] != nullptr)
+      if (entitiesInVolume[i] != nullptr)
       {
-        entities.push_back(unculled[i]);
+        entities.push_back(entitiesInVolume[i]);
       }
     }
 
@@ -499,7 +529,10 @@ namespace ToolKit
     }
   }
 
-  void AABBTree::FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, AABBNodeProxy root) const
+  void AABBTree::VolumeQuery(EntityRawPtrArray& result,
+                             std::atomic_int& threadCount,
+                             AABBNodeProxy root,
+                             std::function<enum class IntersectResult(AABBNodeProxy)> queryFn) const
   {
     std::deque<AABBNodeProxy> stack;
     stack.emplace_back(root);
@@ -509,7 +542,7 @@ namespace ToolKit
       AABBNodeProxy current = stack.back();
       stack.pop_back();
 
-      IntersectResult intResult = FrustumBoxIntersection(frustum, m_nodes[current].aabb);
+      IntersectResult intResult = queryFn(current);
 
       if (intResult == IntersectResult::Intersect)
       {
@@ -518,7 +551,7 @@ namespace ToolKit
         {
           if (!m_nodes[current].entity.expired())
           {
-            unculled[current] = m_nodes[current].entity.lock().get();
+            result[current] = m_nodes[current].entity.lock().get();
           }
         }
         else
@@ -530,15 +563,14 @@ namespace ToolKit
               return;
             }
 
-            int currentCount = m_threadCount.load(std::memory_order_relaxed);
-            if (currentCount < m_maxThreadCount)
+            int currentCount = threadCount.load(std::memory_order_seq_cst);
+            if (currentCount > 0)
             {
-              if (m_threadCount.compare_exchange_weak(currentCount, currentCount + 1, std::memory_order_relaxed))
+              if (threadCount.compare_exchange_strong(currentCount, currentCount - 1))
               {
                 TKAsyncTask(WorkerManager::FramePool,
-                            [this, node, &frustum, &unculled]() -> void
-                            { FrustumCullParallel(frustum, unculled, node); });
-
+                            [this, &result, &threadCount, node, queryFn]() -> void
+                            { VolumeQuery(result, threadCount, node, queryFn); });
                 return;
               }
             }
@@ -557,13 +589,13 @@ namespace ToolKit
         {
           if (!m_nodes[leaf].entity.expired())
           {
-            unculled[leaf] = m_nodes[leaf].entity.lock().get();
+            result[leaf] = m_nodes[leaf].entity.lock().get();
           }
         }
       }
     }
 
-    m_threadCount.fetch_sub(1, std::memory_order_relaxed);
+    threadCount.fetch_add(1);
   }
 
   AABBNodeProxy AABBTree::InsertLeaf(AABBNodeProxy leaf)

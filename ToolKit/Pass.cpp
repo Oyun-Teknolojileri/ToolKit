@@ -343,6 +343,20 @@ namespace ToolKit
     }
   }
 
+  void RenderJobProcessor::AssignLight(const LightRawPtrArray& lights, const AABBTree& aabbTree)
+  {
+    std::for_each(TKExecBy(WorkerManager::FramePool),
+                  lights.begin(),
+                  lights.end(),
+                  [&](Light* light) -> void
+                  {
+                    BoundingBox box            = light->GetBoundingBox(true);
+                    EntityRawPtrArray entities = aabbTree.VolumeQuery(box);
+                    LightRawPtrArray filteredLights;
+                    MoveByType(entities, filteredLights);
+                  });
+  }
+
   struct LightSortStruct
   {
     LightPtr light      = nullptr;
@@ -487,8 +501,8 @@ namespace ToolKit
       }
 
       // Pick the smallest volume intersecting with job.
-      BoundingBox vbb = std::move(volume->GetBoundingBox());
-      if (BoxBoxIntersection(vbb, job.BoundingBox))
+      const BoundingBox& vbb = volume->GetBoundingBox();
+      if (BoxBoxIntersection(vbb, job.BoundingBox) != IntersectResult::Outside)
       {
         if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)
         {

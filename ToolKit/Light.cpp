@@ -495,4 +495,5 @@ namespace ToolKit
           m_invalidatedForLightCache = true;
         });
   }
+
 } // namespace ToolKit

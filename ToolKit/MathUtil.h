@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "AABBTree.h"
 #include "GeometryTypes.h"
 
 namespace ToolKit
@@ -65,9 +64,7 @@ namespace ToolKit
                                        const Vec3& spherePos2,
                                        float sphereRadius2);
 
-  TK_API bool BoxInsideBox(const BoundingBox& inside, const BoundingBox& outside);
-
-  TK_API bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
+  TK_API IntersectResult BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
 
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
 
@@ -153,7 +150,6 @@ namespace ToolKit
   TK_API void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera);
   TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices);
   TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs);
-  TK_API EntityRawPtrArray FrustumCull(const AABBTree& aabbTree, const CameraPtr camera);
 
   // Conversions and Interpolation
   //////////////////////////////////////////

@@ -212,13 +212,16 @@ namespace ToolKit
     AABBNodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
 
     /** Entity causes AABBTree to be updated when added removed to the scene. */
-    bool m_partOfAABBTree         = true;
+    bool m_partOfAABBTree             = true;
 
     /** The Scene that entity belongs to. */
     SceneWeakPtr m_scene;
 
     /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
     bool m_transformCacheInvalidated = true;
+
+    /** Lights that effects this entity. */
+    LightRawPtrArray m_effectingLights;
 
    protected:
     BoundingBox m_localBoundingBoxCache;

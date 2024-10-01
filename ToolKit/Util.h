@@ -174,6 +174,25 @@ namespace ToolKit
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
 
+  /** Move entities of type T to filtered array. */
+  template <typename T>
+  void MoveByType(EntityRawPtrArray& entities, std::vector<T*>& filtered)
+  {
+    auto it = std::partition(entities.begin(),
+                             entities.end(),
+                             [&filtered](Entity* ntt)
+                             {
+                               if (static_cast<Object*>(ntt)->IsA<T>())
+                               {
+                                 filtered.emplace_back(static_cast<T*>(ntt));
+                                 return false; // Keep elements of type T.
+                               }
+                               return true; // Remove elements thats not of type T.
+                             });
+
+    entities.erase(it, entities.end());
+  }
+
   TK_API void GetParents(const EntityPtr ntt, EntityPtrArray& parents);
 
   // Gather hierarchy from parent (indx 0) to child (indx end).
@@ -200,10 +219,10 @@ namespace ToolKit
   TK_API int IndexOf(EntityPtr ntt, const EntityPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
 
-template <typename T, typename Predicate>
+  template <typename T, typename Predicate>
   void move_values(std::vector<T>& from, std::vector<T>& to, Predicate p)
   {
-    to.reserve(from.size()); // Reserve space for potential moved elements
+    to.reserve(from.size()); // Reserve space for potential moved elements.
 
     auto it = std::partition(from.begin(),
                              from.end(),
@@ -212,9 +231,9 @@ template <typename T, typename Predicate>
                                if (p(val))
                                {
                                  to.emplace_back(std::move(val));
-                                 return false; // Keep elements that satisfy the predicate
+                                 return false; // Keep elements that satisfy the predicate.
                                }
-                               return true; // Remove elements that don't satisfy the predicate
+                               return true; // Remove elements that don't satisfy the predicate.
                              });
 
     from.erase(it, from.end());

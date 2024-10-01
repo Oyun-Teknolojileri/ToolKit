@@ -59,6 +59,7 @@ namespace ToolKit
     void UpdateNode(AABBNodeProxy node);
     void RemoveNode(AABBNodeProxy node);
     void Traverse(std::function<void(const AABBNode*)> callback) const;
+
     /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
 
@@ -68,11 +69,12 @@ namespace ToolKit
     /** Returns the bounding box that covers all entities. */
     const BoundingBox& GetRootBoundingBox() const;
 
-    /** Checks frustum against the tree and returns the entities intersecting with the frustum. */
-    EntityRawPtrArray FrustumQuery(const Frustum& frustum) const;
+    /** Template for volume queries. VolumeTypes: {Frustum, BoundingBox} */
+    template <typename VolumeType>
+    EntityRawPtrArray VolumeQuery(const VolumeType& vol) const;
 
     /**
-     * Checks entities inside the aabb tree and return the nearest one that hits the ray and the hit distance t.
+     * Test ray against the tree and returns the nearest entity that hits the ray and the hit distance t.
      * If the deep parameter passed as true, it checks mesh level intersection.
      */
     EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr) const;
@@ -84,7 +86,10 @@ namespace ToolKit
     void RemoveLeaf(AABBNodeProxy leaf);
     void Rotate(AABBNodeProxy node);
 
-    void FrustumCullParallel(const Frustum& frustum, EntityRawPtrArray& unculled, AABBNodeProxy root) const;
+    void VolumeQuery(EntityRawPtrArray& result,
+                     std::atomic_int& threadCount,
+                     AABBNodeProxy root,
+                     std::function<enum class IntersectResult(AABBNodeProxy)> queryFn) const;
 
    private:
     AABBNodeProxy m_root;
@@ -94,8 +99,8 @@ namespace ToolKit
     int m_nodeCapacity;
     int m_nodeCount;
 
-    /** Internally used to keep track of parallel traverse thread count. */
-    mutable std::atomic<int> m_threadCount;
+    /** Threshold node count to do threaded traverse for volume queries. */
+    const int m_threadTreshold;
 
     /** Internally used to get max available thread count. */
     mutable int m_maxThreadCount;

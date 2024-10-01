@@ -145,6 +145,8 @@ namespace ToolKit
 
     static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
 
+    static void AssignLight(const LightRawPtrArray& lights, const AABBTree& aabbTree);
+
     /**
      * Makes sure that first elements are directional lights.
      * @param lights are the lights to sort.

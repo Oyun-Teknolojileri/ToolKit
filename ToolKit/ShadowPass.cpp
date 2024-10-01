@@ -264,7 +264,7 @@ namespace ToolKit
     RenderData renderData;
 
     Frustum frustum            = ExtractFrustum(cullCamera->GetProjectViewMatrix(), false);
-    EntityRawPtrArray entities = m_params.scene->m_aabbTree.FrustumQuery(frustum);
+    EntityRawPtrArray entities = m_params.scene->m_aabbTree.VolumeQuery(frustum);
 
     RenderJobProcessor::CreateRenderJobs(renderData.jobs, entities, nullLights, nullEnv);
     RenderJobProcessor::SeperateRenderData(renderData, true);

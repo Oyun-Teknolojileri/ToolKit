@@ -251,7 +251,7 @@ namespace ToolKit
 
     pickFn(extraList, false);
 
-    EntityRawPtrArray entitiesInTheFrustum = m_aabbTree.FrustumQuery(frustum);
+    EntityRawPtrArray entitiesInTheFrustum = m_aabbTree.VolumeQuery(frustum);
     EntityPtrArray entityPtrs              = ToEntityPtrArray(entitiesInTheFrustum);
     pickFn(entityPtrs, true);
   }
