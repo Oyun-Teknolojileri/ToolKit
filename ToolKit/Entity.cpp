@@ -95,7 +95,7 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetBoundingBox(bool inWorld)
+  const BoundingBox& Entity::GetBoundingBox(bool inWorld)
   {
     if (!m_transformCacheInvalidated)
     {

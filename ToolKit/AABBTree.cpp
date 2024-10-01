@@ -70,9 +70,10 @@ namespace ToolKit
     assert(m_nodes[node].IsLeaf());
 
     BoundingBox aabb = m_nodes[node].aabb;
-    if (EntityPtr ntt = m_nodes[node].entity.lock())
+    if (!m_nodes[node].entity.expired())
     {
-      aabb = ntt->GetBoundingBox(true);
+      EntityPtr ntt = m_nodes[node].entity.lock();
+      aabb          = ntt->GetBoundingBox(true);
     }
 
     aabb.max = aabb.max;

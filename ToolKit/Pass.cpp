@@ -350,7 +350,7 @@ namespace ToolKit
                   lights.end(),
                   [&](Light* light) -> void
                   {
-                    BoundingBox box            = light->GetBoundingBox(true);
+                    const BoundingBox& box     = light->GetBoundingBox(true);
                     EntityRawPtrArray entities = aabbTree.VolumeQuery(box);
                     LightRawPtrArray filteredLights;
                     MoveByType(entities, filteredLights);

@@ -36,7 +36,7 @@ namespace ToolKit
     BoundingBox GetBoundingBox();
 
     // AABB should be in entity space (not world space)
-    void SetBoundingBox(BoundingBox aabb);
+    void SetBoundingBox(const BoundingBox& aabb);
 
    protected:
     void ParameterConstructor() override;

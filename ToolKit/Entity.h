@@ -43,7 +43,7 @@ namespace ToolKit
     EntityPtr Parent() const;
     virtual bool IsDrawable() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
-    virtual BoundingBox GetBoundingBox(bool inWorld = false);
+    virtual const BoundingBox& GetBoundingBox(bool inWorld = false);
     ObjectPtr Copy() const override;
     virtual void RemoveResources();
 

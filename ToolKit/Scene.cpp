@@ -230,18 +230,18 @@ namespace ToolKit
           continue;
         }
 
-        IntersectResult res = IntersectResult::Inside;
-        BoundingBox bb      = ntt->GetBoundingBox(true);
+        IntersectResult res    = IntersectResult::Inside;
+        const BoundingBox& box = ntt->GetBoundingBox(true);
 
         if (!skipTest)
         {
-          res = FrustumBoxIntersection(frustum, bb);
+          res = FrustumBoxIntersection(frustum, box);
         }
 
         if (res != IntersectResult::Outside)
         {
           PickData pd;
-          pd.pickPos = (bb.max + bb.min) * 0.5f;
+          pd.pickPos = (box.max + box.min) * 0.5f;
           pd.entity  = ntt;
 
           pickedObjects.push_back(pd);
