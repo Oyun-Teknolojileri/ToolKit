@@ -241,7 +241,7 @@ namespace ToolKit
     TKDeclareClass(EntityNode, Entity);
 
     EntityNode();
-    explicit EntityNode(const String& name);
+    EntityNode(const String& name);
     virtual ~EntityNode();
 
     void RemoveResources() override;
