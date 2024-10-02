@@ -20,6 +20,7 @@
 #include <GradientSky.h>
 #include <Material.h>
 #include <MaterialComponent.h>
+#include <MathUtil.h>
 #include <Prefab.h>
 #include <TKProfiler.h>
 #include <UIManager.h>
@@ -403,7 +404,7 @@ namespace ToolKit
         RenderJobProcessor::CreateRenderJobs(renderJobs, rawNtties, true);
         renderJobs.insert(renderJobs.end(), billboardJobs.begin(), billboardJobs.end());
 
-        RenderJobProcessor::CullRenderJobs(renderJobs, viewportCamera, m_unCulledRenderJobs);
+        FrustumCull(renderJobs, viewportCamera, m_unCulledRenderJobs);
 
         // Set parameters of pass
         m_outlinePass->m_params.Camera       = viewportCamera;

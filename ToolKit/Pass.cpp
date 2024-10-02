@@ -342,25 +342,6 @@ namespace ToolKit
     std::sort(begin, end, sortFn);
   }
 
-  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera)
-  {
-    FrustumCull(jobArray, camera);
-  }
-
-  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray,
-                                          const CameraPtr& camera,
-                                          UIntArray& resultIndices)
-  {
-    FrustumCull(jobArray, camera, resultIndices);
-  }
-
-  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray,
-                                          const CameraPtr& camera,
-                                          RenderJobArray& unCulledJobs)
-  {
-    FrustumCull(jobArray, camera, unCulledJobs);
-  }
-
   void RenderJobProcessor::SortByMaterial(RenderData& renderData)
   {
     auto sortRangeFn = [](RenderJobItr begin, RenderJobItr end) -> void
@@ -395,21 +376,6 @@ namespace ToolKit
     begin = renderData.GetForwardTranslucentBegin();
     end   = renderData.jobs.end();
     sortRangeFn(begin, end);
-  }
-
-  void RenderJobProcessor::AssignEnvironment(RenderJobItr begin,
-                                             RenderJobItr end,
-                                             const EnvironmentComponentPtrArray& environments)
-  {
-    if (environments.empty())
-    {
-      return;
-    }
-
-    for (RenderJobItr job = begin; job != end; job++)
-    {
-      AssignEnvironment(*job, environments);
-    }
   }
 
   void RenderJobProcessor::AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments)

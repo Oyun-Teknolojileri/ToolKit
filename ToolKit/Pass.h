@@ -136,6 +136,9 @@ namespace ToolKit
     /** Assign all lights affecting the job. */
     static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex);
 
+    /** Assign environment to each job. If job is under influence of many environment, picks the smallest volume. */
+    static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);
+
     /**
      * Makes sure that first elements are directional lights.
      * @param lights are the lights to sort.
@@ -146,21 +149,8 @@ namespace ToolKit
     /** Sort entities by distance(from boundary center) in ascending order to camera. Accounts for isometric camera. */
     static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
 
-    /** Cull objects based on the sent camera. Update Job's frustumCulled state. */
-    static void CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera);
-
-    /** Doesn't alter render job, but puts results into cullResults array. Useful for not to alter RenderData. */
-    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, UIntArray& resultIndices);
-
-    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, RenderJobArray& unCulledJobs);
-
+    /** Sort render jobs based on materials. */
     static void SortByMaterial(RenderData& renderData);
-
-    static void AssignEnvironment(RenderJobItr begin,
-                                  RenderJobItr end,
-                                  const EnvironmentComponentPtrArray& environments);
-
-    static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);
 
     /**
      * Calculates the standard deviation and mean of the given RenderJobArray
