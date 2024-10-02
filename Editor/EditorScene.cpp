@@ -113,20 +113,29 @@ namespace ToolKit
       {
         if (!additive) // we've cleared the array, must add again
         {
-          m_selectedEntities.push_back(id);
+          AddToSelectionSane(id);
         }
         return;
       }
 
       EntityPtr ntt = GetEntity(id);
+      bool skipAdd  = false; // Prefab sub entities may cause addition of the root.
 
       // If the entity comes from a prefab scene, swap the child ntt with prefab.
       if (Entity* prefabRoot = ntt->GetPrefabRoot())
       {
-        ntt = prefabRoot->Self<Entity>();
-        id  = ntt->GetIdVal();
+        ntt     = prefabRoot->Self<Entity>();
+        id      = ntt->GetIdVal();
+        skipAdd = IsSelected(id);
       }
 
+      if (!skipAdd)
+      {
+        AddToSelectionSane(id);
+      }
+
+      // Execute commands that activates on selection.
+      // A better approach would be creating an editor event OnSelected.
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
         LightPtrArray lights = GetLights();
@@ -160,24 +169,16 @@ namespace ToolKit
           }
         }
       }
-
-      m_selectedEntities.push_back(id);
     }
 
     void EditorScene::AddToSelection(const IDArray& entities, bool additive)
     {
       ULongID currentId = NULL_HANDLE;
-      if (entities.size() > 1)
+      for (const ULongID& id : entities)
       {
-        for (const ULongID& id : entities)
+        if (IsCurrentSelection(id))
         {
-          if (id != NULL_HANDLE)
-          {
-            if (IsCurrentSelection(id))
-            {
-              currentId = id;
-            }
-          }
+          currentId = id;
         }
       }
 
@@ -189,11 +190,6 @@ namespace ToolKit
 
       for (const ULongID& id : entities)
       {
-        if (id == NULL_HANDLE)
-        {
-          continue;
-        }
-
         // Add to selection.
         if (!additive)
         {
@@ -209,11 +205,13 @@ namespace ToolKit
               {
                 if (IsCurrentSelection(id))
                 {
+                  // Deselect if user is reselecting the current selection.
                   RemoveFromSelection(id);
                 }
                 else
                 {
-                  MakeCurrentSelection(id, false);
+                  // Make it current.
+                  MakeCurrentSelection(id);
                 }
               }
             }
@@ -229,7 +227,10 @@ namespace ToolKit
         }
       }
 
-      MakeCurrentSelection(currentId, true);
+      if (currentId != NULL_HANDLE)
+      {
+        MakeCurrentSelection(currentId);
+      }
     }
 
     void EditorScene::AddToSelection(const EntityPtrArray& entities, bool additive)
@@ -250,19 +251,18 @@ namespace ToolKit
       return false;
     }
 
-    void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
+    void EditorScene::MakeCurrentSelection(ULongID id)
     {
       IDArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (itr != m_selectedEntities.end())
       {
+        // If the id exist, swap it to the last to make it current selection.
         std::iter_swap(itr, m_selectedEntities.end() - 1);
       }
       else
       {
-        if (!ifExist)
-        {
-          m_selectedEntities.push_back(id);
-        }
+        // Entity is not selected, adding it back of the array makes it both selected and current.
+        AddToSelectionSane(id);
       }
     }
 
@@ -564,6 +564,13 @@ namespace ToolKit
           }
         }
       }
+    }
+
+    void EditorScene::AddToSelectionSane(ULongID id)
+    {
+      assert(id != NULL_HANDLE);
+      assert(IsSelected(id) == false);
+      m_selectedEntities.push_back(id);
     }
 
     EditorSceneManager::EditorSceneManager() {}

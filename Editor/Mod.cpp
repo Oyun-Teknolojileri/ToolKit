@@ -255,10 +255,6 @@ namespace ToolKit
         {
           ids.push_back(pd.entity->GetIdVal());
         }
-        else
-        {
-          ids.push_back(NULL_HANDLE);
-        }
       }
     }
 
@@ -407,10 +403,10 @@ namespace ToolKit
           frustum.planes[5] = PlaneFrom(planePnts.data());
 
           // Perform picking.
-          std::vector<EditorScene::PickData> ntties;
+          std::vector<EditorScene::PickData> entities;
           EditorScenePtr currScene = g_app->GetCurrentScene();
-          currScene->PickObject(frustum, ntties, m_ignoreList);
-          m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
+          currScene->PickObject(frustum, entities, m_ignoreList);
+          m_pickData.insert(m_pickData.end(), entities.begin(), entities.end());
 
           // Debug draw the picking frustum.
           if (g_app->m_showPickingDebug)
