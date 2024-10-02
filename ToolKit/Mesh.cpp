@@ -22,8 +22,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 static constexpr bool SERIALIZE_MESH_AS_BINARY = true;
 
 namespace ToolKit
@@ -199,7 +197,7 @@ namespace ToolKit
       glGenBuffers(1, &cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboVertexId);
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboVertexId);
-      uint size = GetVertexSize() * m_vertexCount;
+      uint64 size = (uint64) GetVertexSize() * m_vertexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
 
@@ -215,7 +213,7 @@ namespace ToolKit
       glGenBuffers(1, &cpy->m_vboIndexId);
       glBindBuffer(GL_COPY_WRITE_BUFFER, cpy->m_vboIndexId);
       glBindBuffer(GL_COPY_READ_BUFFER, m_vboIndexId);
-      uint size = sizeof(uint) * m_indexCount;
+      uint64 size = sizeof(uint) * (uint64) m_indexCount;
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
 
@@ -629,7 +627,7 @@ namespace ToolKit
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
-    AddVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+    AddVRAMUsageInBytes(GetVertexSize() * (uint64) m_vertexCount);
 
     if (flush)
     {
@@ -660,7 +658,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_indexCount = (uint) m_clientSideIndices.size();
 
-      AddVRAMUsageInBytes(sizeof(uint) * m_clientSideIndices.size());
+      AddVRAMUsageInBytes(sizeof(uint) * (uint64) m_clientSideIndices.size());
     }
 
     m_indexCount = (uint) m_clientSideIndices.size();
@@ -824,7 +822,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
 
-      AddVRAMUsageInBytes(GetVertexSize() * m_clientSideVertices.size());
+      AddVRAMUsageInBytes(GetVertexSize() * (uint64) m_clientSideVertices.size());
     }
 
     if (flush)

@@ -216,10 +216,13 @@ namespace ToolKit
                          const IDArray& ignoreList,
                          const EntityPtrArray& extraList)
   {
+    // Create pick data for the  entities.
     auto pickFn = [&](const EntityPtrArray& entities, bool skipTest) -> void
     {
       for (EntityPtr ntt : entities)
       {
+        assert(ntt != nullptr);
+
         if (!ntt->IsDrawable())
         {
           continue;
@@ -235,6 +238,7 @@ namespace ToolKit
 
         if (!skipTest)
         {
+          // If frustum test is applied via aabb tree this check can be skipped.
           res = FrustumBoxIntersection(frustum, box);
         }
 
@@ -249,11 +253,10 @@ namespace ToolKit
       }
     };
 
-    pickFn(extraList, false);
+    pickFn(extraList, false); // Test extra list with frustum.
 
     EntityRawPtrArray entitiesInTheFrustum = m_aabbTree.VolumeQuery(frustum);
-    EntityPtrArray entityPtrs              = ToEntityPtrArray(entitiesInTheFrustum);
-    pickFn(entityPtrs, true);
+    pickFn(ToEntityPtrArray(entitiesInTheFrustum), true); // Skip the frustum test.
   }
 
   EntityPtr Scene::GetEntity(ULongID id, int* index) const

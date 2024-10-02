@@ -379,12 +379,11 @@ namespace ToolKit
                                  const IDArray& ignoreList,
                                  const EntityPtrArray& extraList)
     {
-      // Add billboards to scene
-      EntityPtrArray temp = extraList;
-      temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
+      EntityPtrArray extraWithBillboards = extraList;
+      extraWithBillboards.insert(extraWithBillboards.end(), m_billboards.begin(), m_billboards.end());
       UpdateBillboardsForPicking();
 
-      Scene::PickObject(frustum, pickedObjects, ignoreList, temp);
+      Scene::PickObject(frustum, pickedObjects, ignoreList, extraWithBillboards);
 
       // If the billboards are picked, pick the entity.
       pickedObjects.erase(std::remove_if(pickedObjects.begin(),

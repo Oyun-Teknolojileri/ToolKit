@@ -123,7 +123,7 @@ namespace ToolKit
                    GL_UNSIGNED_BYTE,
                    m_image);
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
     }
     else
     {
@@ -137,7 +137,7 @@ namespace ToolKit
                    GL_FLOAT,
                    m_imagef);
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
     }
 
     if (m_settings.GenerateMipMap)
@@ -180,15 +180,16 @@ namespace ToolKit
 
     if (m_settings.Target == GraphicTypes::Target2D)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
+      RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) *
+                             m_settings.Layers);
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
+      RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) * 6);
     }
     else
     {
@@ -250,7 +251,7 @@ namespace ToolKit
     }
 
     uint64 internalFormatSize = stencil ? 4 : 3;
-    AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
+    AddVRAMUsageInBytes((uint64) (m_width * m_height) * internalFormatSize);
   }
 
   void DepthTexture::UnInit()
@@ -263,7 +264,7 @@ namespace ToolKit
     glDeleteRenderbuffers(1, &m_textureId);
 
     uint64 internalFormatSize = m_stencil ? 4 : 3;
-    RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
+    RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * internalFormatSize);
 
     m_textureId   = 0;
     m_initiated   = false;
@@ -321,7 +322,7 @@ namespace ToolKit
     }
 
     RHI::DeleteTextures(1, &m_textureId);
-    RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+    RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
 
     m_textureId = 0;
     m_loaded    = false;
@@ -643,12 +644,12 @@ namespace ToolKit
                      0);
       }
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
+      AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) * 6);
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
+      AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
     }
 
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);

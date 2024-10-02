@@ -564,7 +564,7 @@ namespace ToolKit
               return;
             }
 
-            int currentCount = threadCount.load(std::memory_order_seq_cst);
+            int currentCount = threadCount.load();
             if (currentCount > 0)
             {
               if (threadCount.compare_exchange_strong(currentCount, currentCount - 1))
