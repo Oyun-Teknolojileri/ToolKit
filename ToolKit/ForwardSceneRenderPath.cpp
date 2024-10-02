@@ -119,17 +119,16 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::SetPassParams()
   {
-    Frustum frustum = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
-
     TKBeginTimer(FrustumCull);
 
+    Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
     EntityRawPtrArray entities = m_params.Scene->m_aabbTree.VolumeQuery(frustum);
 
     TKEndTimer(FrustumCull);
 
-    TKBeginTimer(AssignLight);
+    TKBeginTimer(CreateRenderJob);
 
-    LightRawPtrArray lights;
+        LightRawPtrArray lights;
     if (m_params.overrideLights.empty())
     {
       // Select non culled scene lights.
@@ -144,12 +143,7 @@ namespace ToolKit
       }
     }
 
-    RenderJobProcessor::AssignLight(lights, m_params.Scene);
-
-    TKEndTimer(AssignLight);
-
-    TKBeginTimer(CreateRenderJob);
-
+    RenderJobProcessor::PreSortLights(lights);
     const EnvironmentComponentPtrArray& environments = m_params.Scene->GetEnvironmentVolumes();
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false, lights, environments);
 

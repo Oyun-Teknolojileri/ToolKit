@@ -455,8 +455,18 @@ namespace ToolKit
             }
             break;
             case 3:
-              ntt->AddComponent<EnvironmentComponent>();
-              break;
+            {
+              // A default hdri must be given for component creation via editor.
+              // Create a default hdri.
+              TextureManager* texMan         = GetTextureManager();
+              HdriPtr hdri                   = texMan->Create<Hdri>(texMan->GetDefaultResource(Hdri::StaticClass()));
+
+              EnvironmentComponentPtr envCom = MakeNewPtr<EnvironmentComponent>();
+              envCom->SetHdriVal(hdri);
+
+              ntt->AddComponent(envCom);
+            }
+            break;
             case 4:
               ntt->AddComponent<AnimControllerComponent>();
               break;

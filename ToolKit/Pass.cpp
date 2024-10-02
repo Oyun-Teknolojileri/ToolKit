@@ -64,7 +64,7 @@ namespace ToolKit
                                             const EnvironmentComponentPtrArray& environments)
   {
 
-    size_t directionalEndIndx = 0;
+    int directionalEndIndx = 0;
     for (size_t i = 0; i < lights.size(); i++)
     {
       if (lights[i]->GetLightType() == Light::Directional)
@@ -74,7 +74,7 @@ namespace ToolKit
 
       // Sanity check
       // All directional lights must be appear before all other lights.
-      assert(directionalEndIndx <= i && "PreSort the lights before sending them to CreateRenderJobs.");
+      assert(directionalEndIndx <= (i + 1) && "PreSort the lights before sending them to CreateRenderJobs.");
     }
 
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
@@ -184,7 +184,7 @@ namespace ToolKit
                       }
 
                       // push directional lights.
-                      AssignLight(job, lights, (int) directionalEndIndx);
+                      AssignLight(job, lights, directionalEndIndx);
                       AssignEnvironment(job, environments);
                     }
                   });
@@ -194,51 +194,6 @@ namespace ToolKit
   {
     EntityRawPtrArray singleNtt = {entity.get()};
     CreateRenderJobs(jobArray, singleNtt, true);
-  }
-
-  void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)
-  {
-    Mat4 project          = camera->GetProjectionMatrix();
-    Mat4 view             = camera->GetViewMatrix();
-    Mat4 projectView      = project * view;
-    Vec3 camPos           = camera->m_node->GetTranslation();
-    Frustum frustum       = ExtractFrustum(projectView, false);
-    Frustum normalFrustum = frustum;
-    NormalizeFrustum(normalFrustum);
-
-    erase_if(lights,
-             [&](const LightPtr& light) -> bool
-             {
-               bool culled = false;
-               switch (light->GetLightType())
-               {
-               case Light::Directional:
-                 return false;
-               case Light::Spot:
-               {
-                 SpotLight* spot = static_cast<SpotLight*>(light.get());
-                 culled = FrustumBoxIntersection(frustum, spot->m_boundingBoxCache) == IntersectResult::Outside;
-               }
-               break;
-               case Light::Point:
-               {
-                 PointLight* point = static_cast<PointLight*>(light.get());
-                 culled            = !FrustumSphereIntersection(normalFrustum, point->m_boundingSphereCache);
-               }
-               break;
-               default:
-                 assert(false && "Unknown light type.");
-                 return true;
-               }
-
-               if (culled)
-               {
-                 return true;
-               }
-
-               float dist = glm::distance(light->m_node->GetTranslation(), camPos);
-               return dist > maxDistance;
-             });
   }
 
   void RenderJobProcessor::SeperateRenderData(RenderData& renderData, bool forwardOnly)
@@ -325,6 +280,7 @@ namespace ToolKit
       else
       {
         // The only light type that remains is point light.
+        // lights must be presorted, check it.
         assert(light->IsA<PointLight>());
         PointLight* point = static_cast<PointLight*>(light);
         if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
@@ -335,65 +291,7 @@ namespace ToolKit
     }
   }
 
-  void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)
-  {
-    int directionalEndIndx     = PreSortLights(lights);
-    LightRawPtrArray rawLights = ToRawPtrArray<Light>(lights);
-
-    for (RenderJobItr job = begin; job != end; job++)
-    {
-      AssignLight(*job, rawLights, directionalEndIndx);
-    }
-  }
-
-  void RenderJobProcessor::AssignLight(LightRawPtrArray& lights, ScenePtr scene)
-  {
-    // Partition directionals at front.
-    auto dirEndItr =
-        std::partition(lights.begin(),
-                       lights.end(),
-                       [](Light* light) -> bool { return light->GetLightType() == Light::LightType::Directional; });
-
-    size_t dirEndIndex             = std::distance(lights.begin(), dirEndItr);
-
-    // Push all directionals.
-    const EntityPtrArray& entities = scene->GetEntities();
-    for (const EntityPtr& ntt : entities)
-    {
-      ntt->m_effectingLights.clear();
-      for (size_t i = 0; i < dirEndIndex; i++)
-      {
-        ntt->m_effectingLights.push_back(lights[i]);
-      }
-    }
-
-    // Query tree to find which point & spot lights effects which entities.
-    std::for_each(TKExecBy(WorkerManager::FramePool),
-                  lights.begin(),
-                  lights.end(),
-                  [&](Light* light) -> void
-                  {
-                    const BoundingBox& box     = light->GetBoundingBox(true);
-                    EntityRawPtrArray entities = scene->m_aabbTree.VolumeQuery(box);
-                    for (Entity* ntt : entities)
-                    {
-                      ntt->m_effectingLights.push_back(light);
-                    }
-                  });
-  }
-
-  struct LightSortStruct
-  {
-    LightPtr light      = nullptr;
-    uint intersectCount = 0;
-  };
-
-  bool CompareLightIntersects(const LightSortStruct& i1, const LightSortStruct& i2)
-  {
-    return (i1.intersectCount > i2.intersectCount);
-  }
-
-  int RenderJobProcessor::PreSortLights(LightPtrArray& lights)
+  int RenderJobProcessor::PreSortLights(LightRawPtrArray& lights)
   {
     // Get all directional lights to beginning first
     uint directionalLightEndIndex = 0;

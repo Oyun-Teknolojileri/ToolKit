@@ -140,10 +140,17 @@ namespace ToolKit
 
         if (!jobs.empty())
         {
-          RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);
+          LightRawPtrArray rawLights = ToRawPtrArray(lights);
+          int dirStart               = RenderJobProcessor::PreSortLights(rawLights);
+
+          for (RenderJob& job : jobs)
+          {
+            RenderJobProcessor::AssignLight(job, rawLights, dirStart);
+          }
+
           RenderJob& job = jobs.front();
 
-          for (int i = 0; i < job.lights.size(); i++)
+          for (size_t i = 0; i < job.lights.size(); i++)
           {
             Light* light = job.lights[i];
             if (!IsSelected(light->GetIdVal()))

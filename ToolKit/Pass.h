@@ -125,9 +125,6 @@ namespace ToolKit
 
     static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
 
-    /** This will drop the lights whose bounding volume does not intersect with camera. */
-    static void CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance = TK_FLT_MAX);
-
     /**
      * Separate jobs such that job array starts with culled jobs, than deferred jobs, than forward opaque and
      * translucent jobs.
@@ -139,16 +136,12 @@ namespace ToolKit
     /** Assign all lights affecting the job. */
     static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex);
 
-    static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
-
-    static void AssignLight(LightRawPtrArray& lights, ScenePtr scene);
-
     /**
      * Makes sure that first elements are directional lights.
      * @param lights are the lights to sort.
      * @returns The index where the non directional lights starts.
      */
-    static int PreSortLights(LightPtrArray& lights);
+    static int PreSortLights(LightRawPtrArray& lights);
 
     /** Sort entities by distance(from boundary center) in ascending order to camera. Accounts for isometric camera. */
     static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
