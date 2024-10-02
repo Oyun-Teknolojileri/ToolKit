@@ -109,24 +109,21 @@ namespace ToolKit
   class TK_API RenderJobProcessor
   {
    public:
-    /** Constructs a render job for a single entity. */
-    static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
-
-    /** Constructs render jobs for all given entities. */
-    static void CreateRenderJobs(RenderJobArray& jobArray, EntityRawPtrArray& entities, bool ignoreVisibility = false);
-
     /**
      * Constructs all render jobs from entities.
      * @param jobArray is the array of constructed jobs.
      * @param entities are the entities to construct render jobs for.
-     * @param lights are the list of lights to consider.
+     * @param lights are the list of lights to consider. Lights must be presorted before sending them to this function.
      * @param environments are the environment volumes to consider.
      * @param ingnoreVisibility when set true, construct jobs for entities that has visibility set to false.
      */
     static void CreateRenderJobs(RenderJobArray& jobArray,
                                  EntityRawPtrArray& entities,
-                                 const EnvironmentComponentPtrArray& environments,
-                                 bool ignoreVisibility = false);
+                                 bool ignoreVisibility                            = false,
+                                 const LightRawPtrArray& lights                   = {},
+                                 const EnvironmentComponentPtrArray& environments = {});
+
+    static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
 
     /** This will drop the lights whose bounding volume does not intersect with camera. */
     static void CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance = TK_FLT_MAX);
@@ -140,7 +137,7 @@ namespace ToolKit
     static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
 
     /** Assign all lights affecting the job. */
-    static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex);
+    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex);
 
     static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
 

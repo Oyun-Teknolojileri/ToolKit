@@ -174,6 +174,23 @@ namespace ToolKit
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
 
+
+  /** Converts an ObjectPTr to RawPtr */
+  template <typename T>
+  std::vector<T*> ToRawPtrArray(const std::vector<std::shared_ptr<T>>& objectArray)
+  {
+    //static_assert(T::StaticClass()->IsA(Object));
+
+    std::vector<T*> rawPtrArray;
+    rawPtrArray.resize(objectArray.size());
+    for (size_t i = 0; i < objectArray.size(); i++)
+    {
+      rawPtrArray.push_back(objectArray[i].get());
+    }
+
+    return rawPtrArray;
+  }
+
   /** Move entities of type T to filtered array. */
   template <typename T>
   void MoveByType(EntityRawPtrArray& entities, std::vector<T*>& filtered)

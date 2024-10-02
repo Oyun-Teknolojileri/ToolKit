@@ -150,7 +150,8 @@ namespace ToolKit
 
     TKBeginTimer(CreateRenderJob);
 
-    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, m_params.Scene->GetEnvironmentVolumes());
+    const EnvironmentComponentPtrArray& environments = m_params.Scene->GetEnvironmentVolumes();
+    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false, lights, environments);
 
     TKEndTimer(CreateRenderJob);
 

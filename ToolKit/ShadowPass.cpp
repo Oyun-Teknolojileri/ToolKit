@@ -257,15 +257,13 @@ namespace ToolKit
     }
 
     // Create render jobs for shadow map generation.
-    EnvironmentComponentPtrArray nullEnv;
-
     RenderJobArray jobs;
     RenderData renderData;
 
     Frustum frustum            = ExtractFrustum(cullCamera->GetProjectViewMatrix(), false);
     EntityRawPtrArray entities = m_params.scene->m_aabbTree.VolumeQuery(frustum);
 
-    RenderJobProcessor::CreateRenderJobs(renderData.jobs, entities, nullEnv);
+    RenderJobProcessor::CreateRenderJobs(renderData.jobs, entities);
     RenderJobProcessor::SeperateRenderData(renderData, true);
 
     renderer->OverrideBlendState(true, BlendFunction::NONE); // Blending must be disabled for shadow map generation.

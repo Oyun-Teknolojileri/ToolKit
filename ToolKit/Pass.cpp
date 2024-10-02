@@ -59,24 +59,24 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,
-                                            bool ignoreVisibility)
+                                            bool ignoreVisibility,
+                                            const LightRawPtrArray& lights,
+                                            const EnvironmentComponentPtrArray& environments)
   {
-    EnvironmentComponentPtrArray nullEnvironments;
 
-    CreateRenderJobs(jobArray, entities, nullEnvironments, ignoreVisibility);
-  }
+    size_t directionalEndIndx = 0;
+    for (size_t i = 0; i < lights.size(); i++)
+    {
+      if (lights[i]->GetLightType() == Light::Directional)
+      {
+        directionalEndIndx++;
+      }
 
-  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
-  {
-    EntityRawPtrArray singleNtt = {entity.get()};
-    CreateRenderJobs(jobArray, singleNtt, true);
-  }
+      // Sanity check
+      // All directional lights must be appear before all other lights.
+      assert(directionalEndIndx <= i && "PreSort the lights before sending them to CreateRenderJobs.");
+    }
 
-  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
-                                            EntityRawPtrArray& entities,
-                                            const EnvironmentComponentPtrArray& environments,
-                                            bool ignoreVisibility)
-  {
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
     // to find the index of the submesh for a given entity index.
     // Ex: Entity index is 4 and it has 3 submesh,
@@ -183,15 +183,17 @@ namespace ToolKit
                         job.animData = skComp->GetAnimData(); // copy
                       }
 
-                      for (Light* light : ntt->m_effectingLights)
-                      {
-                        job.lights.push_back(light);
-                      }
-
-                      // AssignLight(job, lights, directionalEndIndx);
+                      // push directional lights.
+                      AssignLight(job, lights, (int) directionalEndIndx);
                       AssignEnvironment(job, environments);
                     }
                   });
+  }
+
+  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
+  {
+    EntityRawPtrArray singleNtt = {entity.get()};
+    CreateRenderJobs(jobArray, singleNtt, true);
   }
 
   void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)
@@ -285,12 +287,12 @@ namespace ToolKit
     renderData.forwardTranslucentStartIndex     = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
-  void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
+  void RenderJobProcessor::AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex)
   {
     // Add all directional lights.
     for (int i = 0; i < startIndex; i++)
     {
-      job.lights.push_back(lights[i].get());
+      job.lights.push_back(lights[i]);
       if (i >= RHIConstants::MaxLightsPerObject)
       {
         break;
@@ -304,9 +306,9 @@ namespace ToolKit
       return;
     }
 
-    for (int i = startIndex; i < (int) lights.size(); i++)
+    for (size_t i = startIndex; i < lights.size(); i++)
     {
-      Light* light = lights[i].get();
+      Light* light = lights[i];
       if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
       {
         return;
@@ -322,7 +324,6 @@ namespace ToolKit
       }
       else
       {
-        // Directional lights are not assigned to bvh nodes.
         // The only light type that remains is point light.
         assert(light->IsA<PointLight>());
         PointLight* point = static_cast<PointLight*>(light);
@@ -336,11 +337,12 @@ namespace ToolKit
 
   void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)
   {
-    int directionalEndIndx = PreSortLights(lights);
+    int directionalEndIndx     = PreSortLights(lights);
+    LightRawPtrArray rawLights = ToRawPtrArray<Light>(lights);
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      AssignLight(*job, lights, directionalEndIndx);
+      AssignLight(*job, rawLights, directionalEndIndx);
     }
   }
 
