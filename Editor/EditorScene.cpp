@@ -390,15 +390,26 @@ namespace ToolKit
                                          pickedObjects.end(),
                                          [&pickedObjects](PickData& pd) -> bool
                                          {
-                                           if (pd.entity != nullptr && pd.entity->IsA<Billboard>() &&
-                                               static_cast<Billboard*>(pd.entity.get())->m_entity != nullptr)
+                                           if (pd.entity == nullptr)
                                            {
-                                             // Check if the entity is already picked
+                                             assert(false && "Pick should not create data with empty entity.");
+                                             return true; // Remove null entity from pick data.
+                                           }
+
+                                           Entity* ntt = pd.entity.get();
+                                           if (Billboard* billboard = ntt->As<Billboard>()) // If entity is a billboard.
+                                           {
+                                             if (billboard->m_entity == nullptr)
+                                             {
+                                               // Remove the billboard if it does not points an entity.
+                                               return true;
+                                             }
+
+                                             // Check if billboard's entity is already picked.
                                              bool found = false;
                                              for (PickData& pd2 : pickedObjects)
                                              {
-                                               if (pd2.entity->GetIdVal() ==
-                                                   static_cast<Billboard*>(pd.entity.get())->m_entity->GetIdVal())
+                                               if (pd2.entity->IsSame(billboard->m_entity))
                                                {
                                                  found = true;
                                                  break;
@@ -407,15 +418,18 @@ namespace ToolKit
 
                                              if (found)
                                              {
+                                               // Billboard's entity is already picked, remove the billboard.
                                                return true;
                                              }
                                              else
                                              {
-                                               pd.entity = static_cast<Billboard*>(pd.entity.get())->m_entity;
+                                               // Replace billboard with its entity.
+                                               pd.entity = billboard->m_entity;
                                                return false;
                                              }
                                            }
-                                           return false;
+
+                                           return false; // If entity is not a billboard don't remove.
                                          }),
                           pickedObjects.end());
     }
