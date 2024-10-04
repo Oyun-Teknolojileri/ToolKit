@@ -152,9 +152,11 @@ namespace ToolKit
 
   void LightDataBuffer::UpdateLightIndices(const LightRawPtrArray& lightsToRender)
   {
-    for (int i = 0; i < lightsToRender.size(); ++i)
+    uint loopLimit = glm::min((uint) lightsToRender.size(), RHIConstants::LightCacheSize);
+    for (uint i = 0; i < loopLimit; i++)
     {
       m_activeLightIndices.activeLightIndices[i] = lightsToRender[i]->m_lightCacheIndex;
     }
   }
+
 } // namespace ToolKit
