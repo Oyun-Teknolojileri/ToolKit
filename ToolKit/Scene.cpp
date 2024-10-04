@@ -526,7 +526,11 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  void Scene::ClearEntities() { m_entities.clear(); }
+  void Scene::ClearEntities()
+  {
+    m_aabbTree.Reset();
+    m_entities.clear();
+  }
 
   const BoundingBox& Scene::GetSceneBoundary() { return m_aabbTree.GetRootBoundingBox(); }
 

@@ -30,6 +30,13 @@ namespace ToolKit
     // Build a linked list for the free list.
     for (int32 i = 0; i < m_nodeCapacity - 1; ++i)
     {
+      if (!m_nodes[i].entity.expired())
+      {
+        EntityPtr ntt = m_nodes[i].entity.lock();
+        ntt->m_aabbTreeNodeProxy = nullNode;
+        m_nodes[i].entity.reset();
+      }
+
       m_nodes[i].next   = i + 1;
       m_nodes[i].parent = i;
       m_nodes[i].leafs.clear();
