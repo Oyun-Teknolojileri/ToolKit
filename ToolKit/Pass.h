@@ -120,6 +120,7 @@ namespace ToolKit
     static void CreateRenderJobs(RenderJobArray& jobArray,
                                  EntityRawPtrArray& entities,
                                  bool ignoreVisibility                            = false,
+                                 int dirLightEndIndex                             = 0,
                                  const LightRawPtrArray& lights                   = {},
                                  const EnvironmentComponentPtrArray& environments = {});
 

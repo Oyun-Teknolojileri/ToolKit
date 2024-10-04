@@ -60,23 +60,10 @@ namespace ToolKit
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,
                                             bool ignoreVisibility,
+                                            int dirLightEndIndex,
                                             const LightRawPtrArray& lights,
                                             const EnvironmentComponentPtrArray& environments)
   {
-
-    int directionalEndIndx = 0;
-    for (size_t i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetLightType() == Light::Directional)
-      {
-        directionalEndIndx++;
-      }
-
-      // Sanity check
-      // All directional lights must be appear before all other lights.
-      assert(directionalEndIndx <= (i + 1) && "PreSort the lights before sending them to CreateRenderJobs.");
-    }
-
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
     // to find the index of the submesh for a given entity index.
     // Ex: Entity index is 4 and it has 3 submesh,
@@ -184,7 +171,7 @@ namespace ToolKit
                       }
 
                       // push directional lights.
-                      AssignLight(job, lights, directionalEndIndx);
+                      AssignLight(job, lights, dirLightEndIndex);
                       AssignEnvironment(job, environments);
                     }
                   });

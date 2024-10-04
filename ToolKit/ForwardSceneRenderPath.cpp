@@ -128,7 +128,7 @@ namespace ToolKit
 
     TKBeginTimer(CreateRenderJob);
 
-        LightRawPtrArray lights;
+    LightRawPtrArray lights;
     if (m_params.overrideLights.empty())
     {
       // Select non culled scene lights.
@@ -143,9 +143,9 @@ namespace ToolKit
       }
     }
 
-    RenderJobProcessor::PreSortLights(lights);
+    int dirEndIndx                                   = RenderJobProcessor::PreSortLights(lights);
     const EnvironmentComponentPtrArray& environments = m_params.Scene->GetEnvironmentVolumes();
-    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false, lights, environments);
+    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false, dirEndIndx, lights, environments);
 
     TKEndTimer(CreateRenderJob);
 
