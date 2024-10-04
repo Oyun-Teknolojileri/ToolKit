@@ -763,7 +763,7 @@ namespace ToolKit
 
     for (EntityPtr ntt : prefabList)
     {
-      PrefabPtr prefab = std::static_pointer_cast<Prefab>(ntt);
+      PrefabPtr prefab = Cast<Prefab>(ntt);
       prefab->Link();
     }
   }

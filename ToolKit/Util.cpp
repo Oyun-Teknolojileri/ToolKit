@@ -959,7 +959,7 @@ namespace ToolKit
 
   EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies)
   {
-    EntityPtr cpy = std::static_pointer_cast<Entity>(root->Copy());
+    EntityPtr cpy = Cast<Entity>(root->Copy());
     copies.push_back(cpy);
 
     for (Node* node : root->m_node->m_children)

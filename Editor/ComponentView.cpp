@@ -423,7 +423,7 @@ namespace ToolKit
 
         // Remove billboards if necessary.
         ScenePtr scene          = GetSceneManager()->GetCurrentScene();
-        EditorScenePtr edtScene = std::static_pointer_cast<EditorScene>(scene);
+        EditorScenePtr edtScene = Cast<EditorScene>(scene);
         edtScene->ValidateBillboard(ntt);
 
         ImGui::PushItemWidth(150);

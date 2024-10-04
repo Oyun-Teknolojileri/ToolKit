@@ -631,7 +631,7 @@ namespace ToolKit
     EditorScenePtr App::GetCurrentScene()
     {
       ScenePtr scene = GetSceneManager()->GetCurrentScene();
-      return std::static_pointer_cast<EditorScene>(scene);
+      return Cast<EditorScene>(scene);
     }
 
     void App::SetCurrentScene(const EditorScenePtr& scene) { GetSceneManager()->SetCurrentScene(scene); }

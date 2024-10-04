@@ -57,7 +57,6 @@ namespace ToolKit
     ~RenderSystem();
 
     void Init();
-    void AddRenderTask(RenderPath* technique);
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
     void FlushRenderTasks();
