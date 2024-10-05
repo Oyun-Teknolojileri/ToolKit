@@ -206,6 +206,10 @@ namespace ToolKit
                 {
                   // Deselect if user is reselecting the current selection.
                   RemoveFromSelection(id);
+                  if (id == currentId)
+                  {
+                    currentId = NULL_HANDLE;
+                  }
                 }
                 else
                 {
@@ -217,6 +221,10 @@ namespace ToolKit
             else
             {
               RemoveFromSelection(id);
+              if (id == currentId)
+              {
+                currentId = NULL_HANDLE;
+              }
             }
           }
           else
