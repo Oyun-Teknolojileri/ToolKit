@@ -220,9 +220,6 @@ namespace ToolKit
     /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
     bool m_transformCacheInvalidated = true;
 
-    /** Lights that effects this entity. */
-    LightRawPtrArray m_effectingLights;
-
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;

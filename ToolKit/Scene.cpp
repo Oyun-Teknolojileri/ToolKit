@@ -144,6 +144,21 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
+    m_environmentVolumeCache.clear();
+
+    for (const EntityPtr& ntt : m_entities)
+    {
+      // Update volume caches.
+      if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
+      {
+        if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
+      }
+    }
+
     for (Light* light : m_lightCache)
     {
       light->UpdateShadowCamera();
