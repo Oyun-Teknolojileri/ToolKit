@@ -52,11 +52,11 @@ namespace ToolKit
       EntityPtrArray selecteds;
       GetSelectedEntities(selecteds);
 
-      LightPtrArray sceneLights   = GetLights();
+      LightRawPtrArray sceneLights = GetLights();
 
-      bool foundFirstLight        = false;
-      LightPtr firstSelectedLight = nullptr;
-      for (LightPtr light : sceneLights)
+      bool foundFirstLight         = false;
+      Light* firstSelectedLight    = nullptr;
+      for (Light* light : sceneLights)
       {
         bool found = false;
         for (EntityPtr ntt : selecteds)
@@ -68,7 +68,7 @@ namespace ToolKit
               firstSelectedLight = light;
               foundFirstLight    = true;
             }
-            EnableLightGizmo(light.get(), true);
+            EnableLightGizmo(light, true);
             found = true;
             break;
           }
@@ -76,7 +76,7 @@ namespace ToolKit
 
         if (!found)
         {
-          EnableLightGizmo(light.get(), false);
+          EnableLightGizmo(light, false);
         }
       }
 
@@ -138,8 +138,8 @@ namespace ToolKit
       // A better approach would be creating an editor event OnSelected.
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
-        LightPtrArray lights = GetLights();
-        for (LightPtr& light : lights)
+        LightRawPtrArray lights = GetLights();
+        for (Light* light : lights)
         {
           light->UpdateShadowCamera();
         }
@@ -149,12 +149,11 @@ namespace ToolKit
 
         if (!jobs.empty())
         {
-          LightRawPtrArray rawLights = ToRawPtrArray(lights);
-          int dirStart               = RenderJobProcessor::PreSortLights(rawLights);
+          int dirStart = RenderJobProcessor::PreSortLights(lights);
 
           for (RenderJob& job : jobs)
           {
-            RenderJobProcessor::AssignLight(job, rawLights, dirStart);
+            RenderJobProcessor::AssignLight(job, lights, dirStart);
           }
 
           RenderJob& job = jobs.front();

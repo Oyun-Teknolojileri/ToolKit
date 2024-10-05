@@ -120,19 +120,32 @@ namespace ToolKit
   void ForwardSceneRenderPath::SetPassParams()
   {
     TKBeginTimer(FrustumCull);
-
     Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
     EntityRawPtrArray entities = m_params.Scene->m_aabbTree.VolumeQuery(frustum);
-
     TKEndTimer(FrustumCull);
 
     TKBeginTimer(CreateRenderJob);
-
     LightRawPtrArray lights;
     if (m_params.overrideLights.empty())
     {
       // Select non culled scene lights.
       MoveByType(entities, lights);
+
+      // Collect directional lights.
+      const LightRawPtrArray& directionalLights = m_params.Scene->GetDirectionalLights();
+      for (Light* light : directionalLights)
+      {
+        lights.push_back(light);
+      }
+
+      // At this point directional lights may be added twice, due to ones coming from frustum cull.
+      auto dirLightEndItr =
+          std::partition(lights.begin(),
+                         lights.end(),
+                         [](Light* light) -> bool { return light->GetLightType() == Light::LightType::Directional; });
+
+      // Make sure there is no duplicate for directionals.
+      RemoveDuplicates(lights, lights.begin(), dirLightEndItr);
     }
     else
     {
@@ -146,7 +159,6 @@ namespace ToolKit
     int dirEndIndx                                   = RenderJobProcessor::PreSortLights(lights);
     const EnvironmentComponentPtrArray& environments = m_params.Scene->GetEnvironmentVolumes();
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false, dirEndIndx, lights, environments);
-
     TKEndTimer(CreateRenderJob);
 
     m_shadowPass->m_params.scene      = m_params.Scene;

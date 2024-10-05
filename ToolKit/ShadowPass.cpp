@@ -85,13 +85,13 @@ namespace ToolKit
     }
 
     // Update shadow maps.
-    for (LightPtr& light : m_lights)
+    for (Light* light : m_lights)
     {
       light->UpdateShadowCamera();
 
       if (light->GetLightType() == Light::LightType::Directional)
       {
-        DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
+        DirectionalLight* dLight = static_cast<DirectionalLight*>(light);
         dLight->UpdateShadowFrustum(m_params.viewCamera, m_params.scene);
       }
 
@@ -143,7 +143,7 @@ namespace ToolKit
 
     // Dropout non shadow casting lights.
     m_lights           = m_params.lights;
-    erase_if(m_lights, [](LightPtr light) -> bool { return !light->GetCastShadowVal(); });
+    erase_if(m_lights, [](Light* light) -> bool { return !light->GetCastShadowVal(); });
 
     InitShadowAtlas();
   }
@@ -152,15 +152,15 @@ namespace ToolKit
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
-  void ShadowPass::RenderShadowMaps(LightPtr light)
+  void ShadowPass::RenderShadowMaps(Light* light)
   {
     Renderer* renderer                                = GetRenderer();
     EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
 
     if (light->GetLightType() == Light::LightType::Directional)
     {
-      int cascadeCount           = graphicsSettings.cascadeCount;
-      DirectionalLightPtr dLight = Cast<DirectionalLight>(light);
+      int cascadeCount         = graphicsSettings.cascadeCount;
+      DirectionalLight* dLight = static_cast<DirectionalLight*>(light);
       for (int i = 0; i < cascadeCount; i++)
       {
         int layer = dLight->m_shadowAtlasLayers[i];
@@ -227,7 +227,7 @@ namespace ToolKit
     }
   }
 
-  void ShadowPass::RenderShadowMap(LightPtr light, CameraPtr shadowCamera, CameraPtr cullCamera)
+  void ShadowPass::RenderShadowMap(Light* light, CameraPtr shadowCamera, CameraPtr cullCamera)
   {
     Renderer* renderer                                = GetRenderer();
     EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
@@ -314,14 +314,14 @@ namespace ToolKit
     renderer->OverrideBlendState(false, BlendFunction::NONE);
   }
 
-  int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights)
+  int ShadowPass::PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights)
   {
-    LightPtrArray lightArray = lights;
+    LightRawPtrArray lightArray = lights;
 
     // Sort all lights based on resolution.
     std::sort(lightArray.begin(),
               lightArray.end(),
-              [](LightPtr l1, LightPtr l2) -> bool
+              [](Light* l1, Light* l2) -> bool
               { return l1->GetShadowResVal().GetValue<float>() < l2->GetShadowResVal().GetValue<float>(); });
 
     EngineSettings& settings = GetEngineSettings();
@@ -330,7 +330,7 @@ namespace ToolKit
     IntArray resolutions;
     for (size_t i = 0; i < lightArray.size(); i++)
     {
-      LightPtr light = lightArray[i];
+      Light* light   = lightArray[i];
       int resolution = (int) light->GetShadowResVal().GetValue<float>();
 
       if (light->GetLightType() == Light::Directional)
@@ -360,7 +360,7 @@ namespace ToolKit
     int rectIndex                    = 0;
     for (int i = 0; i < lightArray.size(); i++)
     {
-      LightPtr light = lightArray[i];
+      Light* light = lightArray[i];
       if (light->GetLightType() == Light::LightType::Directional)
       {
         for (int ii = 0; ii < cascadeCount; ii++)
@@ -419,7 +419,7 @@ namespace ToolKit
     int nextId = 0;
     for (int i = 0; i < m_lights.size(); ++i)
     {
-      Light* light = m_lights[i].get();
+      Light* light = m_lights[i];
       if (light->m_shadowResolutionUpdated)
       {
         light->m_shadowResolutionUpdated = false;

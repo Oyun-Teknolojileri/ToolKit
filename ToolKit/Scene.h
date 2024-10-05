@@ -140,11 +140,11 @@ namespace ToolKit
      */
     const EntityPtrArray& GetEntities() const;
 
-    /**
-     * Gets an array of all the lights in the scene.
-     * @returns An array containing pointers to all the lights in the scene.
-     */
-    const LightPtrArray& GetLights() const;
+    /** Returns all lights in the scene including directional lights.  */
+    const LightRawPtrArray& GetLights() const;
+
+    /** Returns all directional lights in the scene. */
+    const LightRawPtrArray& GetDirectionalLights() const;
 
     /**
      * Gets the sky object associated with the scene. If multiple exist, returns the last one.
@@ -294,7 +294,8 @@ namespace ToolKit
     EntityPtrArray m_entities; //!< The entities in the scene.
     bool m_isPrefab;           //!< Whether or not the scene is a prefab.
 
-    mutable LightPtrArray m_lightCache;                            //!< Cached light entities which is added to scene.
+    mutable LightRawPtrArray m_lightCache;                         //!< Cached light entities which is added to scene.
+    mutable LightRawPtrArray m_directionalLightCache;              //!< Cached directional lights in the scene.
     mutable EnvironmentComponentPtrArray m_environmentVolumeCache; //!< Environment volumes in the scene.
     mutable SkyBasePtr m_skyCache;                                 //!< Last added sky.
   };

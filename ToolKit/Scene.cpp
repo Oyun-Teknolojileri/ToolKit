@@ -144,7 +144,7 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
-    for (LightPtr& light : m_lightCache)
+    for (Light* light : m_lightCache)
     {
       light->UpdateShadowCamera();
     }
@@ -390,7 +390,9 @@ namespace ToolKit
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  const LightPtrArray& Scene::GetLights() const { return m_lightCache; }
+  const LightRawPtrArray& Scene::GetLights() const { return m_lightCache; }
+
+  const LightRawPtrArray& Scene::GetDirectionalLights() const { return m_directionalLightCache; }
 
   SkyBasePtr& Scene::GetSky() { return m_skyCache; }
 
@@ -564,15 +566,23 @@ namespace ToolKit
         m_skyCache = nullptr;
       }
     }
-    else if (const LightPtr& light = SafeCast<Light>(ntt))
+    else if (Light* light = ntt->As<Light>())
     {
       if (add)
       {
         m_lightCache.push_back(light);
+        if (light->GetLightType() == Light::LightType::Directional)
+        {
+          m_directionalLightCache.push_back(light);
+        }
       }
       else
       {
         remove(m_lightCache, light);
+        if (light->GetLightType() == Light::LightType::Directional)
+        {
+          remove(m_directionalLightCache, light);
+        }
       }
     }
 

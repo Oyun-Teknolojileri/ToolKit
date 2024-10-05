@@ -130,29 +130,23 @@ namespace ToolKit
       m_lightSystem->m_parentNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightSystem->m_parentNode);
 
-      EditorScenePtr scene = app->GetCurrentScene();
+      EditorScenePtr scene            = app->GetCurrentScene();
 
-      LightPtrArray lights;
-      bool useSceneLights = true;
-      if (m_params.LitMode == EditorLitMode::EditorLit)
-      {
-        lights         = m_lightSystem->m_lights;
-        useSceneLights = false;
-      }
-      else
-      {
-        lights = scene->GetLights();
-      }
-
-      EditorViewport* viewport                    = static_cast<EditorViewport*>(m_params.Viewport);
+      EditorViewport* viewport        = static_cast<EditorViewport*>(m_params.Viewport);
 
       // Scene renderer will render the given scene independent of editor.
       // Editor objects will be drawn on top of scene.
 
       // Scene pass.
-      m_sceneRenderPath->m_params.Gfx             = gfx;
-      m_sceneRenderPath->m_params.Cam             = m_camera;
-      m_sceneRenderPath->m_params.overrideLights  = lights;
+      m_sceneRenderPath->m_params.Gfx = gfx;
+      m_sceneRenderPath->m_params.Cam = m_camera;
+
+      m_sceneRenderPath->m_params.overrideLights.clear();
+      if (m_params.LitMode == EditorLitMode::EditorLit)
+      {
+        m_sceneRenderPath->m_params.overrideLights = m_lightSystem->m_lights;
+      }
+
       m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
       m_sceneRenderPath->m_params.Scene           = scene;
 
@@ -233,28 +227,28 @@ namespace ToolKit
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      for (const LightPtr& light : scene->GetLights())
+      for (Light* light : scene->GetLights())
       {
         if (light->GetLightType() == Light::LightType::Directional)
         {
-          if (Cast<EditorDirectionalLight>(light)->GizmoActive())
+          if (light->As<EditorDirectionalLight>()->GizmoActive())
           {
-            editorEntities.push_back(light);
+            editorEntities.push_back(light->Self<Entity>());
           }
         }
         else if (light->GetLightType() == Light::LightType::Spot)
         {
-          if (Cast<EditorSpotLight>(light)->GizmoActive())
+          if (light->As<EditorSpotLight>()->GizmoActive())
           {
-            editorEntities.push_back(light);
+            editorEntities.push_back(light->Self<Entity>());
           }
         }
         else
         {
           assert(light->GetLightType() == Light::LightType::Point);
-          if (Cast<EditorPointLight>(light)->GizmoActive())
+          if (light->As<EditorPointLight>()->GizmoActive())
           {
-            editorEntities.push_back(light);
+            editorEntities.push_back(light->Self<Entity>());
           }
         }
       }

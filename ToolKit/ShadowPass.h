@@ -17,7 +17,7 @@ namespace ToolKit
   {
     ScenePtr scene       = nullptr;
     CameraPtr viewCamera = nullptr;
-    LightPtrArray lights;
+    LightRawPtrArray lights;
   };
 
   /** Create shadow map buffers for all given lights. */
@@ -36,17 +36,17 @@ namespace ToolKit
 
    private:
     /** Perform all renderings to generate all shadow maps for the given light. */
-    void RenderShadowMaps(LightPtr light);
+    void RenderShadowMaps(Light* light);
 
     /** Performs a single render that generates a single shadow map of a cascade, or a face of a cube etc...*/
-    void RenderShadowMap(LightPtr light, CameraPtr shadowCamera, CameraPtr cullCamera);
+    void RenderShadowMap(Light* light, CameraPtr shadowCamera, CameraPtr cullCamera);
 
     /**
      * Sets layer and coordinates of the shadow maps in shadow atlas.
      * @param lights Light array that have shadows.
      * @return number of layers needed.
      */
-    int PlaceShadowMapsToShadowAtlas(const LightPtrArray& lights);
+    int PlaceShadowMapsToShadowAtlas(const LightRawPtrArray& lights);
 
     /** Creates a shadow atlas for m_params.Lights */
     void InitShadowAtlas();
@@ -70,7 +70,7 @@ namespace ToolKit
     Quaternion m_cubeMapRotations[6];
     BinPack2D m_packer;
 
-    LightPtrArray m_lights; // Shadow casters in scene.
+    LightRawPtrArray m_lights; // Shadow casters in scene.
   };
 
   typedef std::shared_ptr<ShadowPass> ShadowPassPtr;

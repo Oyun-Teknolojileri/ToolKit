@@ -280,24 +280,12 @@ namespace ToolKit
 
   int RenderJobProcessor::PreSortLights(LightRawPtrArray& lights)
   {
-    // Get all directional lights to beginning first
-    uint directionalLightEndIndex = 0;
-    for (size_t i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetLightType() == Light::Directional)
-      {
-        if (i == directionalLightEndIndex)
-        {
-          directionalLightEndIndex++;
-          continue;
-        }
+    auto dirEndItr =
+        std::partition(lights.begin(),
+                       lights.end(),
+                       [](Light* light) -> bool { return light->GetLightType() == Light::LightType::Directional; });
 
-        std::iter_swap(lights.begin() + i, lights.begin() + directionalLightEndIndex);
-        directionalLightEndIndex++;
-      }
-    }
-
-    return directionalLightEndIndex;
+    return (int) std::distance(lights.begin(), dirEndItr);
   }
 
   void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam)

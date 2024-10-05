@@ -174,12 +174,11 @@ namespace ToolKit
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
 
-
   /** Converts an ObjectPTr to RawPtr */
   template <typename T>
   std::vector<T*> ToRawPtrArray(const std::vector<std::shared_ptr<T>>& objectArray)
   {
-    //static_assert(T::StaticClass()->IsA(Object));
+    // static_assert(T::StaticClass()->IsA(Object));
 
     std::vector<T*> rawPtrArray;
     rawPtrArray.resize(objectArray.size());
@@ -331,19 +330,20 @@ namespace ToolKit
     return true; // All keys in map1 are found in map2
   }
 
+  /** Remove duplicate elements in a range from the vector. */
   template <typename T>
-  void RemoveDuplicates(std::vector<T>& vec)
+  void RemoveDuplicates(std::vector<T>& vec,
+                        typename std::vector<T>::iterator begin,
+                        typename std::vector<T>::iterator end)
   {
-    std::sort(vec.begin(), vec.end());
-    vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
-  }
+    // First, sort the range
+    std::sort(begin, end);
 
-  template <typename T>
-  void Swap(T& data1, T& data2)
-  {
-    T data = data1;
-    data1  = data2;
-    data2  = data;
+    // Use std::unique to move duplicates to the end
+    auto last = std::unique(begin, end);
+
+    // Erase the duplicates
+    vec.erase(last, end);
   }
 
   //  Time.
