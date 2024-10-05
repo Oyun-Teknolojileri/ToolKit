@@ -45,12 +45,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\tkimgui;$(SolutionDir)Dependency\tkimgui\imgui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\tkimgui;$(SolutionDir)Dependency\tkimgui\imgui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\poolSTL\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\tkimgui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\tkimgui;$(SolutionDir)Dependency\tkimgui\imgui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\tkimgui;$(SolutionDir)Dependency\tkimgui\imgui;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\poolSTL\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\tkimgui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -138,7 +138,6 @@
     <ClCompile Include="PropInspectorWindow.cpp" />
     <ClCompile Include="PublishManager.cpp" />
     <ClCompile Include="RenderSettingsWindow.cpp" />
-    <ClCompile Include="SingleMaterialPass.cpp" />
     <ClCompile Include="StatsWindow.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="Thumbnail.cpp" />
@@ -200,7 +199,6 @@
     <ClInclude Include="PreviewViewport.h" />
     <ClInclude Include="PublishManager.h" />
     <ClInclude Include="RenderSettingsWindow.h" />
-    <ClInclude Include="SingleMaterialPass.h" />
     <ClInclude Include="StatsWindow.h" />
     <ClInclude Include="StatusBar.h" />
     <ClInclude Include="Thumbnail.h" />

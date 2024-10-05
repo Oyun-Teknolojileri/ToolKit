@@ -97,7 +97,7 @@ namespace ToolKit
     return hdri;
   }
 
-  BoundingBox SkyBase::GetBoundingBox(bool inWorld) { return unitBox; }
+  const BoundingBox& SkyBase::GetBoundingBox(bool inWorld) { return unitBox; }
 
   bool SkyBase::ReadyToRender()
   {

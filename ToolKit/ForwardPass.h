@@ -20,7 +20,7 @@ namespace ToolKit
     RenderTargetPtr SsaoTexture  = nullptr;
     GraphicBitFields clearBuffer = GraphicBitFields::AllBits;
     bool hasForwardPrePass       = false;
-    LightPtrArray Lights         = {}; //!< Updated lights.
+    LightRawPtrArray Lights      = {}; //!< Lights ready to render with (Culled, updated.).
   };
 
   /**

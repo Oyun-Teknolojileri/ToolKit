@@ -11,8 +11,6 @@
 #include "Mesh.h"
 #include "SkeletonComponent.h"
 
-
-
 namespace ToolKit
 {
 
@@ -30,7 +28,7 @@ namespace ToolKit
     return mc;
   }
 
-  BoundingBox MeshComponent::GetBoundingBox()
+  const BoundingBox& MeshComponent::GetBoundingBox()
   {
     SkeletonComponent* skelComp = OwnerEntity()->GetComponentFast<SkeletonComponent>();
     MeshPtr mesh                = GetMeshVal();

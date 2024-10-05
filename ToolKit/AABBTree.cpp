@@ -12,37 +12,44 @@
 namespace ToolKit
 {
 
-  AABBTree::AABBTree() : root {nullNode}, nodeCapacity {32}, nodeCount {0} { Reset(); }
+  AABBTree::AABBTree() : m_root {nullNode}, m_nodeCapacity {32}, m_nodeCount {0}, m_threadTreshold(1000) { Reset(); }
 
   AABBTree::~AABBTree()
   {
-    nodes.clear();
-    root      = nullNode;
-    nodeCount = 0;
+    m_nodes.clear();
+    m_root      = nullNode;
+    m_nodeCount = 0;
   }
 
   void AABBTree::Reset()
   {
-    root      = nullNode;
-    nodeCount = 0;
-    nodes.resize(nodeCapacity);
+    m_root      = nullNode;
+    m_nodeCount = 0;
+    m_nodes.resize(m_nodeCapacity);
 
     // Build a linked list for the free list.
-    for (int32 i = 0; i < nodeCapacity - 1; ++i)
+    for (int32 i = 0; i < m_nodeCapacity - 1; ++i)
     {
-      nodes[i].next   = i + 1;
-      nodes[i].parent = i;
-      nodes[i].leafs.clear();
-    }
-    nodes[nodeCapacity - 1].next   = nullNode;
-    nodes[nodeCapacity - 1].parent = nodeCapacity - 1;
+      if (!m_nodes[i].entity.expired())
+      {
+        EntityPtr ntt = m_nodes[i].entity.lock();
+        ntt->m_aabbTreeNodeProxy = nullNode;
+        m_nodes[i].entity.reset();
+      }
 
-    freeList                       = 0;
+      m_nodes[i].next   = i + 1;
+      m_nodes[i].parent = i;
+      m_nodes[i].leafs.clear();
+    }
+    m_nodes[m_nodeCapacity - 1].next   = nullNode;
+    m_nodes[m_nodeCapacity - 1].parent = m_nodeCapacity - 1;
+
+    m_freeList                         = 0;
   }
 
-  NodeProxy AABBTree::CreateNode(EntityWeakPtr entity, const BoundingBox& aabb)
+  AABBNodeProxy AABBTree::CreateNode(EntityWeakPtr entity, const BoundingBox& aabb)
   {
-    NodeProxy newNode = AllocateNode();
+    AABBNodeProxy newNode = AllocateNode();
 
     if (EntityPtr ntt = entity.lock())
     {
@@ -50,72 +57,73 @@ namespace ToolKit
     }
 
     // Fatten the aabb
-    nodes[newNode].aabb.max = aabb.max + aabb_margin;
-    nodes[newNode].aabb.min = aabb.min - aabb_margin;
-    nodes[newNode].entity   = entity;
-    nodes[newNode].parent   = nullNode;
-    nodes[newNode].moved    = true;
+    m_nodes[newNode].aabb.max = aabb.max;
+    m_nodes[newNode].aabb.min = aabb.min;
+    m_nodes[newNode].entity   = entity;
+    m_nodes[newNode].parent   = nullNode;
+    m_nodes[newNode].moved    = true;
 
     // Insert a reference to self to create leafs struct properly in the tree.
-    nodes[newNode].leafs.insert(newNode);
+    m_nodes[newNode].leafs.insert(newNode);
 
     InsertLeaf(newNode);
 
     return newNode;
   }
 
-  void AABBTree::UpdateNode(NodeProxy node)
+  void AABBTree::UpdateNode(AABBNodeProxy node)
   {
-    assert(0 <= node && node < nodeCapacity);
-    assert(nodes[node].IsLeaf());
+    assert(0 <= node && node < m_nodeCapacity);
+    assert(m_nodes[node].IsLeaf());
 
-    BoundingBox aabb = nodes[node].aabb;
-    if (EntityPtr ntt = nodes[node].entity.lock())
+    BoundingBox aabb = m_nodes[node].aabb;
+    if (!m_nodes[node].entity.expired())
     {
-      aabb = ntt->GetBoundingBox(true);
+      EntityPtr ntt = m_nodes[node].entity.lock();
+      aabb          = ntt->GetBoundingBox(true);
     }
 
-    aabb.max = aabb.max + aabb_margin;
-    aabb.min = aabb.min - aabb_margin;
+    aabb.max = aabb.max;
+    aabb.min = aabb.min;
 
     RemoveLeaf(node);
 
-    nodes[node].aabb = aabb;
+    m_nodes[node].aabb = aabb;
 
     InsertLeaf(node);
   }
 
-  void AABBTree::RemoveNode(NodeProxy node)
+  void AABBTree::RemoveNode(AABBNodeProxy node)
   {
-    assert(0 <= node && node < nodeCapacity);
-    assert(nodes[node].IsLeaf());
+    assert(0 <= node && node < m_nodeCapacity);
+    assert(m_nodes[node].IsLeaf());
 
     RemoveLeaf(node);
     FreeNode(node);
   }
 
-  void AABBTree::Traverse(std::function<void(const Node*)> callback) const
+  void AABBTree::Traverse(std::function<void(const AABBNode*)> callback) const
   {
-    if (root == nullNode)
+    if (m_root == nullNode)
     {
       return;
     }
 
-    std::deque<NodeProxy> stack;
-    stack.emplace_back(root);
+    std::deque<AABBNodeProxy> stack;
+    stack.emplace_back(m_root);
 
     while (stack.size() != 0)
     {
-      NodeProxy current = stack.back();
+      AABBNodeProxy current = stack.back();
       stack.pop_back();
 
-      if (nodes[current].IsLeaf() == false)
+      if (m_nodes[current].IsLeaf() == false)
       {
-        stack.emplace_back(nodes[current].child1);
-        stack.emplace_back(nodes[current].child2);
+        stack.emplace_back(m_nodes[current].child1);
+        stack.emplace_back(m_nodes[current].child2);
       }
 
-      const Node* node = &nodes[current];
+      const AABBNode* node = &m_nodes[current];
       callback(node);
     }
   }
@@ -124,25 +132,25 @@ namespace ToolKit
   {
     // Rebuild tree with bottom up approach
 
-    std::vector<NodeProxy> leaves;
-    leaves.resize(nodeCount);
+    std::vector<AABBNodeProxy> leaves;
+    leaves.resize(m_nodeCount);
     int32 count = 0;
 
     // Collect all leaves
-    for (int32 i = 0; i < nodeCapacity; ++i)
+    for (int32 i = 0; i < m_nodeCapacity; ++i)
     {
       // Already in the free list
-      if (nodes[i].parent == i)
+      if (m_nodes[i].parent == i)
       {
         continue;
       }
 
       // Clean the leaf
-      if (nodes[i].IsLeaf())
+      if (m_nodes[i].IsLeaf())
       {
-        nodes[i].parent = nullNode;
+        m_nodes[i].parent = nullNode;
 
-        leaves[count++] = i;
+        leaves[count++]   = i;
       }
       else
       {
@@ -160,11 +168,11 @@ namespace ToolKit
       // Find the best aabb pair
       for (int32 i = 0; i < count; ++i)
       {
-        BoundingBox aabbI = nodes[leaves[i]].aabb;
+        BoundingBox aabbI = m_nodes[leaves[i]].aabb;
 
         for (int32 j = i + 1; j < count; ++j)
         {
-          BoundingBox aabbJ    = nodes[leaves[j]].aabb;
+          BoundingBox aabbJ    = m_nodes[leaves[j]].aabb;
 
           BoundingBox combined = BoundingBox::Union(aabbI, aabbJ);
           float cost           = combined.SurfaceArea();
@@ -178,126 +186,138 @@ namespace ToolKit
         }
       }
 
-      NodeProxy index1      = leaves[minI];
-      NodeProxy index2      = leaves[minJ];
-      Node* child1          = &nodes[index1];
-      Node* child2          = &nodes[index2];
+      AABBNodeProxy index1      = leaves[minI];
+      AABBNodeProxy index2      = leaves[minJ];
+      AABBNode* child1          = &m_nodes[index1];
+      AABBNode* child2          = &m_nodes[index2];
 
       // Create a parent(internal) node
-      NodeProxy parentIndex = AllocateNode();
-      Node* parent          = &nodes[parentIndex];
+      AABBNodeProxy parentIndex = AllocateNode();
+      AABBNode* parent          = &m_nodes[parentIndex];
 
-      parent->child1        = index1;
-      parent->child2        = index2;
-      parent->aabb          = BoundingBox::Union(child1->aabb, child2->aabb);
-      parent->parent        = nullNode;
+      parent->child1            = index1;
+      parent->child2            = index2;
+      parent->aabb              = BoundingBox::Union(child1->aabb, child2->aabb);
+      parent->parent            = nullNode;
 
-      child1->parent        = parentIndex;
-      child2->parent        = parentIndex;
+      child1->parent            = parentIndex;
+      child2->parent            = parentIndex;
 
-      leaves[minI]          = parentIndex;
+      leaves[minI]              = parentIndex;
 
-      leaves[minJ]          = leaves[count - 1];
+      leaves[minJ]              = leaves[count - 1];
       --count;
     }
 
     if (!leaves.empty())
     {
-      root = leaves[0];
+      m_root = leaves[0];
       leaves.clear();
     }
   }
 
   const BoundingBox& AABBTree::GetRootBoundingBox() const
   {
-    if (root != nullNode)
+    if (m_root != nullNode)
     {
-      return nodes[root].aabb;
+      return m_nodes[m_root].aabb;
     }
 
     return infinitesimalBox;
   }
 
-  NodeProxy AABBTree::AllocateNode()
+  AABBNodeProxy AABBTree::AllocateNode()
   {
-    if (freeList == nullNode)
+    if (m_freeList == nullNode)
     {
-      assert(nodeCount == nodeCapacity);
+      assert(m_nodeCount == m_nodeCapacity);
 
       // Grow the node pool
-      nodeCapacity += nodeCapacity / 2;
-      nodes.resize(nodeCapacity);
+      m_nodeCapacity += m_nodeCapacity / 2;
+      m_nodes.resize(m_nodeCapacity);
 
       // Build a linked list for the free list.
-      for (int32 i = nodeCount; i < nodeCapacity - 1; ++i)
+      for (int32 i = m_nodeCount; i < m_nodeCapacity - 1; ++i)
       {
-        nodes[i].next   = i + 1;
-        nodes[i].parent = i;
+        m_nodes[i].next   = i + 1;
+        m_nodes[i].parent = i;
       }
-      nodes[nodeCapacity - 1].next   = nullNode;
-      nodes[nodeCapacity - 1].parent = nodeCapacity - 1;
+      m_nodes[m_nodeCapacity - 1].parent = m_nodeCapacity - 1;
+      m_nodes[m_nodeCapacity - 1].next   = nullNode;
 
-      freeList                       = nodeCount;
+      m_freeList                         = m_nodeCount;
     }
 
-    NodeProxy node     = freeList;
-    freeList           = nodes[node].next;
-    nodes[node].parent = nullNode;
-    nodes[node].child1 = nullNode;
-    nodes[node].child2 = nullNode;
-    nodes[node].moved  = false;
-    nodes[node].entity.reset();
-    nodes[node].leafs.clear();
-    ++nodeCount;
+    AABBNodeProxy node   = m_freeList;
+    m_freeList           = m_nodes[node].next;
+    m_nodes[node].parent = nullNode;
+    m_nodes[node].child1 = nullNode;
+    m_nodes[node].child2 = nullNode;
+    m_nodes[node].moved  = false;
+    m_nodes[node].entity.reset();
+    m_nodes[node].leafs.clear();
+    ++m_nodeCount;
 
     return node;
   }
 
-  EntityRawPtrArray AABBTree::FrustumQuery(const Frustum& frustum) const
-  {
-    EntityRawPtrArray entities;
+  /** Test tree against a frustum. */
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const Frustum& frustum, bool threaded) const;
 
-    if (root == nullNode)
+  /** Test tree against a box. */
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const BoundingBox& box, bool threaded) const;
+
+  template <typename VolumeType>
+  EntityRawPtrArray AABBTree::VolumeQuery(const VolumeType& vol, bool threaded) const
+  {
+
+    EntityRawPtrArray entities;
+    if (m_root == nullNode)
     {
       return entities;
     }
 
-    std::deque<NodeProxy> stack;
-    stack.emplace_back(root);
+    EntityRawPtrArray entitiesInVolume;
+    entitiesInVolume.resize(m_nodeCapacity);
+    std::fill(entitiesInVolume.begin(), entitiesInVolume.end(), nullptr);
 
-    while (stack.size() != 0)
+    m_maxThreadCount =
+        m_nodeCount > m_threadTreshold && threaded ? GetWorkerManager()->GetThreadCount(WorkerManager::FramePool) : 0;
+
+    std::atomic_int availableThreadCount(glm::max(0, m_maxThreadCount - 1));
+
+    if constexpr (std::is_same_v<VolumeType, Frustum>)
     {
-      NodeProxy current = stack.back();
-      stack.pop_back();
+      VolumeQuery(entitiesInVolume,
+                  availableThreadCount,
+                  m_root,
+                  [this, &vol](AABBNodeProxy root) -> IntersectResult
+                  { return FrustumBoxIntersection(vol, m_nodes[root].aabb); });
+    }
+    else if constexpr (std::is_same_v<VolumeType, BoundingBox>)
+    {
+      VolumeQuery(entitiesInVolume,
+                  availableThreadCount,
+                  m_root,
+                  [this, &vol](AABBNodeProxy root) -> IntersectResult
+                  { return BoxBoxIntersection(vol, m_nodes[root].aabb); });
+    }
+    else
+    {
+      assert(0 && "Volume query is not implemented.");
+      return entities;
+    }
 
-      IntersectResult intResult = FrustumBoxIntersection(frustum, nodes[current].aabb);
+    // If there are threads in work, wait for them.
+    HyperThreadSpinWait(availableThreadCount.load() < m_maxThreadCount);
 
-      if (intResult == IntersectResult::Intersect)
+    entities.reserve(m_nodeCapacity);
+
+    for (int i = 0; i < (int) entitiesInVolume.size(); i++)
+    {
+      if (entitiesInVolume[i] != nullptr)
       {
-        // Volume is partially inside, check all internal volumes.
-        if (nodes[current].IsLeaf())
-        {
-          if (EntityPtr ntt = nodes[current].entity.lock())
-          {
-            entities.push_back(ntt.get());
-          }
-        }
-        else
-        {
-          stack.emplace_back(nodes[current].child1);
-          stack.emplace_back(nodes[current].child2);
-        }
-      }
-      else if (intResult == IntersectResult::Inside)
-      {
-        // Volume is fully inside, get all entities from cache.
-        for (NodeProxy leaf : nodes[current].leafs)
-        {
-          if (EntityPtr ntt = nodes[leaf].entity.lock())
-          {
-            entities.push_back(ntt.get());
-          }
-        }
+        entities.push_back(entitiesInVolume[i]);
       }
     }
 
@@ -306,28 +326,28 @@ namespace ToolKit
 
   EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t) const
   {
-    if (root == nullNode)
+    if (m_root == nullNode)
     {
       return nullptr;
     }
 
-    std::deque<NodeProxy> stack;
-    stack.emplace_back(root);
+    std::deque<AABBNodeProxy> stack;
+    stack.emplace_back(m_root);
 
     float hitDist = TK_FLT_MAX;
     EntityPtr hitEntity;
 
     while (stack.size() != 0)
     {
-      NodeProxy current = stack.back();
+      AABBNodeProxy current = stack.back();
       stack.pop_back();
 
       float intersecLen;
-      if (RayBoxIntersection(ray, nodes[current].aabb, intersecLen))
+      if (RayBoxIntersection(ray, m_nodes[current].aabb, intersecLen))
       {
-        if (nodes[current].IsLeaf())
+        if (m_nodes[current].IsLeaf())
         {
-          EntityPtr candidate = nodes[current].entity.lock();
+          EntityPtr candidate = m_nodes[current].entity.lock();
 
           if (deep)
           {
@@ -350,8 +370,8 @@ namespace ToolKit
         }
         else
         {
-          stack.emplace_back(nodes[current].child1);
-          stack.emplace_back(nodes[current].child2);
+          stack.emplace_back(m_nodes[current].child1);
+          stack.emplace_back(m_nodes[current].child2);
         }
       }
     }
@@ -366,88 +386,57 @@ namespace ToolKit
 
   void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const
   {
-    Traverse([&](const AABBTree::Node* node) -> void
+    Traverse([&](const AABBNode* node) -> void
              { boundingBoxes.push_back(CreateBoundingBoxDebugObject(node->aabb, ZERO, 1.0f)); });
   }
 
-  void AABBTree::PrintTree()
+  void AABBTree::FreeNode(AABBNodeProxy node)
   {
-    if (root == nullNode)
-    {
-      return;
-    }
+    assert(0 <= node && node <= m_nodeCapacity);
+    assert(0 < m_nodeCount);
 
-    std::deque<NodeProxy> stack;
-    stack.emplace_back(root);
-
-    while (stack.size() != 0)
-    {
-      NodeProxy current = stack.back();
-      stack.pop_back();
-
-      if (nodes[current].IsLeaf() == false)
-      {
-        stack.emplace_back(nodes[current].child1);
-        stack.emplace_back(nodes[current].child2);
-      }
-
-      const Node* node = &nodes[current];
-      TK_LOG("Parent %d - Child %d", node->parent, current);
-      String ntts;
-      for (NodeProxy l : node->leafs)
-      {
-        if (EntityPtr ntt = nodes[l].entity.lock())
-        {
-          ntts += ", " + ntt->GetNameVal();
-        }
-      }
-      TK_LOG("%s", ntts.c_str());
-    }
-  }
-
-  void AABBTree::FreeNode(NodeProxy node)
-  {
-    assert(0 <= node && node <= nodeCapacity);
-    assert(0 < nodeCount);
-
-    if (EntityPtr ntt = nodes[node].entity.lock())
+    if (EntityPtr ntt = m_nodes[node].entity.lock())
     {
       ntt->m_aabbTreeNodeProxy = nullNode;
     }
 
-    nodes[node].parent = node;
-    nodes[node].next   = freeList;
-    nodes[node].entity.reset();
-    nodes[node].leafs.clear();
-    freeList = node;
+    m_nodes[node].parent = node;
+    m_nodes[node].next   = m_freeList;
+    m_nodes[node].entity.reset();
+    m_nodes[node].leafs.clear();
+    m_freeList = node;
 
-    --nodeCount;
+    --m_nodeCount;
   }
 
-  void AABBTree::Rotate(NodeProxy node)
+  void AABBTree::Rotate(AABBNodeProxy node)
   {
-    if (nodes[node].IsLeaf())
+    if (m_nodes[node].IsLeaf())
     {
       return;
     }
 
-    NodeProxy child1   = nodes[node].child1;
-    NodeProxy child2   = nodes[node].child2;
+    AABBNodeProxy child1 = m_nodes[node].child1;
+    AABBNodeProxy child2 = m_nodes[node].child2;
 
-    float costDiffs[4] = {0.0f};
+    float costDiffs[4]   = {0.0f};
 
-    if (nodes[child1].IsLeaf() == false)
+    if (m_nodes[child1].IsLeaf() == false)
     {
-      float area1  = nodes[child1].aabb.SurfaceArea();
-      costDiffs[0] = BoundingBox::Union(nodes[nodes[child1].child1].aabb, nodes[child2].aabb).SurfaceArea() - area1;
-      costDiffs[1] = BoundingBox::Union(nodes[nodes[child1].child2].aabb, nodes[child2].aabb).SurfaceArea() - area1;
+      float area1 = m_nodes[child1].aabb.SurfaceArea();
+      costDiffs[0] =
+          BoundingBox::Union(m_nodes[m_nodes[child1].child1].aabb, m_nodes[child2].aabb).SurfaceArea() - area1;
+      costDiffs[1] =
+          BoundingBox::Union(m_nodes[m_nodes[child1].child2].aabb, m_nodes[child2].aabb).SurfaceArea() - area1;
     }
 
-    if (nodes[child2].IsLeaf() == false)
+    if (m_nodes[child2].IsLeaf() == false)
     {
-      float area2  = nodes[child2].aabb.SurfaceArea();
-      costDiffs[2] = BoundingBox::Union(nodes[nodes[child2].child1].aabb, nodes[child1].aabb).SurfaceArea() - area2;
-      costDiffs[3] = BoundingBox::Union(nodes[nodes[child2].child2].aabb, nodes[child1].aabb).SurfaceArea() - area2;
+      float area2 = m_nodes[child2].aabb.SurfaceArea();
+      costDiffs[2] =
+          BoundingBox::Union(m_nodes[m_nodes[child2].child1].aabb, m_nodes[child1].aabb).SurfaceArea() - area2;
+      costDiffs[3] =
+          BoundingBox::Union(m_nodes[m_nodes[child2].child2].aabb, m_nodes[child1].aabb).SurfaceArea() - area2;
     }
 
     int32 bestDiffIndex = 0;
@@ -467,19 +456,19 @@ namespace ToolKit
 
     // n0 does not invalidate its parent leaf cache, n1 does due to depth difference.
     // n0 is at a lower depth, moving it a higher depth does not alter n's leafs.
-    auto leafCacheUpdate = [&](NodeProxy n0, NodeProxy n1) -> void
+    auto leafCacheUpdate = [&](AABBNodeProxy n0, AABBNodeProxy n1) -> void
     {
-      NodeProxy n0sibling = nodes[n1].parent;
+      AABBNodeProxy n0sibling = m_nodes[n1].parent;
       assert(n0sibling != nullNode);
 
-      for (NodeProxy leaf : nodes[n1].leafs)
+      for (AABBNodeProxy leaf : m_nodes[n1].leafs)
       {
-        nodes[n0sibling].leafs.erase(leaf);
+        m_nodes[n0sibling].leafs.erase(leaf);
       }
 
-      for (NodeProxy leaf : nodes[n0].leafs)
+      for (AABBNodeProxy leaf : m_nodes[n0].leafs)
       {
-        nodes[n0sibling].leafs.insert(leaf);
+        m_nodes[n0sibling].leafs.insert(leaf);
       }
     };
 
@@ -489,99 +478,171 @@ namespace ToolKit
     case 0:
     {
       // Swap(child2, nodes[child1].child2);
-      leafCacheUpdate(child2, nodes[child1].child2);
+      leafCacheUpdate(child2, m_nodes[child1].child2);
 
-      nodes[nodes[child1].child2].parent = node;
-      nodes[node].child2                 = nodes[child1].child2;
+      m_nodes[m_nodes[child1].child2].parent = node;
+      m_nodes[node].child2                   = m_nodes[child1].child2;
 
-      nodes[child1].child2               = child2;
-      nodes[child2].parent               = child1;
+      m_nodes[child1].child2                 = child2;
+      m_nodes[child2].parent                 = child1;
 
-      nodes[child1].aabb = BoundingBox::Union(nodes[nodes[child1].child1].aabb, nodes[nodes[child1].child2].aabb);
+      m_nodes[child1].aabb =
+          BoundingBox::Union(m_nodes[m_nodes[child1].child1].aabb, m_nodes[m_nodes[child1].child2].aabb);
     }
     break;
     case 1:
     {
       // Swap(child2, nodes[child1].child1);
-      leafCacheUpdate(child2, nodes[child1].child1);
+      leafCacheUpdate(child2, m_nodes[child1].child1);
 
-      nodes[nodes[child1].child1].parent = node;
-      nodes[node].child2                 = nodes[child1].child1;
+      m_nodes[m_nodes[child1].child1].parent = node;
+      m_nodes[node].child2                   = m_nodes[child1].child1;
 
-      nodes[child1].child1               = child2;
-      nodes[child2].parent               = child1;
+      m_nodes[child1].child1                 = child2;
+      m_nodes[child2].parent                 = child1;
 
-      nodes[child1].aabb = BoundingBox::Union(nodes[nodes[child1].child1].aabb, nodes[nodes[child1].child2].aabb);
+      m_nodes[child1].aabb =
+          BoundingBox::Union(m_nodes[m_nodes[child1].child1].aabb, m_nodes[m_nodes[child1].child2].aabb);
     }
     break;
     case 2:
     {
       // Swap(child1, nodes[child2].child2);
-      leafCacheUpdate(child1, nodes[child2].child2);
+      leafCacheUpdate(child1, m_nodes[child2].child2);
 
-      nodes[nodes[child2].child2].parent = node;
-      nodes[node].child1                 = nodes[child2].child2;
+      m_nodes[m_nodes[child2].child2].parent = node;
+      m_nodes[node].child1                   = m_nodes[child2].child2;
 
-      nodes[child2].child2               = child1;
-      nodes[child1].parent               = child2;
-
-      nodes[child2].aabb = BoundingBox::Union(nodes[nodes[child2].child1].aabb, nodes[nodes[child2].child2].aabb);
+      m_nodes[child2].child2                 = child1;
+      m_nodes[child1].parent                 = child2;
+      m_nodes[child2].aabb =
+          BoundingBox::Union(m_nodes[m_nodes[child2].child1].aabb, m_nodes[m_nodes[child2].child2].aabb);
     }
     break;
     case 3:
     {
       // Swap(child1, nodes[child2].child1);
-      leafCacheUpdate(child1, nodes[child2].child1);
+      leafCacheUpdate(child1, m_nodes[child2].child1);
 
-      nodes[nodes[child2].child1].parent = node;
-      nodes[node].child1                 = nodes[child2].child1;
+      m_nodes[m_nodes[child2].child1].parent = node;
+      m_nodes[node].child1                   = m_nodes[child2].child1;
 
-      nodes[child2].child1               = child1;
-      nodes[child1].parent               = child2;
+      m_nodes[child2].child1                 = child1;
+      m_nodes[child1].parent                 = child2;
 
-      nodes[child2].aabb = BoundingBox::Union(nodes[nodes[child2].child1].aabb, nodes[nodes[child2].child2].aabb);
+      m_nodes[child2].aabb =
+          BoundingBox::Union(m_nodes[m_nodes[child2].child1].aabb, m_nodes[m_nodes[child2].child2].aabb);
     }
     break;
     }
   }
 
-  NodeProxy AABBTree::InsertLeaf(NodeProxy leaf)
+  void AABBTree::VolumeQuery(EntityRawPtrArray& result,
+                             std::atomic_int& threadCount,
+                             AABBNodeProxy root,
+                             std::function<enum class IntersectResult(AABBNodeProxy)> queryFn) const
   {
-    assert(0 <= leaf && leaf < nodeCapacity);
-    assert(nodes[leaf].IsLeaf());
+    std::deque<AABBNodeProxy> stack;
+    stack.emplace_back(root);
 
-    if (root == nullNode)
+    while (stack.size() != 0)
     {
-      root = leaf;
+      AABBNodeProxy current = stack.back();
+      stack.pop_back();
+
+      IntersectResult intResult = queryFn(current);
+
+      if (intResult == IntersectResult::Intersect)
+      {
+        // Volume is partially inside, check all internal volumes.
+        if (m_nodes[current].IsLeaf())
+        {
+          if (!m_nodes[current].entity.expired())
+          {
+            result[current] = m_nodes[current].entity.lock().get();
+          }
+        }
+        else
+        {
+          auto parallelProcessFn = [&](AABBNodeProxy node) -> void
+          {
+            if (node == nullNode)
+            {
+              return;
+            }
+
+            int currentCount = threadCount.load();
+            if (currentCount > 0)
+            {
+              if (threadCount.compare_exchange_strong(currentCount, currentCount - 1))
+              {
+                TKAsyncTask(WorkerManager::FramePool,
+                            [this, &result, &threadCount, node, queryFn]() -> void
+                            { VolumeQuery(result, threadCount, node, queryFn); });
+                return;
+              }
+            }
+
+            stack.emplace_back(node);
+          };
+
+          parallelProcessFn(m_nodes[current].child1);
+          parallelProcessFn(m_nodes[current].child2);
+        }
+      }
+      else if (intResult == IntersectResult::Inside)
+      {
+        // Volume is fully inside, get all entities from cache.
+        for (AABBNodeProxy leaf : m_nodes[current].leafs)
+        {
+          if (!m_nodes[leaf].entity.expired())
+          {
+            result[leaf] = m_nodes[leaf].entity.lock().get();
+          }
+        }
+      }
+    }
+
+    threadCount.fetch_add(1);
+  }
+
+  AABBNodeProxy AABBTree::InsertLeaf(AABBNodeProxy leaf)
+  {
+    assert(0 <= leaf && leaf < m_nodeCapacity);
+    assert(m_nodes[leaf].IsLeaf());
+
+    if (m_root == nullNode)
+    {
+      m_root = leaf;
       return leaf;
     }
 
-    BoundingBox aabb      = nodes[leaf].aabb;
+    BoundingBox aabb          = m_nodes[leaf].aabb;
 
     // Find the best sibling for the new leaf
 
-    NodeProxy bestSibling = root;
-    float bestCost        = BoundingBox::Union(nodes[root].aabb, aabb).SurfaceArea();
+    AABBNodeProxy bestSibling = m_root;
+    float bestCost            = BoundingBox::Union(m_nodes[m_root].aabb, aabb).SurfaceArea();
 
     // Candidate node with inherited cost
     struct Candidate
     {
-      NodeProxy node;
+      AABBNodeProxy node;
       float inheritedCost;
 
-      Candidate(NodeProxy node, float inheritedCost) : node(node), inheritedCost(inheritedCost) {}
+      Candidate(AABBNodeProxy node, float inheritedCost) : node(node), inheritedCost(inheritedCost) {}
     };
 
     std::deque<Candidate> stack;
-    stack.emplace_back(root, 0.0f);
+    stack.emplace_back(m_root, 0.0f);
 
     while (stack.size() != 0)
     {
-      NodeProxy current   = stack.back().node;
-      float inheritedCost = stack.back().inheritedCost;
+      AABBNodeProxy current = stack.back().node;
+      float inheritedCost   = stack.back().inheritedCost;
       stack.pop_back();
 
-      BoundingBox combined = BoundingBox::Union(nodes[current].aabb, aabb);
+      BoundingBox combined = BoundingBox::Union(m_nodes[current].aabb, aabb);
       float directCost     = combined.SurfaceArea();
 
       float cost           = directCost + inheritedCost;
@@ -591,137 +652,137 @@ namespace ToolKit
         bestSibling = current;
       }
 
-      inheritedCost        += directCost - nodes[current].aabb.SurfaceArea();
+      inheritedCost        += directCost - m_nodes[current].aabb.SurfaceArea();
 
       float lowerBoundCost  = aabb.SurfaceArea() + inheritedCost;
       if (lowerBoundCost < bestCost)
       {
-        if (nodes[current].IsLeaf() == false)
+        if (m_nodes[current].IsLeaf() == false)
         {
-          stack.emplace_back(nodes[current].child1, inheritedCost);
-          stack.emplace_back(nodes[current].child2, inheritedCost);
+          stack.emplace_back(m_nodes[current].child1, inheritedCost);
+          stack.emplace_back(m_nodes[current].child2, inheritedCost);
         }
       }
     }
 
     // Create a new parent
-    NodeProxy oldParent       = nodes[bestSibling].parent;
-    NodeProxy newParent       = AllocateNode();
-    nodes[newParent].aabb     = BoundingBox::Union(aabb, nodes[bestSibling].aabb);
-    nodes[newParent].parent   = oldParent;
+    AABBNodeProxy oldParent     = m_nodes[bestSibling].parent;
+    AABBNodeProxy newParent     = AllocateNode();
+    m_nodes[newParent].aabb     = BoundingBox::Union(aabb, m_nodes[bestSibling].aabb);
+    m_nodes[newParent].parent   = oldParent;
 
     // Connect new leaf and sibling to new parent
-    nodes[newParent].child1   = leaf;
-    nodes[newParent].child2   = bestSibling;
-    nodes[leaf].parent        = newParent;
-    nodes[bestSibling].parent = newParent;
+    m_nodes[newParent].child1   = leaf;
+    m_nodes[newParent].child2   = bestSibling;
+    m_nodes[leaf].parent        = newParent;
+    m_nodes[bestSibling].parent = newParent;
 
     if (oldParent != nullNode)
     {
-      if (nodes[oldParent].child1 == bestSibling)
+      if (m_nodes[oldParent].child1 == bestSibling)
       {
-        nodes[oldParent].child1 = newParent;
+        m_nodes[oldParent].child1 = newParent;
       }
       else
       {
-        nodes[oldParent].child2 = newParent;
+        m_nodes[oldParent].child2 = newParent;
       }
     }
     else
     {
-      root = newParent;
+      m_root = newParent;
     }
 
     // Construct new parent's leaf cache.
-    if (nodes[bestSibling].IsLeaf())
+    if (m_nodes[bestSibling].IsLeaf())
     {
-      nodes[newParent].leafs.insert(bestSibling);
+      m_nodes[newParent].leafs.insert(bestSibling);
     }
     else
     {
-      for (NodeProxy sibLeaf : nodes[bestSibling].leafs)
+      for (AABBNodeProxy sibLeaf : m_nodes[bestSibling].leafs)
       {
-        nodes[newParent].leafs.insert(sibLeaf);
+        m_nodes[newParent].leafs.insert(sibLeaf);
       }
     }
 
     // Walk back up the tree refitting ancestors' AABB and applying rotations
-    NodeProxy ancestor = newParent;
+    AABBNodeProxy ancestor = newParent;
     while (ancestor != nullNode)
     {
-      nodes[ancestor].leafs.insert(leaf); // Insert to all ancestors.
+      m_nodes[ancestor].leafs.insert(leaf); // Insert to all ancestors.
 
-      NodeProxy child1     = nodes[ancestor].child1;
-      NodeProxy child2     = nodes[ancestor].child2;
+      AABBNodeProxy child1   = m_nodes[ancestor].child1;
+      AABBNodeProxy child2   = m_nodes[ancestor].child2;
 
-      nodes[ancestor].aabb = BoundingBox::Union(nodes[child1].aabb, nodes[child2].aabb);
+      m_nodes[ancestor].aabb = BoundingBox::Union(m_nodes[child1].aabb, m_nodes[child2].aabb);
 
       Rotate(ancestor);
 
-      ancestor = nodes[ancestor].parent;
+      ancestor = m_nodes[ancestor].parent;
     }
 
     return leaf;
   }
 
-  void AABBTree::RemoveLeaf(NodeProxy leaf)
+  void AABBTree::RemoveLeaf(AABBNodeProxy leaf)
   {
-    assert(0 <= leaf && leaf < nodeCapacity);
-    assert(nodes[leaf].IsLeaf());
+    assert(0 <= leaf && leaf < m_nodeCapacity);
+    assert(m_nodes[leaf].IsLeaf());
 
-    NodeProxy parent = nodes[leaf].parent;
+    AABBNodeProxy parent = m_nodes[leaf].parent;
     if (parent == nullNode) // node is root
     {
-      assert(root == leaf);
-      root = nullNode;
+      assert(m_root == leaf);
+      m_root = nullNode;
       return;
     }
 
-    NodeProxy grandParent = nodes[parent].parent;
-    NodeProxy sibling;
-    if (nodes[parent].child1 == leaf)
+    AABBNodeProxy grandParent = m_nodes[parent].parent;
+    AABBNodeProxy sibling;
+    if (m_nodes[parent].child1 == leaf)
     {
-      sibling = nodes[parent].child2;
+      sibling = m_nodes[parent].child2;
     }
     else
     {
-      sibling = nodes[parent].child1;
+      sibling = m_nodes[parent].child1;
     }
 
     FreeNode(parent);
 
     if (grandParent != nullNode) // node has grandparent
     {
-      nodes[sibling].parent = grandParent;
+      m_nodes[sibling].parent = grandParent;
 
-      if (nodes[grandParent].child1 == parent)
+      if (m_nodes[grandParent].child1 == parent)
       {
-        nodes[grandParent].child1 = sibling;
+        m_nodes[grandParent].child1 = sibling;
       }
       else
       {
-        nodes[grandParent].child2 = sibling;
+        m_nodes[grandParent].child2 = sibling;
       }
 
-      NodeProxy ancestor = grandParent;
+      AABBNodeProxy ancestor = grandParent;
       while (ancestor != nullNode)
       {
-        nodes[ancestor].leafs.erase(leaf); // Remove from all ancestors.
+        m_nodes[ancestor].leafs.erase(leaf); // Remove from all ancestors.
 
-        NodeProxy child1     = nodes[ancestor].child1;
-        NodeProxy child2     = nodes[ancestor].child2;
+        AABBNodeProxy child1   = m_nodes[ancestor].child1;
+        AABBNodeProxy child2   = m_nodes[ancestor].child2;
 
-        nodes[ancestor].aabb = BoundingBox::Union(nodes[child1].aabb, nodes[child2].aabb);
+        m_nodes[ancestor].aabb = BoundingBox::Union(m_nodes[child1].aabb, m_nodes[child2].aabb);
 
         Rotate(ancestor);
 
-        ancestor = nodes[ancestor].parent;
+        ancestor = m_nodes[ancestor].parent;
       }
     }
     else // node has no grandparent
     {
-      root                  = sibling;
-      nodes[sibling].parent = nullNode;
+      m_root                  = sibling;
+      m_nodes[sibling].parent = nullNode;
     }
   }
 

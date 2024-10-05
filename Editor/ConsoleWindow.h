@@ -96,8 +96,8 @@ namespace ToolKit
     const String g_deleteSelection("DeleteSelection");
     void DeleteSelection(TagArgArray tagArgs);
 
-    const String g_printBvh("PrintBVH");
-    void PrintBVH(TagArgArray tagArgs);
+    const String g_showProfileTimer("ShowProfileTimer");
+    void ShowProfileTimer(TagArgArray tagArgs);
 
     // Command errors
     const String g_noValidEntity("No valid entity");
@@ -128,6 +128,7 @@ namespace ToolKit
 
       // Buffers.
       StringArray m_items;
+      std::mutex m_itemMutex;
       StringArray m_commands;
       std::unordered_map<String, std::function<void(TagArgArray&)>> m_commandExecutors;
 

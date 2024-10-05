@@ -31,7 +31,6 @@ namespace ToolKit
   {
     // Scene pass params
     m_sceneRenderPath->m_params.Cam                        = m_params.viewport->GetCamera();
-    m_sceneRenderPath->m_params.Lights                     = m_params.scene->GetLights();
     m_sceneRenderPath->m_params.MainFramebuffer            = m_params.viewport->m_framebuffer;
     m_sceneRenderPath->m_params.Scene                      = m_params.scene;
     m_sceneRenderPath->m_params.Gfx                        = m_params.gfx;

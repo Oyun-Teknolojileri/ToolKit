@@ -15,8 +15,6 @@
 #include "ToolKit.h"
 #include "Viewport.h"
 
-
-
 namespace ToolKit
 {
 
@@ -93,8 +91,6 @@ namespace ToolKit
       }
     }
     ParameterEventConstructor();
-
-
 
     // Re assign default material.
     MaterialComponentPtr matCom = GetMaterialComponent();
@@ -335,45 +331,45 @@ namespace ToolKit
       return;
     }
 
-    const BoundingBox bb = canvasPanel->GetBoundingBox(true);
-    const float w        = bb.GetWidth();
-    const float h        = bb.GetHeight();
+    const BoundingBox& box = canvasPanel->GetBoundingBox(true);
+    const float w          = box.GetWidth();
+    const float h          = box.GetHeight();
 
-    Vec3 pos             = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-    pos.x                = bb.min.x;
-    pos.y                = bb.max.y;
+    Vec3 pos               = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+    pos.x                  = box.min.x;
+    pos.y                  = box.max.y;
 
-    const Vec3 axis[3]   = {
+    const Vec3 axis[3]     = {
         {1.f, 0.f, 0.f},
         {0.f, 1.f, 0.f},
         {0.f, 0.f, 1.f}
     };
 
-    canvas[0]                    = pos;
-    canvas[0]                   -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
-    canvas[0]                   += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
-    canvas[0].z                  = 0.f;
+    canvas[0]                      = pos;
+    canvas[0]                     -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
+    canvas[0]                     += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
+    canvas[0].z                    = 0.f;
 
-    canvas[1]                    = pos;
-    canvas[1]                   -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
-    canvas[1]                   += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
-    canvas[1].z                  = 0.f;
+    canvas[1]                      = pos;
+    canvas[1]                     -= axis[1] * ((m_anchorParams.m_anchorRatios[2]) * h);
+    canvas[1]                     += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
+    canvas[1].z                    = 0.f;
 
-    canvas[2]                    = pos;
-    canvas[2]                   -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
-    canvas[2]                   += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
-    canvas[2].z                  = 0.f;
+    canvas[2]                      = pos;
+    canvas[2]                     -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
+    canvas[2]                     += axis[0] * ((m_anchorParams.m_anchorRatios[0]) * w);
+    canvas[2].z                    = 0.f;
 
-    canvas[3]                    = pos;
-    canvas[3]                   -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
-    canvas[3]                   += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
-    canvas[3].z                  = 0.f;
+    canvas[3]                      = pos;
+    canvas[3]                     -= axis[1] * ((1.f - m_anchorParams.m_anchorRatios[3]) * h);
+    canvas[3]                     += axis[0] * ((1.f - m_anchorParams.m_anchorRatios[1]) * w);
+    canvas[3].z                    = 0.f;
 
-    const BoundingBox surfaceBB  = GetBoundingBox(true);
-    surface[0]                   = Vec3(surfaceBB.min.x, surfaceBB.max.y, 0.f);
-    surface[1]                   = Vec3(surfaceBB.max.x, surfaceBB.max.y, 0.f);
-    surface[2]                   = Vec3(surfaceBB.min.x, surfaceBB.min.y, 0.f);
-    surface[3]                   = Vec3(surfaceBB.max.x, surfaceBB.min.y, 0.f);
+    const BoundingBox& surfaceBox  = GetBoundingBox(true);
+    surface[0]                     = Vec3(surfaceBox.min.x, surfaceBox.max.y, 0.f);
+    surface[1]                     = Vec3(surfaceBox.max.x, surfaceBox.max.y, 0.f);
+    surface[2]                     = Vec3(surfaceBox.min.x, surfaceBox.min.y, 0.f);
+    surface[3]                     = Vec3(surfaceBox.max.x, surfaceBox.min.y, 0.f);
   }
 
   // Button

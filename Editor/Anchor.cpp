@@ -101,7 +101,7 @@ namespace ToolKit
       Vec3 pos;
       float w = 0, h = 0;
       {
-        const BoundingBox bb = canvasPanel->GetBoundingBox(true);
+        const BoundingBox& bb = canvasPanel->GetBoundingBox(true);
         w                    = bb.GetWidth();
         h                    = bb.GetHeight();
         pos                  = Vec3(bb.min.x, bb.max.y, pos.z);

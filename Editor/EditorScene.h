@@ -35,10 +35,8 @@ namespace ToolKit
       void ClearSelection();
       bool IsCurrentSelection(ULongID id) const;
 
-      // Makes the entity current selection. When ifExist true, only works if
-      // the entity exist in the selection.
-      // Otherwise adds entity to selection list and selects it.
-      void MakeCurrentSelection(ULongID id, bool ifExist);
+      // Makes the entity current selection.
+      void MakeCurrentSelection(ULongID id);
 
       uint GetSelectedEntityCount() const;
       EntityPtr GetCurrentSelection() const;
@@ -88,6 +86,9 @@ namespace ToolKit
        * proper picking.
        */
       void UpdateBillboardsForPicking();
+
+      /** Internally used to sanitize selection before adding it. */
+      void AddToSelectionSane(ULongID id);
 
      public:
       // Indicates if this is created via new scene.

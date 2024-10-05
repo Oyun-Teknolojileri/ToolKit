@@ -9,46 +9,25 @@
 
 #include "Types.h"
 
-#include <poolSTL/poolstl.hpp>
-
-#include <future>
-#include <type_traits>
+#include <poolstl/poolstl.hpp>
 
 namespace ToolKit
 {
-  /** A lock that busy waits.
-   * if contention is low, busy waiting locks much more performant than context switching locks
-   * such as mutexes.
-   */
-  struct AtomicLock
-  {
-    std::atomic<bool> lock = false;
 
-    /** Locks via busy waiting. */
-    void Lock()
-    {
-      while (lock.exchange(true, std::memory_order_relaxed)) {};
-    }
-
-    /** Free the lock to be acquired again. */
-    void Release() { lock.store(false, std::memory_order_relaxed); }
-  };
+  /** Spin waits until the cond become false. Release cpu resources for hyper threading. */
+#define HyperThreadSpinWait(cond)                                                                                      \
+  while (cond)                                                                                                         \
+    HyperThreadPause();
 
   typedef task_thread_pool::task_thread_pool ThreadPool;
-
+  typedef std::queue<std::packaged_task<void()>> TaskQueue;
   typedef std::function<void()> Task;
 
-  typedef std::queue<std::packaged_task<void()>> TaskQueue;
-
-  /**
-   * This is the class that keeps the thread pools and manages async tasks.
-   */
+  /** This is the class that keeps the thread pools and manages async tasks. */
   class TK_API WorkerManager
   {
    public:
-    /**
-     * Predefined thread pools for specific jobs.
-     */
+    /** Predefined thread pools for specific jobs. */
     enum Executor
     {
       MainThread, //!< Tasks in this executor runs in sync with main thread at the end of the current frame.
@@ -56,15 +35,26 @@ namespace ToolKit
     };
 
    public:
-    WorkerManager();  //!< Default constructor, initializes thread pools.
-    ~WorkerManager(); //!< Default destructor, destroy thread pools.
+    /** Default constructor, initializes thread pools. */
+    WorkerManager();
 
-    void Init();   //!< Initialize threads,  pools and task queues.
-    void UnInit(); //!< Flushes all the tasks in the pools, queues than terminates threads.
+    /** Default destructor, destroy thread pools. */
+    ~WorkerManager();
 
-    ThreadPool& GetPool(Executor executor); //!< Returns the thread pool corresponding to the executor.
+    /** Initialize threads,  pools and task queues. */
+    void Init();
 
-    void Flush(); //!< Stops waiting tasks and completes ongoing tasks on all pools and threads.
+    /** Flushes all the tasks in the pools, queues than terminates threads. */
+    void UnInit();
+
+    /** Returns the thread pool corresponding to the executor. */
+    ThreadPool& GetPool(Executor executor);
+
+    /** Returns available threads for given executor. */
+    int GetThreadCount(Executor executor);
+
+    /** Stops waiting tasks and completes ongoing tasks on all pools and threads. */
+    void Flush();
 
     template <typename F, typename... A, typename R = std::invoke_result_t<std::decay_t<F>, std::decay_t<A>...>>
     std::future<R> AsyncTask(Executor exec, F&& func, A&&... args)
@@ -91,37 +81,28 @@ namespace ToolKit
     void ExecuteTasks(TaskQueue& queue, std::mutex& mex);
 
    public:
-    ThreadPool* m_frameWorkers = nullptr; //!< Task that suppose to complete in a frame should be using this pool.
+    /** Task that suppose to complete in a frame should be using this pool. */
+    ThreadPool* m_frameWorkers = nullptr;
 
-    /**
-     * Tasks that will be executed at the main thread frame end is stored here.
-     */
+    /** Tasks that will be executed at the main thread frame end is stored here. */
     TaskQueue m_mainThreadTasks;
 
    private:
-    std::mutex m_mainTaskMutex; //!< Lock for main thread tasks.
+    /** Lock for main thread tasks. */
+    std::mutex m_mainTaskMutex;
   };
 
-  /**
-   * Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on. Allows
-   * to decide to run for loop sequential or parallel based on the given condition.
-   */
+/**
+ * Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on.
+ * Allows to decide to run for loop sequential or parallel based on the given condition.
+ */
 #define TKExecByConditional(Condition, Target)                                                                         \
   poolstl::par_if((Condition) && Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
-  /**
-   * Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on.
-   */
-#define TKExecBy(Target)                    poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
+/** Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on. */
+#define TKExecBy(Target)         poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
-  /**
-   * Insert an async task to given target.
-   */
-#define TKAsyncTask(Target, Func)           Main::GetInstance()->m_workerManager->AsyncTask(Target, Func);
-
-  /**
-   * Insert an async task with arguments to given target.
-   */
-#define TKAsyncTaskArgs(Target, Func, Args) Main::GetInstance()->m_workerManager->AsyncTask(Target, Func, Args);
+/** Insert an async task to given target. */
+#define TKAsyncTask(Target, ...) GetWorkerManager()->AsyncTask(Target, __VA_ARGS__);
 
 } // namespace ToolKit

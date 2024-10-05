@@ -11,19 +11,20 @@
 
 namespace ToolKit
 {
-  const uint64 MessageBufferLength = 4096;
-  static char MessageBuffer[MessageBufferLength];
+  constexpr uint TKMessageBufferLength = 4096;
 
   void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, va_list args)
   {
+    char messageBuffer[TKMessageBufferLength];
+
     if (logFn == nullptr)
     {
       return;
     }
 
-    vsprintf(MessageBuffer, msg, args);
+    vsprintf(messageBuffer, msg, args);
 
-    logFn(logType, String(MessageBuffer));
+    logFn(logType, String(messageBuffer));
   }
 
   Logger::Logger() { m_logFile.open("Log.txt", std::ios::out); }
@@ -50,34 +51,27 @@ namespace ToolKit
 
     static const char* logTypes[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
 
-    vsprintf(MessageBuffer, msg, args);
+    char messageBuffer[TKMessageBufferLength];
+    vsprintf(messageBuffer, msg, args);
 
-    m_logFile << logTypes[(int) logType] << MessageBuffer << std::endl;
+    m_logFile << logTypes[(int) logType] << messageBuffer << std::endl;
 
     if (m_writeConsoleFn != nullptr)
     {
-      m_writeConsoleFn(logType, MessageBuffer);
+      m_writeConsoleFn(logType, messageBuffer);
     }
 
     if (m_platfromConsoleFn != nullptr)
     {
-      m_platfromConsoleFn(logType, MessageBuffer);
+      m_platfromConsoleFn(logType, messageBuffer);
     }
 
     va_end(args);
   }
 
-  void Logger::SetWriteConsoleFn(ConsoleOutputFn fn) { m_writeConsoleFn = fn; }
-
-  void Logger::SetClearConsoleFn(ClearConsoleFn fn) { m_clearConsoleFn = fn; }
-
-  void Logger::SetPlatformConsoleFn(ConsoleOutputFn fn) { m_platfromConsoleFn = fn; }
-
-  void Logger::ClearConsole() { m_clearConsoleFn(); }
-
   void Logger::WriteTKConsole(LogType logType, const char* msg, ...)
   {
-    if (strlen(msg) >= MessageBufferLength)
+    if (strlen(msg) >= TKMessageBufferLength)
     {
       if (m_platfromConsoleFn)
       {
@@ -102,7 +96,7 @@ namespace ToolKit
 
   void Logger::WritePlatformConsole(LogType logType, const char* msg, ...)
   {
-    if (strlen(msg) >= MessageBufferLength)
+    if (strlen(msg) >= TKMessageBufferLength)
     {
       if (m_platfromConsoleFn)
       {
@@ -118,5 +112,13 @@ namespace ToolKit
 
     va_end(args);
   }
+
+  void Logger::SetWriteConsoleFn(ConsoleOutputFn fn) { m_writeConsoleFn = fn; }
+
+  void Logger::SetClearConsoleFn(ClearConsoleFn fn) { m_clearConsoleFn = fn; }
+
+  void Logger::SetPlatformConsoleFn(ConsoleOutputFn fn) { m_platfromConsoleFn = fn; }
+
+  void Logger::ClearConsole() { m_clearConsoleFn(); }
 
 } // namespace ToolKit

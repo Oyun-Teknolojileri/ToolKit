@@ -63,8 +63,7 @@ namespace ToolKit
                 [this, vpScale, cam](EntityPtr bb) -> bool
                 {
                   // Update billboards.
-                  assert(bb->IsA<Billboard>());
-                  BillboardPtr cbb = std::static_pointer_cast<Billboard>(bb);
+                  BillboardPtr cbb = Cast<Billboard>(bb);
                   cbb->LookAt(cam, vpScale);
 
                   // Return separation condition.

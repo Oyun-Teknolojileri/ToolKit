@@ -43,7 +43,7 @@ namespace ToolKit
     EntityPtr Parent() const;
     virtual bool IsDrawable() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
-    virtual BoundingBox GetBoundingBox(bool inWorld = false);
+    virtual const BoundingBox& GetBoundingBox(bool inWorld = false);
     ObjectPtr Copy() const override;
     virtual void RemoveResources();
 
@@ -209,10 +209,10 @@ namespace ToolKit
     Entity* _prefabRootEntity;
 
     /** Index into the bvh tree that points to the node for this entity. */
-    NodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
+    AABBNodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
 
     /** Entity causes AABBTree to be updated when added removed to the scene. */
-    bool m_partOfAABBTree         = true;
+    bool m_partOfAABBTree             = true;
 
     /** The Scene that entity belongs to. */
     SceneWeakPtr m_scene;
@@ -238,7 +238,7 @@ namespace ToolKit
     TKDeclareClass(EntityNode, Entity);
 
     EntityNode();
-    explicit EntityNode(const String& name);
+    EntityNode(const String& name);
     virtual ~EntityNode();
 
     void RemoveResources() override;

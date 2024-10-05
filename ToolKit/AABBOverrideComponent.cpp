@@ -42,7 +42,7 @@ namespace ToolKit
     return aabb;
   }
 
-  void AABBOverrideComponent::SetBoundingBox(BoundingBox aabb)
+  void AABBOverrideComponent::SetBoundingBox(const BoundingBox& aabb)
   {
     SetPositionOffsetVal(aabb.min);
     SetSizeVal(aabb.max - aabb.min);

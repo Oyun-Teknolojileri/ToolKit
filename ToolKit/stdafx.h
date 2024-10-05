@@ -14,6 +14,7 @@
 #include <deque>
 #include <filesystem>
 #include <functional>
+#include <future>
 #include <limits>
 #include <memory>
 #include <set>

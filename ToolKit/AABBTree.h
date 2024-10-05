@@ -19,34 +19,32 @@
 namespace ToolKit
 {
 
-  typedef int32 NodeProxy;
-  typedef std::unordered_set<NodeProxy> NodeProxySet;
-
-  const Vec3 aabb_margin          = Vec3(0.03f);
-  constexpr float aabb_multiplier = 3.0f;
+  typedef int AABBNodeProxy;
+  typedef std::unordered_set<AABBNodeProxy> AABBNodeProxySet;
+  typedef std::vector<AABBNodeProxy> NodeProxyArray;
 
   class TK_API AABBTree
   {
    public:
     static constexpr inline int32 nullNode = -1;
 
-    struct Node
+    struct AABBNode
     {
       bool IsLeaf() const { return child1 == nullNode; }
 
       BoundingBox aabb;
       EntityWeakPtr entity;
 
-      NodeProxy parent;
-      NodeProxy child1;
-      NodeProxy child2;
-      NodeProxy next;
+      AABBNodeProxy parent;
+      AABBNodeProxy child1;
+      AABBNodeProxy child2;
+      AABBNodeProxy next;
       bool moved;
 
-      NodeProxySet leafs;
+      AABBNodeProxySet leafs;
     };
 
-    typedef std::vector<AABBTree::Node> NodeArray;
+    typedef std::vector<AABBNode> AABBNodeArray;
 
    public:
     AABBTree();
@@ -56,46 +54,56 @@ namespace ToolKit
     AABBTree& operator=(const AABBTree&) = delete;
 
     void Reset();
-    NodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
+    AABBNodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
     /** Updates the tree via reinserting the provided node. */
-    void UpdateNode(NodeProxy node);
-    void RemoveNode(NodeProxy node);
-    void Traverse(std::function<void(const Node*)> callback) const;
+    void UpdateNode(AABBNodeProxy node);
+    void RemoveNode(AABBNodeProxy node);
+    void Traverse(std::function<void(const AABBNode*)> callback) const;
+
     /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
-    
+
     /** Return debug boxes for each node in the tree. */
     void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const;
 
-    /** Prints each node and the leaf entities under the node to the console. */
-    void PrintTree();
-
+    /** Returns the bounding box that covers all entities. */
     const BoundingBox& GetRootBoundingBox() const;
 
-    /** Checks frustum against the tree and returns the entities intersecting with the frustum. */
-    EntityRawPtrArray FrustumQuery(const Frustum& frustum) const;
+    /** Template for volume queries. VolumeTypes: {Frustum, BoundingBox} */
+    template <typename VolumeType>
+    EntityRawPtrArray VolumeQuery(const VolumeType& vol, bool threaded = true) const;
 
     /**
-     * Checks entities inside the aabb tree and return the nearest one that hits the ray and the hit distance t.
+     * Test ray against the tree and returns the nearest entity that hits the ray and the hit distance t.
      * If the deep parameter passed as true, it checks mesh level intersection.
      */
     EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr) const;
 
    private:
-    NodeProxy AllocateNode();
-    void FreeNode(NodeProxy node);
-    NodeProxy InsertLeaf(NodeProxy leaf);
-    void RemoveLeaf(NodeProxy leaf);
-    void Rotate(NodeProxy node);
+    AABBNodeProxy AllocateNode();
+    void FreeNode(AABBNodeProxy node);
+    AABBNodeProxy InsertLeaf(AABBNodeProxy leaf);
+    void RemoveLeaf(AABBNodeProxy leaf);
+    void Rotate(AABBNodeProxy node);
+
+    void VolumeQuery(EntityRawPtrArray& result,
+                     std::atomic_int& threadCount,
+                     AABBNodeProxy root,
+                     std::function<enum class IntersectResult(AABBNodeProxy)> queryFn) const;
 
    private:
-    NodeProxy root;
+    AABBNodeProxy m_root;
+    AABBNodeProxy m_freeList;
 
-    NodeArray nodes;
-    int32 nodeCapacity;
-    int32 nodeCount;
+    AABBNodeArray m_nodes;
+    int m_nodeCapacity;
+    int m_nodeCount;
 
-    NodeProxy freeList;
+    /** Threshold node count to do threaded traverse for volume queries. */
+    const int m_threadTreshold;
+
+    /** Internally used to get max available thread count. */
+    mutable int m_maxThreadCount;
   };
 
 } // namespace ToolKit

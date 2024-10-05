@@ -144,7 +144,22 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
-    for (LightPtr& light : m_lightCache)
+    m_environmentVolumeCache.clear();
+
+    for (const EntityPtr& ntt : m_entities)
+    {
+      // Update volume caches.
+      if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
+      {
+        if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
+      }
+    }
+
+    for (Light* light : m_lightCache)
     {
       light->UpdateShadowCamera();
     }
@@ -216,10 +231,13 @@ namespace ToolKit
                          const IDArray& ignoreList,
                          const EntityPtrArray& extraList)
   {
+    // Create pick data for the  entities.
     auto pickFn = [&](const EntityPtrArray& entities, bool skipTest) -> void
     {
       for (EntityPtr ntt : entities)
       {
+        assert(ntt != nullptr);
+
         if (!ntt->IsDrawable())
         {
           continue;
@@ -230,18 +248,19 @@ namespace ToolKit
           continue;
         }
 
-        IntersectResult res = IntersectResult::Inside;
-        BoundingBox bb      = ntt->GetBoundingBox(true);
+        IntersectResult res    = IntersectResult::Inside;
+        const BoundingBox& box = ntt->GetBoundingBox(true);
 
         if (!skipTest)
         {
-          res = FrustumBoxIntersection(frustum, bb);
+          // If frustum test is applied via aabb tree this check can be skipped.
+          res = FrustumBoxIntersection(frustum, box);
         }
 
         if (res != IntersectResult::Outside)
         {
           PickData pd;
-          pd.pickPos = (bb.max + bb.min) * 0.5f;
+          pd.pickPos = (box.max + box.min) * 0.5f;
           pd.entity  = ntt;
 
           pickedObjects.push_back(pd);
@@ -249,11 +268,10 @@ namespace ToolKit
       }
     };
 
-    pickFn(extraList, false);
+    pickFn(extraList, false); // Test extra list with frustum.
 
-    EntityRawPtrArray entitiesInTheFrustum = m_aabbTree.FrustumQuery(frustum);
-    EntityPtrArray entityPtrs              = ToEntityPtrArray(entitiesInTheFrustum);
-    pickFn(entityPtrs, true);
+    EntityRawPtrArray entitiesInTheFrustum = m_aabbTree.VolumeQuery(frustum);
+    pickFn(ToEntityPtrArray(entitiesInTheFrustum), true); // Skip the frustum test.
   }
 
   EntityPtr Scene::GetEntity(ULongID id, int* index) const
@@ -387,7 +405,9 @@ namespace ToolKit
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  const LightPtrArray& Scene::GetLights() const { return m_lightCache; }
+  const LightRawPtrArray& Scene::GetLights() const { return m_lightCache; }
+
+  const LightRawPtrArray& Scene::GetDirectionalLights() const { return m_directionalLightCache; }
 
   SkyBasePtr& Scene::GetSky() { return m_skyCache; }
 
@@ -492,6 +512,7 @@ namespace ToolKit
     }
 
     m_entities.clear();
+    m_aabbTree.Reset();
 
     m_loaded    = false;
     m_initiated = false;
@@ -522,7 +543,11 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  void Scene::ClearEntities() { m_entities.clear(); }
+  void Scene::ClearEntities()
+  {
+    m_aabbTree.Reset();
+    m_entities.clear();
+  }
 
   const BoundingBox& Scene::GetSceneBoundary() { return m_aabbTree.GetRootBoundingBox(); }
 
@@ -556,15 +581,23 @@ namespace ToolKit
         m_skyCache = nullptr;
       }
     }
-    else if (const LightPtr& light = SafeCast<Light>(ntt))
+    else if (Light* light = ntt->As<Light>())
     {
       if (add)
       {
         m_lightCache.push_back(light);
+        if (light->GetLightType() == Light::LightType::Directional)
+        {
+          m_directionalLightCache.push_back(light);
+        }
       }
       else
       {
         remove(m_lightCache, light);
+        if (light->GetLightType() == Light::LightType::Directional)
+        {
+          remove(m_directionalLightCache, light);
+        }
       }
     }
 
@@ -759,7 +792,7 @@ namespace ToolKit
 
     for (EntityPtr ntt : prefabList)
     {
-      PrefabPtr prefab = std::static_pointer_cast<Prefab>(ntt);
+      PrefabPtr prefab = Cast<Prefab>(ntt);
       prefab->Link();
     }
   }

@@ -15,6 +15,7 @@
 #include <Drawable.h>
 #include <Mesh.h>
 #include <PluginManager.h>
+#include <TKProfiler.h>
 
 #include <DebugNew.h>
 
@@ -50,6 +51,21 @@ namespace ToolKit
     }
 
     // Executors
+    bool BoolCheck(const TagArg& arg)
+    {
+      if (arg.second.empty())
+      {
+        return false;
+      }
+
+      if (arg.second.front() == "1")
+      {
+        return true;
+      }
+
+      return false;
+    }
+
     void BoolCheck(const TagArgArray& tagArgs, bool* val)
     {
       if (tagArgs.empty())
@@ -57,22 +73,7 @@ namespace ToolKit
         return;
       }
 
-      if (tagArgs.front().second.empty())
-      {
-        return;
-      }
-
-      String args = tagArgs.front().second.front();
-
-      if (args == "1")
-      {
-        *val = true;
-      }
-
-      if (args == "0")
-      {
-        *val = false;
-      }
+      *val = BoolCheck(tagArgs.front());
     }
 
     void ShowPickDebugExec(TagArgArray tagArgs)
@@ -612,11 +613,49 @@ namespace ToolKit
       scene->RemoveEntity(selection, isDeep);
     }
 
-    void PrintBVH(TagArgArray tagArgs)
+    void ShowProfileTimer(TagArgArray tagArgs)
     {
-      if (EditorScenePtr scene = g_app->GetCurrentScene())
+      if (tagArgs.empty())
       {
-        scene->m_aabbTree.PrintTree();
+        return;
+      }
+
+      for (auto& arg : tagArgs)
+      {
+        if (arg.first == "all")
+        {
+          bool val = BoolCheck(tagArgs.front());
+          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
+          {
+            itr->second = val;
+          }
+
+          return;
+        }
+        else if (arg.first == "list")
+        {
+          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
+          {
+            TK_LOG("%s", itr->first.c_str());
+          }
+        }
+        else if (arg.first == "reset")
+        {
+          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
+          {
+            if (itr->second) // Reset all shown timers.
+            {
+              itr->second = 2; // This indicates a reset for the average time accumulator.
+            }
+          }
+        }
+        else
+        {
+          if (TKProfileTimerMap.find(arg.first) != TKProfileTimerMap.end())
+          {
+            TKProfileTimerMap[arg.first] = BoolCheck(arg);
+          }
+        }
       }
     }
 
@@ -683,7 +722,7 @@ namespace ToolKit
       CreateCommand(g_showSceneBoundary, ShowSceneBoundary);
       CreateCommand(g_showBVHNodes, ShowBVHNodes);
       CreateCommand(g_deleteSelection, DeleteSelection);
-      CreateCommand(g_printBvh, PrintBVH);
+      CreateCommand(g_showProfileTimer, ShowProfileTimer);
     }
 
     ConsoleWindow::~ConsoleWindow() {}
@@ -866,10 +905,10 @@ namespace ToolKit
       {
         prefixed = "[" + tag + "] " + log;
       }
-
-      m_items.push_back(prefixed);
       m_scrollToBottom = true;
 
+      std::unique_lock<std::mutex> lock(m_itemMutex);
+      m_items.push_back(prefixed);
       if (m_items.size() > 1024)
       {
         ClearLog();
@@ -979,11 +1018,6 @@ namespace ToolKit
         String tag;
         tag = values.front();
         pop_front(values);
-
-        if (values.empty())
-        {
-          continue;
-        }
 
         TagArg input(tag, values);
         tagArgs.push_back(input);

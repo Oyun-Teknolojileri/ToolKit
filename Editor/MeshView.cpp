@@ -117,7 +117,7 @@ namespace ToolKit
 
       if (m_mesh->IsSkinned())
       {
-        SkinMeshPtr skinMesh          = std::static_pointer_cast<SkinMesh>(m_mesh);
+        SkinMeshPtr skinMesh          = Cast<SkinMesh>(m_mesh);
         SkeletonComponentPtr skelComp = m_previewEntity->GetComponent<SkeletonComponent>();
         skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
         skelComp->Init();

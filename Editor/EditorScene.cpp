@@ -52,11 +52,11 @@ namespace ToolKit
       EntityPtrArray selecteds;
       GetSelectedEntities(selecteds);
 
-      LightPtrArray sceneLights   = GetLights();
+      LightRawPtrArray sceneLights = GetLights();
 
-      bool foundFirstLight        = false;
-      LightPtr firstSelectedLight = nullptr;
-      for (LightPtr light : sceneLights)
+      bool foundFirstLight         = false;
+      Light* firstSelectedLight    = nullptr;
+      for (Light* light : sceneLights)
       {
         bool found = false;
         for (EntityPtr ntt : selecteds)
@@ -68,7 +68,7 @@ namespace ToolKit
               firstSelectedLight = light;
               foundFirstLight    = true;
             }
-            EnableLightGizmo(light.get(), true);
+            EnableLightGizmo(light, true);
             found = true;
             break;
           }
@@ -76,7 +76,7 @@ namespace ToolKit
 
         if (!found)
         {
-          EnableLightGizmo(light.get(), false);
+          EnableLightGizmo(light, false);
         }
       }
 
@@ -113,24 +113,33 @@ namespace ToolKit
       {
         if (!additive) // we've cleared the array, must add again
         {
-          m_selectedEntities.push_back(id);
+          AddToSelectionSane(id);
         }
         return;
       }
 
       EntityPtr ntt = GetEntity(id);
+      bool skipAdd  = false; // Prefab sub entities may cause addition of the root.
 
       // If the entity comes from a prefab scene, swap the child ntt with prefab.
       if (Entity* prefabRoot = ntt->GetPrefabRoot())
       {
-        ntt = prefabRoot->Self<Entity>();
-        id  = ntt->GetIdVal();
+        ntt     = prefabRoot->Self<Entity>();
+        id      = ntt->GetIdVal();
+        skipAdd = IsSelected(id);
       }
 
+      if (!skipAdd)
+      {
+        AddToSelectionSane(id);
+      }
+
+      // Execute commands that activates on selection.
+      // A better approach would be creating an editor event OnSelected.
       if (g_app->m_selectEffectingLights && !ntt->IsA<Light>())
       {
-        LightPtrArray lights = GetLights();
-        for (LightPtr& light : lights)
+        LightRawPtrArray lights = GetLights();
+        for (Light* light : lights)
         {
           light->UpdateShadowCamera();
         }
@@ -140,10 +149,16 @@ namespace ToolKit
 
         if (!jobs.empty())
         {
-          RenderJobProcessor::AssignLight(jobs.begin(), jobs.end(), lights);
+          int dirStart = RenderJobProcessor::PreSortLights(lights);
+
+          for (RenderJob& job : jobs)
+          {
+            RenderJobProcessor::AssignLight(job, lights, dirStart);
+          }
+
           RenderJob& job = jobs.front();
 
-          for (int i = 0; i < job.lights.size(); i++)
+          for (size_t i = 0; i < job.lights.size(); i++)
           {
             Light* light = job.lights[i];
             if (!IsSelected(light->GetIdVal()))
@@ -153,24 +168,16 @@ namespace ToolKit
           }
         }
       }
-
-      m_selectedEntities.push_back(id);
     }
 
     void EditorScene::AddToSelection(const IDArray& entities, bool additive)
     {
       ULongID currentId = NULL_HANDLE;
-      if (entities.size() > 1)
+      for (const ULongID& id : entities)
       {
-        for (const ULongID& id : entities)
+        if (IsCurrentSelection(id))
         {
-          if (id != NULL_HANDLE)
-          {
-            if (IsCurrentSelection(id))
-            {
-              currentId = id;
-            }
-          }
+          currentId = id;
         }
       }
 
@@ -182,11 +189,6 @@ namespace ToolKit
 
       for (const ULongID& id : entities)
       {
-        if (id == NULL_HANDLE)
-        {
-          continue;
-        }
-
         // Add to selection.
         if (!additive)
         {
@@ -202,17 +204,27 @@ namespace ToolKit
               {
                 if (IsCurrentSelection(id))
                 {
+                  // Deselect if user is reselecting the current selection.
                   RemoveFromSelection(id);
+                  if (id == currentId)
+                  {
+                    currentId = NULL_HANDLE;
+                  }
                 }
                 else
                 {
-                  MakeCurrentSelection(id, false);
+                  // Make it current.
+                  MakeCurrentSelection(id);
                 }
               }
             }
             else
             {
               RemoveFromSelection(id);
+              if (id == currentId)
+              {
+                currentId = NULL_HANDLE;
+              }
             }
           }
           else
@@ -222,7 +234,10 @@ namespace ToolKit
         }
       }
 
-      MakeCurrentSelection(currentId, true);
+      if (currentId != NULL_HANDLE)
+      {
+        MakeCurrentSelection(currentId);
+      }
     }
 
     void EditorScene::AddToSelection(const EntityPtrArray& entities, bool additive)
@@ -243,19 +258,18 @@ namespace ToolKit
       return false;
     }
 
-    void EditorScene::MakeCurrentSelection(ULongID id, bool ifExist)
+    void EditorScene::MakeCurrentSelection(ULongID id)
     {
       IDArray::iterator itr = std::find(m_selectedEntities.begin(), m_selectedEntities.end(), id);
       if (itr != m_selectedEntities.end())
       {
+        // If the id exist, swap it to the last to make it current selection.
         std::iter_swap(itr, m_selectedEntities.end() - 1);
       }
       else
       {
-        if (!ifExist)
-        {
-          m_selectedEntities.push_back(id);
-        }
+        // Entity is not selected, adding it back of the array makes it both selected and current.
+        AddToSelectionSane(id);
       }
     }
 
@@ -372,27 +386,37 @@ namespace ToolKit
                                  const IDArray& ignoreList,
                                  const EntityPtrArray& extraList)
     {
-      // Add billboards to scene
-      EntityPtrArray temp = extraList;
-      temp.insert(temp.end(), m_billboards.begin(), m_billboards.end());
+      EntityPtrArray extraWithBillboards = extraList;
+      extraWithBillboards.insert(extraWithBillboards.end(), m_billboards.begin(), m_billboards.end());
       UpdateBillboardsForPicking();
 
-      Scene::PickObject(frustum, pickedObjects, ignoreList, temp);
+      Scene::PickObject(frustum, pickedObjects, ignoreList, extraWithBillboards);
 
       // If the billboards are picked, pick the entity.
       pickedObjects.erase(std::remove_if(pickedObjects.begin(),
                                          pickedObjects.end(),
                                          [&pickedObjects](PickData& pd) -> bool
                                          {
-                                           if (pd.entity != nullptr && pd.entity->IsA<Billboard>() &&
-                                               static_cast<Billboard*>(pd.entity.get())->m_entity != nullptr)
+                                           if (pd.entity == nullptr)
                                            {
-                                             // Check if the entity is already picked
+                                             assert(false && "Pick should not create data with empty entity.");
+                                             return true; // Remove null entity from pick data.
+                                           }
+
+                                           Entity* ntt = pd.entity.get();
+                                           if (Billboard* billboard = ntt->As<Billboard>()) // If entity is a billboard.
+                                           {
+                                             if (billboard->m_entity == nullptr)
+                                             {
+                                               // Remove the billboard if it does not points an entity.
+                                               return true;
+                                             }
+
+                                             // Check if billboard's entity is already picked.
                                              bool found = false;
                                              for (PickData& pd2 : pickedObjects)
                                              {
-                                               if (pd2.entity->GetIdVal() ==
-                                                   static_cast<Billboard*>(pd.entity.get())->m_entity->GetIdVal())
+                                               if (pd2.entity->IsSame(billboard->m_entity))
                                                {
                                                  found = true;
                                                  break;
@@ -401,15 +425,18 @@ namespace ToolKit
 
                                              if (found)
                                              {
+                                               // Billboard's entity is already picked, remove the billboard.
                                                return true;
                                              }
                                              else
                                              {
-                                               pd.entity = static_cast<Billboard*>(pd.entity.get())->m_entity;
+                                               // Replace billboard with its entity.
+                                               pd.entity = billboard->m_entity;
                                                return false;
                                              }
                                            }
-                                           return false;
+
+                                           return false; // If entity is not a billboard don't remove.
                                          }),
                           pickedObjects.end());
     }
@@ -557,6 +584,13 @@ namespace ToolKit
           }
         }
       }
+    }
+
+    void EditorScene::AddToSelectionSane(ULongID id)
+    {
+      assert(id != NULL_HANDLE);
+      assert(IsSelected(id) == false);
+      m_selectedEntities.push_back(id);
     }
 
     EditorSceneManager::EditorSceneManager() {}

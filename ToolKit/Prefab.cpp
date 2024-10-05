@@ -87,7 +87,7 @@ namespace ToolKit
   {
     if (ntt->IsA<Prefab>())
     {
-      return std::static_pointer_cast<Prefab>(ntt);
+      return Cast<Prefab>(ntt);
     }
 
     if (EntityPtr parent = ntt->Parent())

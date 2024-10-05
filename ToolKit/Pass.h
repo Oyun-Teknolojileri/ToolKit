@@ -109,28 +109,22 @@ namespace ToolKit
   class TK_API RenderJobProcessor
   {
    public:
-    /** Constructs a render job for a single entity. */
-    static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
-
-    /** Constructs render jobs for all given entities. */
-    static void CreateRenderJobs(RenderJobArray& jobArray, EntityRawPtrArray& entities, bool ignoreVisibility = false);
-
     /**
      * Constructs all render jobs from entities.
      * @param jobArray is the array of constructed jobs.
      * @param entities are the entities to construct render jobs for.
-     * @param lights are the list of lights to consider.
+     * @param lights are the list of lights to consider. Lights must be presorted before sending them to this function.
      * @param environments are the environment volumes to consider.
      * @param ingnoreVisibility when set true, construct jobs for entities that has visibility set to false.
      */
     static void CreateRenderJobs(RenderJobArray& jobArray,
                                  EntityRawPtrArray& entities,
-                                 LightPtrArray& lights,
-                                 const EnvironmentComponentPtrArray& environments,
-                                 bool ignoreVisibility = false);
+                                 bool ignoreVisibility                            = false,
+                                 int dirLightEndIndex                             = 0,
+                                 const LightRawPtrArray& lights                   = {},
+                                 const EnvironmentComponentPtrArray& environments = {});
 
-    /** This will drop the lights whose bounding volume does not intersect with camera. */
-    static void CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance = TK_FLT_MAX);
+    static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
 
     /**
      * Separate jobs such that job array starts with culled jobs, than deferred jobs, than forward opaque and
@@ -141,35 +135,23 @@ namespace ToolKit
     static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
 
     /** Assign all lights affecting the job. */
-    static void AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex);
+    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex);
 
-    static void AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights);
+    /** Assign environment to each job. If job is under influence of many environment, picks the smallest volume. */
+    static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);
 
     /**
      * Makes sure that first elements are directional lights.
      * @param lights are the lights to sort.
      * @returns The index where the non directional lights starts.
      */
-    static int PreSortLights(LightPtrArray& lights);
+    static int PreSortLights(LightRawPtrArray& lights);
 
     /** Sort entities by distance(from boundary center) in ascending order to camera. Accounts for isometric camera. */
     static void SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam);
 
-    /** Cull objects based on the sent camera. Update Job's frustumCulled state. */
-    static void CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera);
-
-    /** Doesn't alter render job, but puts results into cullResults array. Useful for not to alter RenderData. */
-    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, UIntArray& resultIndices);
-
-    static void CullRenderJobs(const RenderJobArray& jobArray, const CameraPtr& camera, RenderJobArray& unCulledJobs);
-
+    /** Sort render jobs based on materials. */
     static void SortByMaterial(RenderData& renderData);
-
-    static void AssignEnvironment(RenderJobItr begin,
-                                  RenderJobItr end,
-                                  const EnvironmentComponentPtrArray& environments);
-
-    static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);
 
     /**
      * Calculates the standard deviation and mean of the given RenderJobArray

@@ -11,6 +11,7 @@
 #include "MathUtil.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "TKProfiler.h"
 
 namespace ToolKit
 {
@@ -118,17 +119,51 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::SetPassParams()
   {
+    TKBeginTimer(FrustumCull);
     Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
-    EntityRawPtrArray entities = m_params.Scene->m_aabbTree.FrustumQuery(frustum);
+    EntityRawPtrArray entities = m_params.Scene->m_aabbTree.VolumeQuery(frustum);
+    TKEndTimer(FrustumCull);
 
-    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs,
-                                         entities,
-                                         m_params.Lights,
-                                         m_params.Scene->GetEnvironmentVolumes());
+    TKBeginTimer(CreateRenderJob);
+    LightRawPtrArray lights;
+    if (m_params.overrideLights.empty())
+    {
+      // Select non culled scene lights.
+      MoveByType(entities, lights);
+
+      // Collect directional lights.
+      const LightRawPtrArray& directionalLights = m_params.Scene->GetDirectionalLights();
+      for (Light* light : directionalLights)
+      {
+        lights.push_back(light);
+      }
+
+      // At this point directional lights may be added twice, due to ones coming from frustum cull.
+      auto dirLightEndItr =
+          std::partition(lights.begin(),
+                         lights.end(),
+                         [](Light* light) -> bool { return light->GetLightType() == Light::LightType::Directional; });
+
+      // Make sure there is no duplicate for directionals.
+      RemoveDuplicates(lights, lights.begin(), dirLightEndItr);
+    }
+    else
+    {
+      // or use override lights.
+      for (LightPtr light : m_params.overrideLights)
+      {
+        lights.push_back(light.get());
+      }
+    }
+
+    int dirEndIndx                                   = RenderJobProcessor::PreSortLights(lights);
+    const EnvironmentComponentPtrArray& environments = m_params.Scene->GetEnvironmentVolumes();
+    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false, dirEndIndx, lights, environments);
+    TKEndTimer(CreateRenderJob);
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;
-    m_shadowPass->m_params.lights     = m_params.Lights;
+    m_shadowPass->m_params.lights     = m_params.Scene->GetLights();
 
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::SortByMaterial(m_renderData);
@@ -156,7 +191,7 @@ namespace ToolKit
     }
 
     m_forwardRenderPass->m_params.renderData        = &m_renderData;
-    m_forwardRenderPass->m_params.Lights            = m_params.Lights;
+    m_forwardRenderPass->m_params.Lights            = lights;
     m_forwardRenderPass->m_params.Cam               = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.SsaoTexture       = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;

@@ -46,11 +46,6 @@ namespace ToolKit
     AddRenderTask({[](Renderer* renderer) -> void { renderer->GenerateBRDFLutTexture(); }});
   }
 
-  void RenderSystem::AddRenderTask(RenderPath* technique)
-  {
-    AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
-  }
-
   void RenderSystem::AddRenderTask(RenderTask task)
   {
     switch (task.Priority)

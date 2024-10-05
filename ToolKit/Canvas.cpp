@@ -14,8 +14,6 @@
 #include "ToolKit.h"
 #include "Viewport.h"
 
-
-
 namespace ToolKit
 {
   // Canvas
@@ -105,17 +103,15 @@ namespace ToolKit
 
           // Scale operation
           {
-            const Vec4 surfaceCurrentSize(surface->GetSizeVal(), 0.f, 1.f);
-            const BoundingBox surfaceBB       = surface->GetBoundingBox(true);
+            Vec4 surfaceCurrentSize(surface->GetSizeVal(), 0.f, 1.f);
+            const BoundingBox& surfaceBB = surface->GetBoundingBox(true);
 
-            const float surfaceAbsoluteWidth  = surfaceBB.GetWidth();
-            const float surfaceAbsoluteHeight = surfaceBB.GetHeight();
-
-            const float innerWidth            = canvasPoints[1].x - canvasPoints[0].x;
-            const float innerHeight           = canvasPoints[0].y - canvasPoints[2].y;
-
-            const float offsetWidthRatio      = ((innerWidth - (offsets[2] + offsets[3])) / surfaceAbsoluteWidth);
-            const float offsetHeightRatio     = ((innerHeight - (offsets[0] + offsets[1])) / surfaceAbsoluteHeight);
+            float surfaceAbsoluteWidth   = surfaceBB.GetWidth();
+            float surfaceAbsoluteHeight  = surfaceBB.GetHeight();
+            float innerWidth             = canvasPoints[1].x - canvasPoints[0].x;
+            float innerHeight            = canvasPoints[0].y - canvasPoints[2].y;
+            float offsetWidthRatio       = ((innerWidth - (offsets[2] + offsets[3])) / surfaceAbsoluteWidth);
+            float offsetHeightRatio      = ((innerHeight - (offsets[0] + offsets[1])) / surfaceAbsoluteHeight);
 
             Vec3 surfaceScale(1.f);
             surfaceScale.x = std::max(offsetWidthRatio, 0.0001f);
@@ -130,10 +126,10 @@ namespace ToolKit
           {
             surface->CalculateAnchorOffsets(canvasPoints, surfacePoints);
 
-            const float innerWidth         = canvasPoints[1].x - canvasPoints[0].x;
-            const float innerHeight        = canvasPoints[0].y - canvasPoints[2].y;
+            float innerWidth         = canvasPoints[1].x - canvasPoints[0].x;
+            float innerHeight        = canvasPoints[0].y - canvasPoints[2].y;
 
-            const Vec3 surfaceCurrentScale = childNode->GetScale();
+            Vec3 surfaceCurrentScale = childNode->GetScale();
             if (glm::epsilonNotEqual<float>(innerWidth, 0.0f, 0.00000001f) && surfaceCurrentScale.x < 0.0f)
             {
               std::swap(surfacePoints[0], surfacePoints[1]);
@@ -146,25 +142,25 @@ namespace ToolKit
               std::swap(surfacePoints[1], surfacePoints[3]);
             }
 
-            const Vec3 widthVector(1.f, 0.f, 0.f);
-            const Vec3 heightVector(0.f, 1.f, 0.f);
+            Vec3 widthVector(1.f, 0.f, 0.f);
+            Vec3 heightVector(0.f, 1.f, 0.f);
 
-            Vec3 translate                = (canvasPoints[0] + widthVector * offsets[2] - heightVector * offsets[0]);
+            Vec3 translate          = (canvasPoints[0] + widthVector * offsets[2] - heightVector * offsets[0]);
 
-            translate                    -= surfacePoints[0];
+            translate              -= surfacePoints[0];
 
-            const Vec3 surfaceCurrentPos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            Vec3 surfaceCurrentPos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
 
-            translate                    += surfaceCurrentPos;
-            translate.z                   = surfaceCurrentPos.z;
+            translate              += surfaceCurrentPos;
+            translate.z             = surfaceCurrentPos.z;
 
             childNode->SetTranslation(translate, TransformationSpace::TS_WORLD);
           }
 
           if (surface->IsA<Canvas>())
           {
-            Canvas* canvasPanel  = static_cast<Canvas*>(surface);
-            const BoundingBox bb = canvasPanel->GetBoundingBox(true);
+            Canvas* canvasPanel   = static_cast<Canvas*>(surface);
+            const BoundingBox& bb = canvasPanel->GetBoundingBox(true);
             canvasPanel->ApplyRecursiveResizePolicy(bb.GetWidth(), bb.GetHeight());
           }
         }

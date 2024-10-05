@@ -276,17 +276,25 @@ namespace ToolKit
     return dist < (sphereRadius + sphereRadius2);
   }
 
-  bool BoxInsideBox(const BoundingBox& inside, const BoundingBox& outside)
+  IntersectResult BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
   {
-    return inside.min.x >= outside.min.x && inside.min.y >= outside.min.y && inside.min.z >= outside.min.z &&
-           inside.max.x <= outside.max.x && inside.max.y <= outside.max.y && inside.max.z <= outside.max.z;
-  }
+    // Check if box1 is completely outside box2.
+    if (box1.max.x < box2.min.x || box1.min.x > box2.max.x || box1.max.y < box2.min.y || box1.min.y > box2.max.y ||
+        box1.max.z < box2.min.z || box1.min.z > box2.max.z)
+    {
+      return IntersectResult::Outside;
+    }
 
-  bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
-  {
-    return (box1.min.x <= box2.max.x && box1.max.x >= box2.min.x) &&
-           (box1.min.y <= box2.max.y && box1.max.y >= box2.min.y) &&
-           (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
+    // Check if box1 fully contains box2.
+    if (box1.min.x <= box2.min.x && box1.max.x >= box2.max.x && box1.min.y <= box2.min.y && box1.max.y >= box2.max.y &&
+        box1.min.z <= box2.min.z && box1.max.z >= box2.max.z)
+    {
+      return IntersectResult::Inside;
+    }
+
+    // If we've reached here, the boxes must be intersecting.
+    // (including the case where box1 is fully inside box2)
+    return IntersectResult::Intersect;
   }
 
   bool BoxPointIntersection(const BoundingBox& box, const Vec3& point)
@@ -730,47 +738,6 @@ namespace ToolKit
     return res == IntersectResult::Outside;
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera)
-  {
-    // Frustum cull.
-    Mat4 projectView = camera->GetProjectViewMatrix();
-    Frustum frustum  = ExtractFrustum(projectView, false);
-
-    auto delFn       = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetBoundingBox(true)); };
-    erase_if(entities, delFn);
-  }
-
-  void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera)
-  {
-    // Frustum cull
-    Mat4 projectView = camera->GetProjectViewMatrix();
-    Frustum frustum  = ExtractFrustum(projectView, false);
-
-    for (int i = 0; i < (int) jobs.size(); i++)
-    {
-      RenderJob& job    = jobs[i];
-      job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
-    }
-  }
-
-  void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices)
-  {
-    // Frustum cull
-    Mat4 projectView = camera->GetProjectViewMatrix();
-    Frustum frustum  = ExtractFrustum(projectView, false);
-
-    resultIndices.clear();
-    resultIndices.reserve(jobs.size());
-
-    for (int i = 0; i < (int) jobs.size(); i++)
-    {
-      if (!FrustumTest(frustum, jobs[i].BoundingBox))
-      {
-        resultIndices.push_back(i);
-      }
-    }
-  }
-
   void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs)
   {
     // Frustum cull
@@ -787,15 +754,6 @@ namespace ToolKit
         unCulledJobs.push_back(jobs[i]);
       }
     }
-  }
-
-  EntityRawPtrArray FrustumCull(const AABBTree& aabbTree, const CameraPtr camera) 
-  {
-    Mat4 projectView                = camera->GetProjectViewMatrix();
-    Frustum frustum                 = ExtractFrustum(projectView, false);
-
-    EntityRawPtrArray insideFrustum = aabbTree.FrustumQuery(frustum);
-    return EntityRawPtrArray(); 
   }
 
   void TransformAABB(BoundingBox& box, const Mat4& transform)

@@ -6,10 +6,9 @@
  */
 
 #include "Threads.h"
-#include "ToolKit.h"
+
 #include "TKPlatform.h"
-
-
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -45,6 +44,11 @@ namespace ToolKit
       return *m_frameWorkers;
       break;
     }
+  }
+
+  int WorkerManager::GetThreadCount(Executor executor)
+  {
+    return Main::GetInstance()->m_threaded ? GetPool(executor).get_num_threads() : 0;
   }
 
   void WorkerManager::Flush()

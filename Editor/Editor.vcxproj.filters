@@ -108,9 +108,6 @@
     <ClCompile Include="GizmoPass.cpp">
       <Filter>Render\Pass</Filter>
     </ClCompile>
-    <ClCompile Include="SingleMaterialPass.cpp">
-      <Filter>Render\Pass</Filter>
-    </ClCompile>
     <ClCompile Include="OverlayUI.cpp">
       <Filter>UI\Overlay</Filter>
     </ClCompile>
@@ -267,9 +264,6 @@
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="GizmoPass.h">
-      <Filter>Render\Pass</Filter>
-    </ClInclude>
-    <ClInclude Include="SingleMaterialPass.h">
       <Filter>Render\Pass</Filter>
     </ClInclude>
     <ClInclude Include="OverlayUI.h">

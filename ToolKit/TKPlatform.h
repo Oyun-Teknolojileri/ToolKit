@@ -48,4 +48,18 @@ namespace ToolKit
   #define TK_PLUGIN_API
 #endif
 
+#ifdef _MSC_VER
+  #if defined(__aarch64__) || defined(__arm__)
+    #define HyperThreadPause() __yield()
+  #else
+    #define HyperThreadPause() _mm_pause()
+  #endif
+#else
+  #if defined(__aarch64__) || defined(__arm__)
+    #define HyperThreadPause() asm volatile("yield");
+  #else
+    #define HyperThreadPause() __builtin_ia32_pause()
+  #endif
+#endif
+
 } // namespace ToolKit

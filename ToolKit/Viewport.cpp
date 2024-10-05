@@ -28,7 +28,7 @@ namespace ToolKit
       {
         if (EntityPtr camNtt = currScene->GetEntity(m_attachedCamera))
         {
-          if (CameraPtr cam = std::static_pointer_cast<Camera>(camNtt))
+          if (CameraPtr cam = Cast<Camera>(camNtt))
           {
             assert(cam->IsA<Camera>());
             return cam;

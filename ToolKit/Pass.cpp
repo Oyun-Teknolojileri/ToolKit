@@ -15,6 +15,7 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include "TKProfiler.h"
 #include "Threads.h"
 #include "ToolKit.h"
@@ -58,29 +59,11 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,
-                                            bool ignoreVisibility)
+                                            bool ignoreVisibility,
+                                            int dirLightEndIndex,
+                                            const LightRawPtrArray& lights,
+                                            const EnvironmentComponentPtrArray& environments)
   {
-    LightPtrArray nullLights;
-    EnvironmentComponentPtrArray nullEnvironments;
-
-    CreateRenderJobs(jobArray, entities, nullLights, nullEnvironments, ignoreVisibility);
-  }
-
-  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
-  {
-    EntityRawPtrArray singleNtt = {entity.get()};
-    CreateRenderJobs(jobArray, singleNtt, true);
-  }
-
-  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
-                                            EntityRawPtrArray& entities,
-                                            LightPtrArray& lights,
-                                            const EnvironmentComponentPtrArray& environments,
-                                            bool ignoreVisibility)
-  {
-    // Sort lights for disc.
-    int directionalEndIndx = PreSortLights(lights);
-
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
     // to find the index of the submesh for a given entity index.
     // Ex: Entity index is 4 and it has 3 submesh,
@@ -187,55 +170,17 @@ namespace ToolKit
                         job.animData = skComp->GetAnimData(); // copy
                       }
 
-                      AssignLight(job, lights, directionalEndIndx);
+                      // push directional lights.
+                      AssignLight(job, lights, dirLightEndIndex);
                       AssignEnvironment(job, environments);
                     }
                   });
   }
 
-  void RenderJobProcessor::CullLights(LightPtrArray& lights, const CameraPtr& camera, float maxDistance)
+  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
   {
-    Mat4 project          = camera->GetProjectionMatrix();
-    Mat4 view             = camera->GetViewMatrix();
-    Mat4 projectView      = project * view;
-    Vec3 camPos           = camera->m_node->GetTranslation();
-    Frustum frustum       = ExtractFrustum(projectView, false);
-    Frustum normalFrustum = frustum;
-    NormalizeFrustum(normalFrustum);
-
-    erase_if(lights,
-             [&](const LightPtr& light) -> bool
-             {
-               bool culled = false;
-               switch (light->GetLightType())
-               {
-               case Light::Directional:
-                 return false;
-               case Light::Spot:
-               {
-                 SpotLight* spot = static_cast<SpotLight*>(light.get());
-                 culled = FrustumBoxIntersection(frustum, spot->m_boundingBoxCache) == IntersectResult::Outside;
-               }
-               break;
-               case Light::Point:
-               {
-                 PointLight* point = static_cast<PointLight*>(light.get());
-                 culled            = !FrustumSphereIntersection(normalFrustum, point->m_boundingSphereCache);
-               }
-               break;
-               default:
-                 assert(false && "Unknown light type.");
-                 return true;
-               }
-
-               if (culled)
-               {
-                 return true;
-               }
-
-               float dist = glm::distance(light->m_node->GetTranslation(), camPos);
-               return dist > maxDistance;
-             });
+    EntityRawPtrArray singleNtt = {entity.get()};
+    CreateRenderJobs(jobArray, singleNtt, true);
   }
 
   void RenderJobProcessor::SeperateRenderData(RenderData& renderData, bool forwardOnly)
@@ -284,12 +229,12 @@ namespace ToolKit
     renderData.forwardTranslucentStartIndex     = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
-  void RenderJobProcessor::AssignLight(RenderJob& job, LightPtrArray& lights, int startIndex)
+  void RenderJobProcessor::AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex)
   {
     // Add all directional lights.
     for (int i = 0; i < startIndex; i++)
     {
-      job.lights.push_back(lights[i].get());
+      job.lights.push_back(lights[i]);
       if (i >= RHIConstants::MaxLightsPerObject)
       {
         break;
@@ -303,9 +248,9 @@ namespace ToolKit
       return;
     }
 
-    for (int i = startIndex; i < (int) lights.size(); i++)
+    for (size_t i = startIndex; i < lights.size(); i++)
     {
-      Light* light = lights[i].get();
+      Light* light = lights[i];
       if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
       {
         return;
@@ -321,8 +266,8 @@ namespace ToolKit
       }
       else
       {
-        // Directional lights are not assigned to bvh nodes.
         // The only light type that remains is point light.
+        // lights must be presorted, check it.
         assert(light->IsA<PointLight>());
         PointLight* point = static_cast<PointLight*>(light);
         if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
@@ -333,47 +278,14 @@ namespace ToolKit
     }
   }
 
-  void RenderJobProcessor::AssignLight(RenderJobItr begin, RenderJobItr end, LightPtrArray& lights)
+  int RenderJobProcessor::PreSortLights(LightRawPtrArray& lights)
   {
-    int directionalEndIndx = PreSortLights(lights);
+    auto dirEndItr =
+        std::partition(lights.begin(),
+                       lights.end(),
+                       [](Light* light) -> bool { return light->GetLightType() == Light::LightType::Directional; });
 
-    for (RenderJobItr job = begin; job != end; job++)
-    {
-      AssignLight(*job, lights, directionalEndIndx);
-    }
-  }
-
-  struct LightSortStruct
-  {
-    LightPtr light      = nullptr;
-    uint intersectCount = 0;
-  };
-
-  bool CompareLightIntersects(const LightSortStruct& i1, const LightSortStruct& i2)
-  {
-    return (i1.intersectCount > i2.intersectCount);
-  }
-
-  int RenderJobProcessor::PreSortLights(LightPtrArray& lights)
-  {
-    // Get all directional lights to beginning first
-    uint directionalLightEndIndex = 0;
-    for (size_t i = 0; i < lights.size(); i++)
-    {
-      if (lights[i]->GetLightType() == Light::Directional)
-      {
-        if (i == directionalLightEndIndex)
-        {
-          directionalLightEndIndex++;
-          continue;
-        }
-
-        std::iter_swap(lights.begin() + i, lights.begin() + directionalLightEndIndex);
-        directionalLightEndIndex++;
-      }
-    }
-
-    return directionalLightEndIndex;
+    return (int) std::distance(lights.begin(), dirEndItr);
   }
 
   void RenderJobProcessor::SortByDistanceToCamera(RenderJobItr begin, RenderJobItr end, const CameraPtr& cam)
@@ -403,25 +315,6 @@ namespace ToolKit
     }
 
     std::sort(begin, end, sortFn);
-  }
-
-  void RenderJobProcessor::CullRenderJobs(RenderJobArray& jobArray, const CameraPtr& camera)
-  {
-    FrustumCull(jobArray, camera);
-  }
-
-  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray,
-                                          const CameraPtr& camera,
-                                          UIntArray& resultIndices)
-  {
-    FrustumCull(jobArray, camera, resultIndices);
-  }
-
-  void RenderJobProcessor::CullRenderJobs(const RenderJobArray& jobArray,
-                                          const CameraPtr& camera,
-                                          RenderJobArray& unCulledJobs)
-  {
-    FrustumCull(jobArray, camera, unCulledJobs);
   }
 
   void RenderJobProcessor::SortByMaterial(RenderData& renderData)
@@ -460,21 +353,6 @@ namespace ToolKit
     sortRangeFn(begin, end);
   }
 
-  void RenderJobProcessor::AssignEnvironment(RenderJobItr begin,
-                                             RenderJobItr end,
-                                             const EnvironmentComponentPtrArray& environments)
-  {
-    if (environments.empty())
-    {
-      return;
-    }
-
-    for (RenderJobItr job = begin; job != end; job++)
-    {
-      AssignEnvironment(*job, environments);
-    }
-  }
-
   void RenderJobProcessor::AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments)
   {
     BoundingBox bestBox;
@@ -487,8 +365,8 @@ namespace ToolKit
       }
 
       // Pick the smallest volume intersecting with job.
-      BoundingBox vbb = std::move(volume->GetBoundingBox());
-      if (BoxBoxIntersection(vbb, job.BoundingBox))
+      const BoundingBox& vbb = volume->GetBoundingBox();
+      if (BoxBoxIntersection(vbb, job.BoundingBox) != IntersectResult::Outside)
       {
         if (bestBox.Volume() > vbb.Volume() || job.EnvironmentVolume == nullptr)
         {

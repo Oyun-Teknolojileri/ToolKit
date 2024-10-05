@@ -95,7 +95,7 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetBoundingBox(bool inWorld)
+  const BoundingBox& Entity::GetBoundingBox(bool inWorld)
   {
     if (!m_transformCacheInvalidated)
     {
@@ -121,12 +121,18 @@ namespace ToolKit
 
   void Entity::InvalidateSpatialCaches()
   {
+    // Get access in components wrongly clears the spatial invalidation.
+    // The better fix is, invalidate all at frame 0 and update all at the beginning on frame 1.
+    // TODO: Post Transform Update.
+
     if (DirectionComponent* dirComp = GetComponentFast<DirectionComponent>())
     {
-      // Get access wrongly clears the spatial invalidation.
-      // The better fix is, invalidate all at frame 0 and update all at the beginning on frame 1.
-      // TODO: Post Transform Update.
       dirComp->m_spatialCachesInvalidated = true;
+    }
+
+    if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
+    {
+      envComp->m_spatialCachesInvalidated = true;
     }
 
     if (m_transformCacheInvalidated)
@@ -142,11 +148,6 @@ namespace ToolKit
       {
         scene->m_aabbTree.UpdateNode(m_aabbTreeNodeProxy);
       }
-    }
-
-    if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
-    {
-      envComp->m_spatialCachesInvalidated = true;
     }
   }
 

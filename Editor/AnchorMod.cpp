@@ -409,10 +409,10 @@ namespace ToolKit
       {
         if (parent->IsA<Canvas>())
         {
-          Canvas* canvasPanel  = parent->As<Canvas>();
-          const BoundingBox bb = canvasPanel->GetBoundingBox(true);
-          w                    = bb.GetWidth();
-          h                    = bb.GetHeight();
+          Canvas* canvasPanel   = parent->As<Canvas>();
+          const BoundingBox& bb = canvasPanel->GetBoundingBox(true);
+          w                     = bb.GetWidth();
+          h                     = bb.GetHeight();
         }
       }
 

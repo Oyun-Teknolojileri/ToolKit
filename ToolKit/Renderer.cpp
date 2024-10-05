@@ -627,7 +627,7 @@ namespace ToolKit
 
     FramebufferPtr lastFb = m_framebuffer;
 
-    RenderTargetPtr rt    = std::static_pointer_cast<RenderTarget>(dst);
+    RenderTargetPtr rt    = Cast<RenderTarget>(dst);
     m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
     SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 

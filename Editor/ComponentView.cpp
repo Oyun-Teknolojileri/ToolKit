@@ -423,7 +423,7 @@ namespace ToolKit
 
         // Remove billboards if necessary.
         ScenePtr scene          = GetSceneManager()->GetCurrentScene();
-        EditorScenePtr edtScene = std::static_pointer_cast<EditorScene>(scene);
+        EditorScenePtr edtScene = Cast<EditorScene>(scene);
         edtScene->ValidateBillboard(ntt);
 
         ImGui::PushItemWidth(150);
@@ -455,8 +455,18 @@ namespace ToolKit
             }
             break;
             case 3:
-              ntt->AddComponent<EnvironmentComponent>();
-              break;
+            {
+              // A default hdri must be given for component creation via editor.
+              // Create a default hdri.
+              TextureManager* texMan         = GetTextureManager();
+              HdriPtr hdri                   = texMan->Create<Hdri>(texMan->GetDefaultResource(Hdri::StaticClass()));
+
+              EnvironmentComponentPtr envCom = MakeNewPtr<EnvironmentComponent>();
+              envCom->SetHdriVal(hdri);
+
+              ntt->AddComponent(envCom);
+            }
+            break;
             case 4:
               ntt->AddComponent<AnimControllerComponent>();
               break;

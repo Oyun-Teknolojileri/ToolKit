@@ -17,8 +17,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -48,7 +46,7 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    AddVRAMUsageInBytes(ptr->m_width * ptr->m_height * 16);
+    AddVRAMUsageInBytes(ptr->m_width * ptr->m_height * (uint64) 16);
 
     ptr->m_initiated = true;
     ptr->m_loaded    = true;

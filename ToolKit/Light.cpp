@@ -386,14 +386,18 @@ namespace ToolKit
     ParamPCFRadius().m_hint.increment = 0.02f;
     Radius_Define(3.0f, "Light", 90, true, true, {false, true, 0.1f, 100000.0f, 0.3f});
     ParamRadius().m_onValueChangedFn.clear();
-    ParamRadius().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                               { m_invalidatedForLightCache = true; });
+    ParamRadius().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          InvalidateSpatialCaches();
+          m_invalidatedForLightCache = true;
+        });
   }
 
   void PointLight::UpdateLocalBoundingBox()
   {
     float radius            = GetRadiusVal();
-    m_localBoundingBoxCache = BoundingBox(Vec3(radius), Vec3(radius));
+    m_localBoundingBoxCache = BoundingBox(Vec3(-radius), Vec3(radius));
   }
 
   // SpotLight
@@ -469,12 +473,17 @@ namespace ToolKit
         {
           const float radius = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
+          InvalidateSpatialCaches();
           m_invalidatedForLightCache = true;
         });
 
     ParamInnerAngle().m_onValueChangedFn.clear();
-    ParamInnerAngle().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                   { m_invalidatedForLightCache = true; });
+    ParamInnerAngle().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          InvalidateSpatialCaches();
+          m_invalidatedForLightCache = true;
+        });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
     ParamOuterAngle().m_onValueChangedFn.push_back(
@@ -482,7 +491,9 @@ namespace ToolKit
         {
           const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
+          InvalidateSpatialCaches();
           m_invalidatedForLightCache = true;
         });
   }
+
 } // namespace ToolKit
