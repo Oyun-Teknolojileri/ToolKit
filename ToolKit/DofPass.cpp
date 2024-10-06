@@ -8,13 +8,12 @@
 #include "DofPass.h"
 
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  DoFPass::DoFPass()
+  DoFPass::DoFPass() : Pass("DoFPass")
   {
     m_quadPass                       = MakeNewPtr<FullQuadPass>();
     m_quadPass->m_params.frameBuffer = MakeNewPtr<Framebuffer>();

@@ -22,7 +22,6 @@
 #include "Scene.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "Threads.h"
 #include "UIManager.h"
@@ -236,9 +235,9 @@ namespace ToolKit
 
   void Main::FrameBegin()
   {
-    ResetDrawCallCounter();
-    ResetHWRenderPassCounter();
-    ResetLightCacheInvalidationPerFrame();
+    Stats::ResetDrawCallCounter();
+    Stats::ResetHWRenderPassCounter();
+    Stats::ResetLightCacheInvalidationPerFrame();
   }
 
   void Main::FrameUpdate()
@@ -273,6 +272,16 @@ namespace ToolKit
 
     m_timing.LastTime = m_timing.CurrentTime;
     GetRenderSystem()->EndFrame();
+
+    // Display stat times.
+    for (auto& timeStat : TKStatTimerMap)
+    {
+      TKStats::TimeArgs& args = timeStat.second;
+      if (args.enabled)
+      {
+        TK_LOG("%s avg t: %f -- t: %f", timeStat.first.data(), args.accumulatedTime / args.hitCount, args.elapsedTime);
+      }
+    }
   }
 
   void Main::Frame(float deltaTime)

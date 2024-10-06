@@ -16,7 +16,6 @@
 #include "Pass.h"
 #include "Renderer.h"
 #include "Scene.h"
-#include "TKProfiler.h"
 #include "Threads.h"
 #include "ToolKit.h"
 #include "Viewport.h"
@@ -24,13 +23,13 @@
 namespace ToolKit
 {
 
-  Pass::Pass() {}
+  Pass::Pass(StringView name) : m_name(name) {}
 
   Pass::~Pass() {}
 
-  void Pass::PreRender() {}
+  void Pass::PreRender() { Stats::BeginGpuScope(m_name); }
 
-  void Pass::PostRender() {}
+  void Pass::PostRender() { Stats::EndGpuScope(); }
 
   void Pass::RenderSubPass(const PassPtr& pass)
   {
@@ -52,10 +51,6 @@ namespace ToolKit
       m_program->UpdateCustomUniform(shaderUniform);
     }
   }
-
-  RenderPass::RenderPass() {}
-
-  RenderPass::~RenderPass() {}
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,

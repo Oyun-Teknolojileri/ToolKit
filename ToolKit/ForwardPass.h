@@ -26,7 +26,7 @@ namespace ToolKit
   /**
    * Renders given entities with given lights using forward rendering
    */
-  class TK_API ForwardRenderPass : public RenderPass
+  class TK_API ForwardRenderPass : public Pass
   {
    public:
     ForwardRenderPass();

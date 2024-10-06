@@ -15,7 +15,6 @@
 #include <Drawable.h>
 #include <Mesh.h>
 #include <PluginManager.h>
-#include <TKProfiler.h>
 
 #include <DebugNew.h>
 
@@ -625,35 +624,34 @@ namespace ToolKit
         if (arg.first == "all")
         {
           bool val = BoolCheck(tagArgs.front());
-          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
+          for (auto itr = TKStatTimerMap.begin(); itr != TKStatTimerMap.end(); itr++)
           {
-            itr->second = val;
+            itr->second.enabled = val;
           }
 
           return;
         }
         else if (arg.first == "list")
         {
-          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
+          for (auto itr = TKStatTimerMap.begin(); itr != TKStatTimerMap.end(); itr++)
           {
-            TK_LOG("%s", itr->first.c_str());
+            TK_LOG("%s", itr->first.data());
           }
         }
         else if (arg.first == "reset")
         {
-          for (auto itr = TKProfileTimerMap.begin(); itr != TKProfileTimerMap.end(); itr++)
+          for (auto itr = TKStatTimerMap.begin(); itr != TKStatTimerMap.end(); itr++)
           {
-            if (itr->second) // Reset all shown timers.
-            {
-              itr->second = 2; // This indicates a reset for the average time accumulator.
-            }
+            bool isEnabled      = itr->second.enabled;
+            itr->second         = {};
+            itr->second.enabled = isEnabled;
           }
         }
         else
         {
-          if (TKProfileTimerMap.find(arg.first) != TKProfileTimerMap.end())
+          if (TKStatTimerMap.find(arg.first) != TKStatTimerMap.end())
           {
-            TKProfileTimerMap[arg.first] = BoolCheck(arg);
+            TKStatTimerMap[arg.first].enabled = BoolCheck(arg);
           }
         }
       }

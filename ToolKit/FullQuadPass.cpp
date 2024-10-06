@@ -11,13 +11,12 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  FullQuadPass::FullQuadPass()
+  FullQuadPass::FullQuadPass() : Pass("FullQuadPass")
   {
     m_camera                   = MakeNewPtr<Camera>();
     m_quad                     = MakeNewPtr<Quad>();

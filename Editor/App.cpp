@@ -19,7 +19,6 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
-#include <TKProfiler.h>
 #include <TKStats.h>
 #include <UIManager.h>
 
@@ -215,8 +214,10 @@ namespace ToolKit
 
       GetRenderSystem()->AddRenderTask({[](Renderer* renderer) -> void
                                         {
+                                          Stats::BeginGpuScope("EditorUI");
                                           renderer->SetFramebuffer(nullptr, GraphicBitFields::None);
                                           UI::EndUI(); // Render UI.
+                                          Stats::EndGpuScope();
                                         }});
 
       m_totalFrameCount = GetRenderSystem()->GetFrameCount();

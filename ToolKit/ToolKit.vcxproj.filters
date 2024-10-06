@@ -229,6 +229,9 @@
     <ClCompile Include="AABBTree.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="TKStats.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -424,9 +427,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="ToolKit.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="TKProfiler.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="TKPlatform.h">

@@ -34,10 +34,10 @@ namespace ToolKit
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         float cpuTime, gpuTime;
-        GetRenderTime(cpuTime, gpuTime);
+        Stats::GetRenderTime(cpuTime, gpuTime);
 
         float cpuTimeAvg, gpuTimeAvg;
-        GetRenderTimeAvg(cpuTimeAvg, gpuTimeAvg);
+        Stats::GetRenderTimeAvg(cpuTimeAvg, gpuTimeAvg);
 
         bool* gpuTimer             = &GetEngineSettings().Graphics.enableGpuTimer;
         EditorViewportPtr viewport = g_app->GetViewport(g_3dViewport);
@@ -56,8 +56,8 @@ namespace ToolKit
         ImGui::Spacing();
         ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());
         ImGui::Text("Total Hardware Render Pass: %llu", g_app->GetLastFrameHWRenderPassCount());
-        ImGui::Text("Approximate Total VRAM Usage: %llu MB", GetTotalVRAMUsageInMB());
-        ImGui::Text("Light Cache Invalidation Per Frame: %u", GetLightCacheInvalidationPerFrame());
+        ImGui::Text("Approximate Total VRAM Usage: %llu MB", Stats::GetTotalVRAMUsageInMB());
+        ImGui::Text("Light Cache Invalidation Per Frame: %u", Stats::GetLightCacheInvalidationPerFrame());
       }
       ImGui::End();
     }

@@ -15,6 +15,12 @@ namespace ToolKit
 
   TKGL_RenderbufferStorageMultisample tk_glRenderbufferStorageMultisampleEXT   = nullptr;
 
+  TKGL_InsertEventMarker tk_glInsertEventMarkerEXT                             = nullptr;
+
+  TKGL_PopGroupMarker tk_glPopGroupMarkerEXT                                   = nullptr;
+
+  TKGL_PushGroupMarker tk_glPushGroupMarkerEXT                                 = nullptr;
+
   int TK_GL_EXT_texture_filter_anisotropic                                     = 0;
 
   int TK_GL_OES_texture_float_linear                                           = 0;
@@ -38,6 +44,14 @@ namespace ToolKit
 
   #ifdef GL_OES_texture_float_linear
     TK_GL_OES_texture_float_linear = GLAD_GL_OES_texture_float_linear;
+  #endif
+
+  #ifdef GL_EXT_debug_marker
+
+    tk_glInsertEventMarkerEXT = glad_glInsertEventMarkerEXT;
+    tk_glPopGroupMarkerEXT    = glad_glPopGroupMarkerEXT;
+    tk_glPushGroupMarkerEXT   = glad_glPushGroupMarkerEXT;
+
   #endif
 
 #endif

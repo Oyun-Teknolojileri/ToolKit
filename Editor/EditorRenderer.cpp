@@ -22,7 +22,6 @@
 #include <MaterialComponent.h>
 #include <MathUtil.h>
 #include <Prefab.h>
-#include <TKProfiler.h>
 #include <UIManager.h>
 #include <Util.h>
 

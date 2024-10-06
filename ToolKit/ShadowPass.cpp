@@ -18,14 +18,13 @@
 #include "RHIConstants.h"
 #include "RenderSystem.h"
 #include "Scene.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  ShadowPass::ShadowPass()
+  ShadowPass::ShadowPass() : Pass("ShadowPass")
   {
     // Order must match with TextureUtil.shader::UVWToUVLayer
     Mat4 views[6] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
@@ -101,7 +100,7 @@ namespace ToolKit
     // The first set attachment did not call hw render pass while rendering shadow map
     if (m_lights.size() > 0)
     {
-      RemoveHWRenderPass();
+      Stats::RemoveHWRenderPass();
     }
 
     renderer->m_clearColor = lastClearColor;
@@ -166,7 +165,7 @@ namespace ToolKit
         int layer = dLight->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
         renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
-        AddHWRenderPass();
+        Stats::AddHWRenderPass();
 
         Vec2 coord       = dLight->m_shadowAtlasCoords[i];
         float resolution = light->GetShadowResVal().GetValue<float>();
@@ -185,13 +184,13 @@ namespace ToolKit
         int layer = light->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
 
-        AddHWRenderPass();
+        Stats::AddHWRenderPass();
 
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
         renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
-        AddHWRenderPass();
+        Stats::AddHWRenderPass();
 
         Vec2 coord       = light->m_shadowAtlasCoords[i];
         float resolution = light->GetShadowResVal().GetValue<float>();
@@ -211,10 +210,10 @@ namespace ToolKit
                                               m_shadowAtlas,
                                               0,
                                               light->m_shadowAtlasLayers[0]);
-      AddHWRenderPass();
+      Stats::AddHWRenderPass();
 
       renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
-      AddHWRenderPass();
+      Stats::AddHWRenderPass();
 
       Vec2 coord       = light->m_shadowAtlasCoords[0];
       float resolution = light->GetShadowResVal().GetValue<float>();

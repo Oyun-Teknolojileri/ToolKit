@@ -10,13 +10,12 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  OutlinePass::OutlinePass()
+  OutlinePass::OutlinePass() : Pass("OutlinePass")
   {
     m_stencilPass  = MakeNewPtr<StencilRenderPass>();
     m_stencilAsRt  = MakeNewPtr<RenderTarget>();

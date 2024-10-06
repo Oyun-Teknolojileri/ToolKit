@@ -20,7 +20,6 @@
 #include "Renderer.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit

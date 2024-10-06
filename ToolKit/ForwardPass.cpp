@@ -12,16 +12,17 @@
 #include "Mesh.h"
 #include "Pass.h"
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  ForwardRenderPass::ForwardRenderPass() {}
+  ForwardRenderPass::ForwardRenderPass() : Pass("ForwardRenderPass") {}
 
-  ForwardRenderPass::ForwardRenderPass(const ForwardRenderPassParams& params) : m_params(params)
+  ForwardRenderPass::ForwardRenderPass(const ForwardRenderPassParams& params) : ForwardRenderPass()
   {
+    m_params = params;
+
     // Create a default frame buffer.
     if (m_params.FrameBuffer == nullptr)
     {

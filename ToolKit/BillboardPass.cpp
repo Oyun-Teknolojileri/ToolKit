@@ -9,13 +9,12 @@
 
 #include "Entity.h"
 #include "Material.h"
-#include "TKProfiler.h"
 
 namespace ToolKit
 {
-  BillboardPass::BillboardPass() {}
+  BillboardPass::BillboardPass() : Pass("BillboardPass") {}
 
-  BillboardPass::BillboardPass(const BillboardPassParams& params) {}
+  BillboardPass::BillboardPass(const BillboardPassParams& params) : BillboardPass() {}
 
   BillboardPass::~BillboardPass() {}
 

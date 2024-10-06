@@ -15,11 +15,11 @@
 namespace ToolKit
 {
 
-  class TK_API ForwardPreProcess : public RenderPass
+  class TK_API ForwardPreProcessPass : public Pass
   {
    public:
-    ForwardPreProcess();
-    ~ForwardPreProcess();
+    ForwardPreProcessPass();
+    ~ForwardPreProcessPass();
 
     void InitBuffers(int width, int height, int sampleCount);
     void Render() override;
@@ -41,6 +41,6 @@ namespace ToolKit
     bool m_buffersInitialized = false;
   };
 
-  typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;
+  typedef std::shared_ptr<ForwardPreProcessPass> ForwardPreProcessPassPtr;
 
 } // namespace ToolKit

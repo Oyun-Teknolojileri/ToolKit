@@ -20,7 +20,7 @@ namespace ToolKit
   class TK_API Pass
   {
    public:
-    Pass();
+    Pass(StringView name);
     virtual ~Pass();
 
     virtual void Render() = 0;
@@ -35,19 +35,11 @@ namespace ToolKit
     void UpdateUniform(const ShaderUniform& shaderUniform);
 
    protected:
-    FramebufferPtr m_prevFrameBuffer = nullptr;
-    GpuProgramPtr m_program          = nullptr;
+    GpuProgramPtr m_program = nullptr; //!< Program used to draw objects with in the pass.
+    StringView m_name; //!< Label that appears in the gpu profile / debug applications (RenderDoc etc...).
 
    private:
     Renderer* m_renderer = nullptr;
-  };
-
-  /** Base class for main rendering classes. */
-  class TK_API RenderPass : public Pass
-  {
-   public:
-    RenderPass();
-    virtual ~RenderPass();
   };
 
   /** This struct holds all the data required to make a drawcall. */
