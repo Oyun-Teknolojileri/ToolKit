@@ -214,8 +214,10 @@ namespace ToolKit
 
       GetRenderSystem()->AddRenderTask({[](Renderer* renderer) -> void
                                         {
+                                          Stats::BeginGpuScope("EditorUI");
                                           renderer->SetFramebuffer(nullptr, GraphicBitFields::None);
                                           UI::EndUI(); // Render UI.
+                                          Stats::EndGpuScope();
                                         }});
 
       m_totalFrameCount = GetRenderSystem()->GetFrameCount();
