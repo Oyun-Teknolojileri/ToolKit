@@ -148,7 +148,7 @@ namespace ToolKit
                                         (Framebuffer::CubemapFace) i);
       if (i > 0)
       {
-        AddHWRenderPass();
+        Stats::AddHWRenderPass();
       }
 
       renderer->SetFramebuffer(m_frameBuffer, GraphicBitFields::None);

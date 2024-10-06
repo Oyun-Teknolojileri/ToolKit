@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "Types.h"
+#include "TKPlatform.h"
 
 #ifdef TK_ANDROID
   #include <GLES3/gl32.h>
@@ -20,7 +20,31 @@ namespace ToolKit
 
   // GL Extensions used by ToolKit.
 
-  // glFramebufferTexture2DMultisampleEXT
+  // GL_EXT_debug_marker
+  //////////////////////////////////////////
+
+  typedef void(TK_STDCAL* TKGL_InsertEventMarker)(GLsizei length, const GLchar* marker);
+
+  extern TKGL_InsertEventMarker tk_glInsertEventMarkerEXT;
+
+#undef glInsertEventMarkerEXT
+#define glInsertEventMarkerEXT tk_glInsertEventMarkerEXT
+
+  typedef void(TK_STDCAL* TKGL_PopGroupMarker)(void);
+
+  extern TKGL_PopGroupMarker tk_glPopGroupMarkerEXT;
+
+#undef glPopGroupMarkerEXT
+#define glPopGroupMarkerEXT tk_glPopGroupMarkerEXT
+
+  typedef void(TK_STDCAL* TKGL_PushGroupMarker)(GLsizei length, const GLchar* marker);
+
+  extern TKGL_PushGroupMarker tk_glPushGroupMarkerEXT;
+
+#undef glPushGroupMarkerEXT
+#define glPushGroupMarkerEXT tk_glPushGroupMarkerEXT;
+
+  // GL_EXT_multisampled_render_to_texture
   //////////////////////////////////////////
 
   typedef void(TK_STDCAL* TKGL_FramebufferTexture2DMultisample)(GLenum target,

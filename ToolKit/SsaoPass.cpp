@@ -13,7 +13,6 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "ToolKit.h"
 

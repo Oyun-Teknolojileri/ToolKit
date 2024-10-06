@@ -139,12 +139,12 @@ namespace ToolKit
     {
       if (m_vboVertexId)
       {
-        RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+        Stats::RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
       }
 
       if (m_vboIndexId)
       {
-        RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
+        Stats::RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
       }
 
       GLuint buffers[2] = {m_vboIndexId, m_vboVertexId};
@@ -201,7 +201,7 @@ namespace ToolKit
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
 
-      AddVRAMUsageInBytes(size);
+      Stats::AddVRAMUsageInBytes(size);
     }
 
     if (m_indexCount > 0)
@@ -217,7 +217,7 @@ namespace ToolKit
       glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, GL_STATIC_DRAW);
       glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size);
 
-      AddVRAMUsageInBytes(size);
+      Stats::AddVRAMUsageInBytes(size);
     }
 
     cpy->m_material    = GetMaterialManager()->Copy<Material>(m_material);
@@ -605,7 +605,7 @@ namespace ToolKit
   {
     if (m_vboVertexId != 0)
     {
-      RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
+      Stats::RemoveVRAMUsageInBytes(GetVertexSize() * m_vertexCount);
     }
 
     glDeleteBuffers(1, &m_vboVertexId);
@@ -627,7 +627,7 @@ namespace ToolKit
     }
 
     m_vertexCount = (uint) m_clientSideVertices.size();
-    AddVRAMUsageInBytes(GetVertexSize() * (uint64) m_vertexCount);
+    Stats::AddVRAMUsageInBytes(GetVertexSize() * (uint64) m_vertexCount);
 
     if (flush)
     {
@@ -639,7 +639,7 @@ namespace ToolKit
   {
     if (m_vboIndexId != 0)
     {
-      RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
+      Stats::RemoveVRAMUsageInBytes(sizeof(uint) * m_indexCount);
     }
 
     glDeleteBuffers(1, &m_vboIndexId);
@@ -658,7 +658,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_indexCount = (uint) m_clientSideIndices.size();
 
-      AddVRAMUsageInBytes(sizeof(uint) * (uint64) m_clientSideIndices.size());
+      Stats::AddVRAMUsageInBytes(sizeof(uint) * (uint64) m_clientSideIndices.size());
     }
 
     m_indexCount = (uint) m_clientSideIndices.size();
@@ -822,7 +822,7 @@ namespace ToolKit
                    GL_STATIC_DRAW);
       m_vertexCount = (uint) m_clientSideVertices.size();
 
-      AddVRAMUsageInBytes(GetVertexSize() * (uint64) m_clientSideVertices.size());
+      Stats::AddVRAMUsageInBytes(GetVertexSize() * (uint64) m_clientSideVertices.size());
     }
 
     if (flush)

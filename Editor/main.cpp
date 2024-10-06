@@ -26,7 +26,6 @@
 #include <ImGui/backends/imgui_impl_sdl2.h>
 #include <PluginManager.h>
 #include <SDL.h>
-#include <TKProfiler.h>
 #include <Types.h>
 #include <locale.h>
 
@@ -313,8 +312,8 @@ namespace ToolKit
 
               g_sdlEventPool->ClearPool(); // Clear after consumption.
 
-              g_app->m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
-              g_app->m_lastFrameDrawCallCount     = GetDrawCallCount();
+              g_app->m_lastFrameHWRenderPassCount = Stats::GetHWRenderPassCount();
+              g_app->m_lastFrameDrawCallCount     = Stats::GetDrawCallCount();
             };
             g_proxy->RegisterPostUpdateFunction(postUpdateFn);
 

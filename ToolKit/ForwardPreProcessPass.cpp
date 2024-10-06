@@ -10,7 +10,6 @@
 #include "ForwardPreProcessPass.h"
 
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "stdafx.h"
 
 namespace ToolKit

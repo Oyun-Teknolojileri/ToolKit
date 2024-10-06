@@ -28,7 +28,6 @@
 #include "Surface.h"
 #include "TKAssert.h"
 #include "TKOpenGL.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "Texture.h"
 #include "ToolKit.h"
@@ -230,7 +229,7 @@ namespace ToolKit
       glDrawArrays((GLenum) renderState->drawType, 0, mesh->m_vertexCount);
     }
 
-    AddDrawCall();
+    Stats::AddDrawCall();
   }
 
   void Renderer::RenderWithProgramFromMaterial(const RenderJobArray& jobs)

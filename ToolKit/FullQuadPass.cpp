@@ -11,7 +11,6 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit

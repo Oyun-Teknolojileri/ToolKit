@@ -13,9 +13,41 @@
 
 namespace ToolKit
 {
+
+#define TKStatTimerMap GetTKStats()->m_profileTimerMap
+
   class TK_API TKStats
   {
    public:
+    // Timers
+    //////////////////////////////////////////
+
+    /** Timer arguments for providing statistics. */
+    struct TimeArgs
+    {
+      bool enabled          = true; //!< Whether show the timer in the console or not.
+      uint hitCount         = 1;    //!< Number of times the measurement performed.
+      float beginTime       = 0.0f; //!< Current start time.
+      float elapsedTime     = 0.0f; //!< Elapsed time between consecutive begin - end calls..
+      float accumulatedTime = 0.0f; //! Accumulated elapsed time.
+    };
+
+    // Creates a timer or register its beginning.
+    void BeginTimer(StringView name)
+    {
+      TimeArgs& args = m_profileTimerMap[name];
+      args.beginTime = GetElapsedMilliSeconds();
+    }
+
+    // Finalize a timer updates statistics.
+    void EndTimer(StringView name)
+    {
+      TimeArgs& args        = m_profileTimerMap[name];
+      args.elapsedTime      = GetElapsedMilliSeconds() - args.beginTime;
+      args.accumulatedTime += args.elapsedTime;
+      args.hitCount++;
+    }
+
     // Vram Usage
     //////////////////////////////////////////
 
@@ -71,6 +103,8 @@ namespace ToolKit
     float m_elapsedCpuRenderTimeAvg       = 0.0f;
     /** Number of times the light cache invalidated for a frame */
     uint m_lightCacheInvalidationPerFrame = 0;
+    /** Timers added to the source. */
+    std::unordered_map<StringView, TimeArgs> m_profileTimerMap;
 
    private:
     uint64 m_totalVRAMUsageInBytes = 0;
@@ -78,176 +112,197 @@ namespace ToolKit
     uint64 m_renderPassCount       = 0;
   };
 
-  TK_API inline uint64 GetLightCacheInvalidationPerFrame()
+  namespace Stats
   {
-    if (TKStats* tkStats = GetTKStats())
-    {
-      return tkStats->m_lightCacheInvalidationPerFrame;
-    }
-    else
-    {
-      return 0;
-    }
-  }
 
-  TK_API inline uint64 GetTotalVRAMUsageInBytes()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void BeginTimeScope(StringView scope)
     {
-      return tkStats->GetTotalVRAMUsageInBytes();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->BeginTimer(scope);
+      }
     }
-    else
-    {
-      return 0;
-    }
-  }
 
-  TK_API inline uint64 GetTotalVRAMUsageInKB()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void EndTimeScope(StringView scope)
     {
-      return tkStats->GetTotalVRAMUsageInKB();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->EndTimer(scope);
+      }
     }
-    else
-    {
-      return 0;
-    }
-  }
 
-  TK_API inline uint64 GetTotalVRAMUsageInMB()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline uint64 GetLightCacheInvalidationPerFrame()
     {
-      return tkStats->GetTotalVRAMUsageInMB();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        return tkStats->m_lightCacheInvalidationPerFrame;
+      }
+      else
+      {
+        return 0;
+      }
     }
-    else
-    {
-      return 0;
-    }
-  }
 
-  TK_API inline void AddVRAMUsageInBytes(uint64 bytes)
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline uint64 GetTotalVRAMUsageInBytes()
     {
-      tkStats->AddVRAMUsageInBytes(bytes);
+      if (TKStats* tkStats = GetTKStats())
+      {
+        return tkStats->GetTotalVRAMUsageInBytes();
+      }
+      else
+      {
+        return 0;
+      }
     }
-  }
 
-  TK_API inline void RemoveVRAMUsageInBytes(uint64 bytes)
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline uint64 GetTotalVRAMUsageInKB()
     {
-      tkStats->RemoveVRAMUsageInBytes(bytes);
+      if (TKStats* tkStats = GetTKStats())
+      {
+        return tkStats->GetTotalVRAMUsageInKB();
+      }
+      else
+      {
+        return 0;
+      }
     }
-  }
 
-  TK_API inline void ResetVRAMUsage()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline uint64 GetTotalVRAMUsageInMB()
     {
-      tkStats->ResetVRAMUsage();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        return tkStats->GetTotalVRAMUsageInMB();
+      }
+      else
+      {
+        return 0;
+      }
     }
-  }
 
-  TK_API inline void AddDrawCall()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void AddVRAMUsageInBytes(uint64 bytes)
     {
-      tkStats->AddDrawCall();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddVRAMUsageInBytes(bytes);
+      }
     }
-  }
 
-  TK_API inline void ResetDrawCallCounter()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void RemoveVRAMUsageInBytes(uint64 bytes)
     {
-      tkStats->ResetDrawCallCounter();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveVRAMUsageInBytes(bytes);
+      }
     }
-  }
 
-  TK_API inline uint64 GetDrawCallCount()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void ResetVRAMUsage()
     {
-      return tkStats->GetDrawCallCount();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->ResetVRAMUsage();
+      }
     }
-    else
-    {
-      return 0;
-    }
-  }
 
-  TK_API inline void AddHWRenderPass()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void AddDrawCall()
     {
-      tkStats->AddHWRenderPass();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddDrawCall();
+      }
     }
-  }
 
-  TK_API inline void RemoveHWRenderPass()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void ResetDrawCallCounter()
     {
-      tkStats->RemoveHWRenderPass();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->ResetDrawCallCounter();
+      }
     }
-  }
 
-  TK_API inline void ResetLightCacheInvalidationPerFrame()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline uint64 GetDrawCallCount()
     {
-      tkStats->m_lightCacheInvalidationPerFrame = 0;
+      if (TKStats* tkStats = GetTKStats())
+      {
+        return tkStats->GetDrawCallCount();
+      }
+      else
+      {
+        return 0;
+      }
     }
-  }
 
-  TK_API inline void ResetHWRenderPassCounter()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void AddHWRenderPass()
     {
-      tkStats->ResetHWRenderPassCounter();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->AddHWRenderPass();
+      }
     }
-  }
 
-  TK_API inline uint64 GetHWRenderPassCount()
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void RemoveHWRenderPass()
     {
-      return tkStats->GetHWRenderPassCount();
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->RemoveHWRenderPass();
+      }
     }
-    else
-    {
-      return 0;
-    }
-  }
 
-  TK_API inline void GetRenderTime(float& cpu, float& gpu)
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void ResetLightCacheInvalidationPerFrame()
     {
-      cpu = tkStats->m_elapsedCpuRenderTime;
-      gpu = tkStats->m_elapsedGpuRenderTime;
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->m_lightCacheInvalidationPerFrame = 0;
+      }
     }
-    else
-    {
-      cpu = 1.0f;
-      gpu = 1.0f;
-    }
-  }
 
-  TK_API inline void GetRenderTimeAvg(float& cpu, float& gpu)
-  {
-    if (TKStats* tkStats = GetTKStats())
+    TK_API inline void ResetHWRenderPassCounter()
     {
-      cpu = tkStats->m_elapsedCpuRenderTimeAvg;
-      gpu = tkStats->m_elapsedGpuRenderTimeAvg;
+      if (TKStats* tkStats = GetTKStats())
+      {
+        tkStats->ResetHWRenderPassCounter();
+      }
     }
-    else
+
+    TK_API inline uint64 GetHWRenderPassCount()
     {
-      cpu = 1.0f;
-      gpu = 1.0f;
+      if (TKStats* tkStats = GetTKStats())
+      {
+        return tkStats->GetHWRenderPassCount();
+      }
+      else
+      {
+        return 0;
+      }
     }
-  }
+
+    TK_API inline void GetRenderTime(float& cpu, float& gpu)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        cpu = tkStats->m_elapsedCpuRenderTime;
+        gpu = tkStats->m_elapsedGpuRenderTime;
+      }
+      else
+      {
+        cpu = 1.0f;
+        gpu = 1.0f;
+      }
+    }
+
+    TK_API inline void GetRenderTimeAvg(float& cpu, float& gpu)
+    {
+      if (TKStats* tkStats = GetTKStats())
+      {
+        cpu = tkStats->m_elapsedCpuRenderTimeAvg;
+        gpu = tkStats->m_elapsedGpuRenderTimeAvg;
+      }
+      else
+      {
+        cpu = 1.0f;
+        gpu = 1.0f;
+      }
+    }
+
+  }; // namespace Stats
 
 } // namespace ToolKit

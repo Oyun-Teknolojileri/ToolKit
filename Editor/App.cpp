@@ -19,7 +19,6 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
-#include <TKProfiler.h>
 #include <TKStats.h>
 #include <UIManager.h>
 

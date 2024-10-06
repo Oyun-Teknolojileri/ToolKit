@@ -9,7 +9,6 @@
 
 #include "Entity.h"
 #include "Material.h"
-#include "TKProfiler.h"
 
 namespace ToolKit
 {

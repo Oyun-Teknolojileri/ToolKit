@@ -8,7 +8,6 @@
 #include "DofPass.h"
 
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit

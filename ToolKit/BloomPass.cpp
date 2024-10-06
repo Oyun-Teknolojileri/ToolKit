@@ -8,7 +8,6 @@
 #include "BloomPass.h"
 
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "ToolKit.h"
 

@@ -59,7 +59,7 @@ namespace ToolKit
     }
 
     glBindFramebuffer(target, framebufferID);
-    AddHWRenderPass();
+    Stats::AddHWRenderPass();
   }
 
   void RHI::DeleteFramebuffers(GLsizei n, const GLuint* framebuffers)

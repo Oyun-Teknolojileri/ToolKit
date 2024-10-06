@@ -10,7 +10,6 @@
 #include "Logger.h"
 #include "RHI.h"
 #include "TKOpenGL.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "ToolKit.h"
 

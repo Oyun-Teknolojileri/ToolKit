@@ -9,7 +9,6 @@
 
 #include "Material.h"
 #include "Mesh.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit

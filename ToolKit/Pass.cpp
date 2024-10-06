@@ -16,7 +16,6 @@
 #include "Pass.h"
 #include "Renderer.h"
 #include "Scene.h"
-#include "TKProfiler.h"
 #include "Threads.h"
 #include "ToolKit.h"
 #include "Viewport.h"

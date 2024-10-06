@@ -10,7 +10,6 @@
 #include <AABBOverrideComponent.h>
 #include <Material.h>
 #include <Mesh.h>
-#include <TKProfiler.h>
 
 #include <DebugNew.h>
 
