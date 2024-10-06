@@ -24,7 +24,7 @@
 namespace ToolKit
 {
 
-  ShadowPass::ShadowPass()
+  ShadowPass::ShadowPass() : Pass("ShadowPass")
   {
     // Order must match with TextureUtil.shader::UVWToUVLayer
     Mat4 views[6] = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),

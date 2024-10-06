@@ -16,7 +16,7 @@
 namespace ToolKit
 {
 
-  StencilRenderPass::StencilRenderPass()
+  StencilRenderPass::StencilRenderPass() : Pass("StencilRenderPass")
   {
     // Init sub pass.
     m_copyStencilSubPass    = MakeNewPtr<FullQuadPass>();

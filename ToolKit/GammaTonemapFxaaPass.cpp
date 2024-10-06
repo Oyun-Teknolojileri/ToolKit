@@ -12,7 +12,7 @@
 namespace ToolKit
 {
 
-  GammaTonemapFxaaPass::GammaTonemapFxaaPass()
+  GammaTonemapFxaaPass::GammaTonemapFxaaPass() : Pass("GammaTonemapFxaaPass")
   {
     m_quadPass          = MakeNewPtr<FullQuadPass>();
     m_processTexture    = MakeNewPtr<RenderTarget>();

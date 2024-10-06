@@ -14,7 +14,7 @@
 namespace ToolKit
 {
 
-  CubeMapPass::CubeMapPass() { m_cube = MakeNewPtr<Cube>(); }
+  CubeMapPass::CubeMapPass() : Pass("CubeMapPass") { m_cube = MakeNewPtr<Cube>(); }
 
   CubeMapPass::CubeMapPass(const CubeMapPassParams& params) : CubeMapPass() { m_params = params; }
 

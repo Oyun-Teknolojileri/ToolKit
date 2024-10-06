@@ -26,7 +26,7 @@ namespace ToolKit
 
   StringArray SSAOPass::m_ssaoSamplesStrCache;
 
-  SSAOPass::SSAOPass()
+  SSAOPass::SSAOPass() : Pass("SSAOPass")
   {
     m_ssaoFramebuffer = MakeNewPtr<Framebuffer>();
     m_ssaoTexture     = MakeNewPtr<RenderTarget>();

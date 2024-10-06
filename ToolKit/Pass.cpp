@@ -23,13 +23,13 @@
 namespace ToolKit
 {
 
-  Pass::Pass() {}
+  Pass::Pass(StringView name) : m_name(name) {}
 
   Pass::~Pass() {}
 
-  void Pass::PreRender() {}
+  void Pass::PreRender() { Stats::BeginGpuScope(m_name); }
 
-  void Pass::PostRender() {}
+  void Pass::PostRender() { Stats::EndGpuScope(); }
 
   void Pass::RenderSubPass(const PassPtr& pass)
   {
@@ -52,7 +52,7 @@ namespace ToolKit
     }
   }
 
-  RenderPass::RenderPass() {}
+  RenderPass::RenderPass() : Pass("RenderPass") {}
 
   RenderPass::~RenderPass() {}
 

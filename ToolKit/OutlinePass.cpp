@@ -15,7 +15,7 @@
 namespace ToolKit
 {
 
-  OutlinePass::OutlinePass()
+  OutlinePass::OutlinePass() : Pass("OutlinePass")
   {
     m_stencilPass  = MakeNewPtr<StencilRenderPass>();
     m_stencilAsRt  = MakeNewPtr<RenderTarget>();

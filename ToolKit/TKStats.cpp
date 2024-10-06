@@ -40,6 +40,7 @@ namespace ToolKit
 
   namespace Stats
   {
+
     void BeginGpuScope(StringView name)
     {
       if (glPushGroupMarkerEXT != nullptr)
@@ -48,7 +49,7 @@ namespace ToolKit
       }
     }
 
-    void EndGpuScope(StringView name)
+    void EndGpuScope()
     {
       if (glPopGroupMarkerEXT != nullptr)
       {

@@ -18,7 +18,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    GizmoPass::GizmoPass()
+    GizmoPass::GizmoPass() : Pass("GizmoPass")
     {
       m_depthMaskSphere = MakeNewPtr<Sphere>();
       m_depthMaskSphere->SetRadiusVal(0.95f);

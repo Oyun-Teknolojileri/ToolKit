@@ -14,7 +14,7 @@
 namespace ToolKit
 {
 
-  BloomPass::BloomPass()
+  BloomPass::BloomPass() : Pass("BloomPass")
   {
     m_downsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomDownsample.shader", true));
     m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));

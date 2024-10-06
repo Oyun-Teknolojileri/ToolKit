@@ -96,7 +96,7 @@ namespace ToolKit
   namespace Stats
   {
     TK_API void BeginGpuScope(StringView name);
-    TK_API void EndGpuScope(StringView name);
+    TK_API void EndGpuScope();
     TK_API void BeginTimeScope(StringView name);
     TK_API void EndTimeScope(StringView name);
     TK_API uint64 GetLightCacheInvalidationPerFrame();
