@@ -42,14 +42,6 @@ namespace ToolKit
     Renderer* m_renderer = nullptr;
   };
 
-  /** Base class for main rendering classes. */
-  class TK_API RenderPass : public Pass
-  {
-   public:
-    RenderPass();
-    virtual ~RenderPass();
-  };
-
   /** This struct holds all the data required to make a drawcall. */
   struct RenderJob
   {

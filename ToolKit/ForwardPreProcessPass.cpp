@@ -15,7 +15,7 @@
 namespace ToolKit
 {
 
-  ForwardPreProcess::ForwardPreProcess()
+  ForwardPreProcessPass::ForwardPreProcessPass() : Pass("ForwardPreProcessPass")
   {
     m_framebuffer            = MakeNewPtr<Framebuffer>();
 
@@ -39,9 +39,9 @@ namespace ToolKit
     m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet);
   }
 
-  ForwardPreProcess::~ForwardPreProcess() {}
+  ForwardPreProcessPass::~ForwardPreProcessPass() {}
 
-  void ForwardPreProcess::InitBuffers(int width, int height, int sampleCount)
+  void ForwardPreProcessPass::InitBuffers(int width, int height, int sampleCount)
   {
     const FramebufferSettings& fbs = m_framebuffer->GetSettings();
     bool requiresReconstruct = fbs.width != width || fbs.height != height || fbs.multiSampleFrameBuffer != sampleCount;
@@ -62,7 +62,7 @@ namespace ToolKit
     }
   }
 
-  void ForwardPreProcess::Render()
+  void ForwardPreProcessPass::Render()
   {
     // Currently transparent objects are not rendered to export screen space normals or linear depth
     // we want SSAO and DOF to effect on opaque objects only renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
@@ -95,16 +95,16 @@ namespace ToolKit
     renderLinearDepthAndNormalFn(begin, end);
   }
 
-  void ForwardPreProcess::PreRender()
+  void ForwardPreProcessPass::PreRender()
   {
-    RenderPass::PreRender();
+    Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Cam, true);
   }
 
-  void ForwardPreProcess::InitDefaultDepthTexture(int width, int height)
+  void ForwardPreProcessPass::InitDefaultDepthTexture(int width, int height)
   {
     if (m_depthTexture == nullptr)
     {

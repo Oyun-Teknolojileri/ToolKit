@@ -52,10 +52,6 @@ namespace ToolKit
     }
   }
 
-  RenderPass::RenderPass() : Pass("RenderPass") {}
-
-  RenderPass::~RenderPass() {}
-
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,
                                             bool ignoreVisibility,

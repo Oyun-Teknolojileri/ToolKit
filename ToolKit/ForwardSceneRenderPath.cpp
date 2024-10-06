@@ -21,7 +21,7 @@ namespace ToolKit
     m_shadowPass            = MakeNewPtr<ShadowPass>();
     m_forwardRenderPass     = MakeNewPtr<ForwardRenderPass>();
     m_skyPass               = MakeNewPtr<CubeMapPass>();
-    m_forwardPreProcessPass = MakeNewPtr<ForwardPreProcess>();
+    m_forwardPreProcessPass = MakeNewPtr<ForwardPreProcessPass>();
     m_ssaoPass              = MakeNewPtr<SSAOPass>();
     m_bloomPass             = MakeNewPtr<BloomPass>();
     m_dofPass               = MakeNewPtr<DoFPass>();
