@@ -279,8 +279,7 @@ namespace ToolKit
       TKStats::TimeArgs& args = timeStat.second;
       if (args.enabled)
       {
-        String name = timeStat.first.data();
-        TK_LOG("%s avg t: %f -- t: %f", name.c_str(), args.accumulatedTime / args.hitCount, args.elapsedTime);
+        TK_LOG("%s avg t: %f -- t: %f", timeStat.first.data(), args.accumulatedTime / args.hitCount, args.elapsedTime);
       }
     }
   }

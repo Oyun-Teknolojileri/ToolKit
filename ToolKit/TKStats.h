@@ -33,16 +33,16 @@ namespace ToolKit
     };
 
     // Creates a timer or register its beginning.
-    void BeginTimer(StringView name)
+    void BeginTimer(const StringView name)
     {
-      TimeArgs& args = m_profileTimerMap[name];
+      TimeArgs& args = m_profileTimerMap[name.data()];
       args.beginTime = GetElapsedMilliSeconds();
     }
 
     // Finalize a timer updates statistics.
-    void EndTimer(StringView name)
+    void EndTimer(const StringView name)
     {
-      TimeArgs& args        = m_profileTimerMap[name];
+      TimeArgs& args        = m_profileTimerMap[name.data()];
       args.elapsedTime      = GetElapsedMilliSeconds() - args.beginTime;
       args.accumulatedTime += args.elapsedTime;
       args.hitCount++;
@@ -104,7 +104,7 @@ namespace ToolKit
     /** Number of times the light cache invalidated for a frame */
     uint m_lightCacheInvalidationPerFrame = 0;
     /** Timers added to the source. */
-    std::unordered_map<StringView, TimeArgs> m_profileTimerMap;
+    std::unordered_map<String, TimeArgs> m_profileTimerMap;
 
    private:
     uint64 m_totalVRAMUsageInBytes = 0;
@@ -115,7 +115,7 @@ namespace ToolKit
   namespace Stats
   {
 
-    TK_API inline void BeginTimeScope(StringView scope)
+    TK_API inline void BeginTimeScope(const StringView scope)
     {
       if (TKStats* tkStats = GetTKStats())
       {
@@ -123,7 +123,7 @@ namespace ToolKit
       }
     }
 
-    TK_API inline void EndTimeScope(StringView scope)
+    TK_API inline void EndTimeScope(const StringView scope)
     {
       if (TKStats* tkStats = GetTKStats())
       {
