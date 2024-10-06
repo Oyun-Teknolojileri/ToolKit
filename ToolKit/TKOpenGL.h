@@ -42,7 +42,7 @@ namespace ToolKit
   extern TKGL_PushGroupMarker tk_glPushGroupMarkerEXT;
 
 #undef glPushGroupMarkerEXT
-#define glPushGroupMarkerEXT tk_glPushGroupMarkerEXT;
+#define glPushGroupMarkerEXT tk_glPushGroupMarkerEXT
 
   // GL_EXT_multisampled_render_to_texture
   //////////////////////////////////////////
