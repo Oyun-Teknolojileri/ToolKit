@@ -77,7 +77,7 @@ namespace ToolKit
     settings.width           = m_params.OutputTarget->m_width;
     settings.height          = m_params.OutputTarget->m_height;
 
-    m_frameBuffer->ReconstructIfNeeded(settings.width, settings.height);
+    m_frameBuffer->ReconstructIfNeeded(settings);
     m_frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_params.OutputTarget);
     m_copyStencilSubPass->m_params.frameBuffer      = m_frameBuffer;
     m_copyStencilSubPass->m_params.clearFrameBuffer = GraphicBitFields::None;
