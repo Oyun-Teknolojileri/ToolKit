@@ -362,7 +362,7 @@ namespace ToolKit
 
     void EditorScene::SelectByTag(const String& tag) { AddToSelection(GetByTag(tag), false); }
 
-    Scene::PickData EditorScene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
+    Scene::PickData EditorScene::PickObject(const Ray& ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
     {
       // Add billboards to scene
       EntityPtrArray temp = extraList;

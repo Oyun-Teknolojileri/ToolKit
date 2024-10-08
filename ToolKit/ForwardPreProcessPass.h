@@ -36,9 +36,6 @@ namespace ToolKit
     DepthTexturePtr m_depthTexture  = nullptr; // This is used in case there is no gbuffer
     RenderTargetPtr m_normalRt      = nullptr;
     RenderTargetPtr m_linearDepthRt = nullptr;
-
-   private:
-    bool m_buffersInitialized = false;
   };
 
   typedef std::shared_ptr<ForwardPreProcessPass> ForwardPreProcessPassPtr;

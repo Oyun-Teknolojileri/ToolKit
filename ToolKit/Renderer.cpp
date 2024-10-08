@@ -699,7 +699,7 @@ namespace ToolKit
 
   void Renderer::Apply7x1GaussianBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({dst->m_width, dst->m_height, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -725,7 +725,7 @@ namespace ToolKit
 
   void Renderer::ApplyAverageBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({dst->m_width, dst->m_height, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -1352,7 +1352,7 @@ namespace ToolKit
 
     mat->UpdateProgramUniform("Exposure", exposure);
 
-    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({(int) size, (int) size, false, false});
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -1505,12 +1505,12 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({(int) size, (int) size, false, false});
 
     UVec2 lastViewportSize = m_viewportSize;
 
     assert(size >= 128 && "Due to RHIConstants::SpecularIBLLods, it can't be lower than this resolution.");
-    for (int mip = 0; mip < mipMaps; ++mip)
+    for (int mip = 0; mip < mipMaps; mip++)
     {
       uint mipSize              = (uint) (size * std::powf(0.5f, (float) mip));
 

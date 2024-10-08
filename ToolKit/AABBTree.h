@@ -77,7 +77,7 @@ namespace ToolKit
      * Test ray against the tree and returns the nearest entity that hits the ray and the hit distance t.
      * If the deep parameter passed as true, it checks mesh level intersection.
      */
-    EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr) const;
+    EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr, const IDArray& ignoreList = {}) const;
 
    private:
     AABBNodeProxy AllocateNode();

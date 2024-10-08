@@ -46,19 +46,19 @@ namespace ToolKit
     const FramebufferSettings& fbs = m_framebuffer->GetSettings();
     bool requiresReconstruct = fbs.width != width || fbs.height != height || fbs.multiSampleFrameBuffer != sampleCount;
 
-    m_framebuffer->ReconstructIfNeeded({width, height, false, false, sampleCount});
-    m_normalRt->ReconstructIfNeeded(width, height);
-    m_linearDepthRt->ReconstructIfNeeded(width, height);
-
     if (requiresReconstruct)
     {
+      m_framebuffer->ReconstructIfNeeded({width, height, false, false, sampleCount});
+      m_normalRt->ReconstructIfNeeded(width, height);
+      m_linearDepthRt->ReconstructIfNeeded(width, height);
+
       m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_linearDepthRt);
       m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment1, m_normalRt);
-    }
 
-    if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
-    {
-      m_framebuffer->AttachDepthTexture(depth);
+      if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
+      {
+        m_framebuffer->AttachDepthTexture(depth);
+      }
     }
   }
 
