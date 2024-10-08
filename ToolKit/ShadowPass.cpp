@@ -262,6 +262,16 @@ namespace ToolKit
     Frustum frustum            = ExtractFrustum(cullCamera->GetProjectViewMatrix(), false);
     EntityRawPtrArray entities = m_params.scene->m_aabbTree.VolumeQuery(frustum);
 
+    // Remove non shadow casters.
+    erase_if(entities,
+             [](Entity* ntt) -> bool
+             {
+               if (MeshComponent* mc = ntt->GetComponentFast<MeshComponent>())
+               {
+                 return !mc->GetCastShadowVal();
+               }
+             });
+
     RenderJobProcessor::CreateRenderJobs(renderData.jobs, entities);
     RenderJobProcessor::SeperateRenderData(renderData, true);
 
