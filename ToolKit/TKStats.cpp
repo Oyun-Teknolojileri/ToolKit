@@ -45,7 +45,7 @@ namespace ToolKit
       if (glLabelObjectEXT != nullptr && label.size() > 0)
       {
         String labelId = String(label) + "_" + std::to_string(resourceId);
-        glLabelObjectEXT((GLenum) resourceType, (GLuint) resourceId, -1, labelId.c_str());
+        glLabelObjectEXT((GLenum) resourceType, (GLuint) resourceId, 0, labelId.c_str());
       }
     }
 

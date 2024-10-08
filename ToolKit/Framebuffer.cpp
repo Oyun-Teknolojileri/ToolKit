@@ -52,6 +52,7 @@ namespace ToolKit
 
     // Create framebuffer object
     glGenFramebuffers(1, &m_fboId);
+    RHI::SetFramebuffer(GL_FRAMEBUFFER, m_fboId);
 
     Stats::SetGpuResourceLabel(m_label, GpuResourceType::FrameBuffer, m_fboId);
 
