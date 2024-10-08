@@ -62,6 +62,7 @@ namespace ToolKit
     m_width    = width;
     m_height   = height;
     m_settings = settings;
+    m_label    = label;
   }
 
   Texture::~Texture()
