@@ -16,35 +16,51 @@
 namespace ToolKit
 {
 
+  TKDefineClass(Framebuffer, Resource);
+
   Framebuffer::Framebuffer()
   {
     for (int i = 0; i < m_maxColorAttachmentCount; ++i)
     {
       m_colorAtchs[i] = nullptr;
     }
+
     m_depthAtch = nullptr;
   }
 
   Framebuffer::~Framebuffer() { UnInit(); }
 
-  void Framebuffer::Init(const FramebufferSettings& settings)
+  void Framebuffer::NativeConstruct(StringView label)
   {
-    if (m_initialized)
+    Super::NativeConstruct();
+    m_label = label;
+  }
+
+  void Framebuffer::NativeConstruct(const FramebufferSettings& settings, StringView label)
+  {
+    Super::NativeConstruct();
+    m_settings = settings;
+    m_label    = label;
+  }
+
+  void Framebuffer::Init(bool flushClientSideArray)
+  {
+    if (m_initiated)
     {
       return;
     }
 
-    m_settings = settings;
-
     // Create framebuffer object
     glGenFramebuffers(1, &m_fboId);
 
-    if (settings.width == 0)
+    Stats::SetGpuResourceLabel(m_label, GpuResourceType::FrameBuffer, m_fboId);
+
+    if (m_settings.width == 0)
     {
       m_settings.width = 1024;
     }
 
-    if (settings.height == 0)
+    if (m_settings.height == 0)
     {
       m_settings.height = 1024;
     }
@@ -60,12 +76,12 @@ namespace ToolKit
       AttachDepthTexture(m_depthAtch);
     }
 
-    m_initialized = true;
+    m_initiated = true;
   }
 
   void Framebuffer::UnInit()
   {
-    if (!m_initialized)
+    if (!m_initiated)
     {
       return;
     }
@@ -73,31 +89,35 @@ namespace ToolKit
     ClearAttachments();
 
     RHI::DeleteFramebuffers(1, &m_fboId);
-    m_fboId       = 0;
-    m_initialized = false;
+    m_fboId     = 0;
+    m_initiated = false;
   }
 
-  bool Framebuffer::Initialized() { return m_initialized; }
+  void Framebuffer::Load() {}
+
+  bool Framebuffer::Initialized() { return m_initiated; }
 
   void Framebuffer::ReconstructIfNeeded(int width, int height)
   {
-    if (!m_initialized || m_settings.width != width || m_settings.height != height)
+    if (!m_initiated || m_settings.width != width || m_settings.height != height)
     {
       UnInit();
 
       m_settings.width  = width;
       m_settings.height = height;
 
-      Init(m_settings);
+      Init();
     }
   }
 
   void Framebuffer::ReconstructIfNeeded(const FramebufferSettings& settings)
   {
-    if (!m_initialized || settings != m_settings)
+    if (!m_initiated || settings != m_settings)
     {
       UnInit();
-      Init(settings);
+
+      m_settings = settings;
+      Init();
     }
   }
 
@@ -204,7 +224,7 @@ namespace ToolKit
 
   void Framebuffer::ClearAttachments()
   {
-    if (!m_initialized)
+    if (!m_initiated)
     {
       return;
     }

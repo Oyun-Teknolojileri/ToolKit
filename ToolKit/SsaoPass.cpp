@@ -28,9 +28,9 @@ namespace ToolKit
 
   SSAOPass::SSAOPass() : Pass("SSAOPass")
   {
-    m_ssaoFramebuffer = MakeNewPtr<Framebuffer>();
-    m_ssaoTexture     = MakeNewPtr<RenderTarget>();
-    m_tempBlurRt      = MakeNewPtr<RenderTarget>();
+    m_ssaoFramebuffer = MakeNewPtr<Framebuffer>("SSAOPassFB");
+    m_ssaoTexture     = MakeNewPtr<RenderTarget>("SSAORT");
+    m_tempBlurRt      = MakeNewPtr<RenderTarget>("SSAOBlurrRT");
 
     TextureSettings noiseSet;
     noiseSet.InternalFormat = GraphicTypes::FormatRG32F;
@@ -91,7 +91,7 @@ namespace ToolKit
 
     // No need destroy and re init framebuffer when size is changed, because
     // the only render target is already being resized.
-    m_ssaoFramebuffer->Init({width, height, false, false});
+    m_ssaoFramebuffer->ReconstructIfNeeded({width, height, false, false});
 
     TextureSettings oneChannelSet;
     oneChannelSet.WarpS          = GraphicTypes::UVClampToEdge;

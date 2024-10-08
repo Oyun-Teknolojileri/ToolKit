@@ -41,7 +41,7 @@ namespace ToolKit
   void Renderer::Init()
   {
     m_uiCamera                      = MakeNewPtr<Camera>();
-    m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
+    m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>("RendererOneColorFB");
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
 
     m_gpuProgramManager             = GetGpuProgramManager();
@@ -618,8 +618,9 @@ namespace ToolKit
 
     if (m_copyFb == nullptr)
     {
-      m_copyFb = MakeNewPtr<Framebuffer>();
-      m_copyFb->Init({src->m_width, src->m_height, false, false});
+      FramebufferSettings fbSettings = {src->m_width, src->m_height, false, false};
+      m_copyFb                       = MakeNewPtr<Framebuffer>(fbSettings, "RendererCopyFB");
+      m_copyFb->Init();
     }
 
     m_copyFb->ReconstructIfNeeded(src->m_width, src->m_height);
@@ -698,7 +699,7 @@ namespace ToolKit
 
   void Renderer::Apply7x1GaussianBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -724,7 +725,7 @@ namespace ToolKit
 
   void Renderer::ApplyAverageBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -764,8 +765,13 @@ namespace ToolKit
           MakeNewPtr<RenderTarget>(RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, set);
       brdfLut->Init();
 
-      FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
-      utilFramebuffer->Init({RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, false, false});
+      FramebufferSettings fbSettings = {RHIConstants::BrdfLutTextureSize,
+                                        RHIConstants::BrdfLutTextureSize,
+                                        false,
+                                        false};
+
+      FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>(fbSettings, "RendererLUTFB");
+      utilFramebuffer->Init();
       utilFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
 
       MaterialPtr material       = MakeNewPtr<Material>();
@@ -1346,7 +1352,7 @@ namespace ToolKit
 
     mat->UpdateProgramUniform("Exposure", exposure);
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -1423,7 +1429,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->Init({(int) size, (int) size, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({(int) size, (int) size, false, false});
 
     for (int i = 0; i < 6; ++i)
     {
@@ -1499,7 +1505,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({0, 0, false, false});
 
     UVec2 lastViewportSize = m_viewportSize;
 

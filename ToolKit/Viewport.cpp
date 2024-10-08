@@ -118,17 +118,15 @@ namespace ToolKit
     EngineSettings& engineSettings = GetEngineSettings();
     if (m_framebuffer == nullptr)
     {
-      m_framebuffer = MakeNewPtr<Framebuffer>();
+      m_framebuffer = MakeNewPtr<Framebuffer>("ViewportFB");
     }
 
-    m_framebuffer->UnInit();
-
     float resScale = engineSettings.Graphics.renderResolutionScale;
-
     int width      = (int) glm::round(m_wndContentAreaSize.x * resScale);
     int height     = (int) glm::round(m_wndContentAreaSize.y * resScale);
 
-    m_framebuffer->Init({width, height, false, true, engineSettings.Graphics.msaa});
+    m_framebuffer->ReconstructIfNeeded({width, height, false, true, engineSettings.Graphics.msaa});
+
     m_renderTarget = MakeNewPtr<RenderTarget>(width, height, settings);
     m_renderTarget->Init();
     m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);

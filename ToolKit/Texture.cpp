@@ -49,7 +49,13 @@ namespace ToolKit
 
   Texture::Texture(const String& file) : Texture() { SetFile(file); }
 
-  void Texture::NativeConstruct(int width, int height, const TextureSettings& settings)
+  void Texture::NativeConstruct(StringView label)
+  {
+    Super::NativeConstruct();
+    m_label = label;
+  }
+
+  void Texture::NativeConstruct(int width, int height, const TextureSettings& settings, StringView label)
   {
     Super::NativeConstruct();
 
@@ -185,7 +191,7 @@ namespace ToolKit
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       Stats::RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) *
-                             m_settings.Layers);
+                                    m_settings.Layers);
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
@@ -614,6 +620,8 @@ namespace ToolKit
     // Create frame buffer color texture
     glGenTextures(1, &m_textureId);
     RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
+
+    Stats::SetGpuResourceLabel(m_label, GpuResourceType::Texture, m_textureId);
 
     if (m_settings.Target == GraphicTypes::Target2D)
     {

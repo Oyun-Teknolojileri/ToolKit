@@ -24,10 +24,11 @@ namespace ToolKit
   {
     ThumbnailRenderer::ThumbnailRenderer()
     {
-      m_maxThumbSize    = 300;
+      m_maxThumbSize                 = 300;
 
-      m_thumbnailBuffer = MakeNewPtr<Framebuffer>();
-      m_thumbnailBuffer->Init({m_maxThumbSize, m_maxThumbSize, false, true, 4});
+      FramebufferSettings fbSettings = {m_maxThumbSize, m_maxThumbSize, false, true, 4};
+      m_thumbnailBuffer              = MakeNewPtr<Framebuffer>(fbSettings, "ThumbnailRendererFB");
+      m_thumbnailBuffer->Init();
 
       m_thumbnailScene = MakeNewPtr<Scene>();
       m_sky            = MakeNewPtr<GradientSky>();

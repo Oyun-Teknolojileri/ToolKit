@@ -44,7 +44,8 @@ namespace ToolKit
     Texture();
     Texture(const String& file);
     virtual ~Texture();
-    virtual void NativeConstruct(int widht, int height, const TextureSettings& settings);
+    virtual void NativeConstruct(StringView label);
+    virtual void NativeConstruct(int widht, int height, const TextureSettings& settings, StringView label = "");
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -63,6 +64,7 @@ namespace ToolKit
     int m_numChannels = 0; //!< Number of channels (r, g, b, a) for loaded images.
     uint8* m_image    = nullptr;
     float* m_imagef   = nullptr;
+    StringView m_label; //!< Debug label which appears in the gpu debuggers.
 
    protected:
     TextureSettings m_settings;
