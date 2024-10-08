@@ -63,7 +63,7 @@ namespace ToolKit
       void SelectByTag(const String& tag);
 
       // Pick operations
-      PickData PickObject(Ray ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {}) override;
+      PickData PickObject(const Ray& ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {}) override;
 
       void PickObject(const Frustum& frustum,
                       PickDataArray& pickedObjects,

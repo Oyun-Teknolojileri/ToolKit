@@ -178,7 +178,7 @@ namespace ToolKit
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
+  Scene::PickData Scene::PickObject(const Ray& ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
@@ -215,7 +215,7 @@ namespace ToolKit
     pickFn(extraList);
 
     float dist          = TK_FLT_MAX;
-    EntityPtr pickedNtt = m_aabbTree.RayQuery(ray, true, &dist);
+    EntityPtr pickedNtt = m_aabbTree.RayQuery(ray, true, &dist, ignoreList);
 
     if (dist < closestPickedDistance)
     {

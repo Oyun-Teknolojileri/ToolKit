@@ -32,7 +32,7 @@ namespace ToolKit
     {
       if (!m_nodes[i].entity.expired())
       {
-        EntityPtr ntt = m_nodes[i].entity.lock();
+        EntityPtr ntt            = m_nodes[i].entity.lock();
         ntt->m_aabbTreeNodeProxy = nullNode;
         m_nodes[i].entity.reset();
       }
@@ -324,7 +324,7 @@ namespace ToolKit
     return entities;
   }
 
-  EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t) const
+  EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t, const IDArray& ignoreList) const
   {
     if (m_root == nullNode)
     {
@@ -348,6 +348,13 @@ namespace ToolKit
         if (m_nodes[current].IsLeaf())
         {
           EntityPtr candidate = m_nodes[current].entity.lock();
+          if (!ignoreList.empty())
+          {
+            if (contains(ignoreList, candidate->GetIdVal()))
+            {
+              continue;
+            }
+          }
 
           if (deep)
           {
