@@ -17,6 +17,7 @@
 #include "Drawable.h"
 #include "Entity.h"
 #include "EnvironmentComponent.h"
+#include "Framebuffer.h"
 #include "GradientSky.h"
 #include "Light.h"
 #include "Material.h"
@@ -148,6 +149,7 @@ namespace ToolKit
     Register<DepthTexture>();
     Register<Hdri>();
     Register<RenderTarget>();
+    Register<Framebuffer>();
   }
 
 } // namespace ToolKit

@@ -16,7 +16,7 @@ namespace ToolKit
   DoFPass::DoFPass() : Pass("DoFPass")
   {
     m_quadPass                       = MakeNewPtr<FullQuadPass>();
-    m_quadPass->m_params.frameBuffer = MakeNewPtr<Framebuffer>();
+    m_quadPass->m_params.frameBuffer = MakeNewPtr<Framebuffer>("DofFB");
     m_dofShader                      = GetShaderManager()->Create<Shader>(ShaderPath("depthOfFieldFrag.shader", true));
     m_copyTexture                    = MakeNewPtr<RenderTarget>();
   }
@@ -37,15 +37,9 @@ namespace ToolKit
       return;
     }
 
-    if (!m_copyTexture->m_initiated || m_copyTexture->m_width != m_params.ColorRt->m_width ||
-        m_copyTexture->m_height != m_params.ColorRt->m_height)
-    {
-      m_copyTexture->UnInit();
-      m_copyTexture->m_width  = m_params.ColorRt->m_width;
-      m_copyTexture->m_height = m_params.ColorRt->m_height;
-      m_copyTexture->Settings(m_params.ColorRt->Settings());
-      m_copyTexture->Init();
-    }
+    const TextureSettings& colorRTSet = m_params.ColorRt->Settings();
+    m_copyTexture->ReconstructIfNeeded(m_params.ColorRt->m_width, m_params.ColorRt->m_height, &colorRTSet);
+
     GetRenderer()->CopyTexture(m_params.ColorRt, m_copyTexture);
 
     m_quadPass->SetFragmentShader(m_dofShader, GetRenderer());
@@ -70,7 +64,8 @@ namespace ToolKit
     m_quadPass->UpdateUniform(ShaderUniform("radiusScale", blurRadiusScale));
 
     IVec2 size(m_params.ColorRt->m_width, m_params.ColorRt->m_height);
-    m_quadPass->m_params.frameBuffer->Init({size.x, size.y, false, false});
+
+    m_quadPass->m_params.frameBuffer->ReconstructIfNeeded({size.x, size.y, false, false});
     m_quadPass->UpdateUniform(ShaderUniform("uPixelSize", Vec2(1.0f) / Vec2(size)));
     m_quadPass->m_params.blendFunc        = BlendFunction::NONE;
     m_quadPass->m_params.clearFrameBuffer = GraphicBitFields::None;

@@ -26,8 +26,9 @@ namespace ToolKit
     // Create a default frame buffer.
     if (m_params.FrameBuffer == nullptr)
     {
-      m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
-      m_params.FrameBuffer->Init({1024, 768, false, true, GetEngineSettings().Graphics.msaa});
+      FramebufferSettings fbSettings = {1024, 768, false, true, GetEngineSettings().Graphics.msaa};
+      m_params.FrameBuffer           = MakeNewPtr<Framebuffer>(fbSettings, "ForwardRenderPassFB");
+      m_params.FrameBuffer->Init();
     }
   }
 

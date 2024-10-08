@@ -39,8 +39,8 @@ namespace ToolKit
       DecomposeMatrix(views[i], nullptr, &m_cubeMapRotations[i], nullptr);
     }
 
-    m_shadowAtlas               = MakeNewPtr<RenderTarget>();
-    m_shadowFramebuffer         = MakeNewPtr<Framebuffer>();
+    m_shadowAtlas               = MakeNewPtr<RenderTarget>("ShadowAtlassRT");
+    m_shadowFramebuffer         = MakeNewPtr<Framebuffer>("ShadowPassFB");
 
     // Create shadow material
     auto createShadowMaterialFn = [](StringView vertexShader, StringView fragmentShader) -> MaterialPtr
@@ -488,8 +488,11 @@ namespace ToolKit
 
       if (!m_shadowFramebuffer->Initialized())
       {
-        m_shadowFramebuffer->Init(
-            {RHIConstants::ShadowAtlasTextureSize, RHIConstants::ShadowAtlasTextureSize, false, true});
+        FramebufferSettings fbSettings = {RHIConstants::ShadowAtlasTextureSize,
+                                          RHIConstants::ShadowAtlasTextureSize,
+                                          false,
+                                          true};
+        m_shadowFramebuffer->ReconstructIfNeeded(fbSettings);
       }
 
       m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, 0);

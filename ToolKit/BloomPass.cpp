@@ -195,19 +195,21 @@ namespace ToolKit
         rt                 = MakeNewPtr<RenderTarget>(curRes.x, curRes.y, set);
         rt->Init();
 
-        FramebufferPtr& fb = m_tempFrameBuffers[i];
-        if (fb == nullptr)
+        FramebufferPtr& frameBuffer = m_tempFrameBuffers[i];
+        if (frameBuffer == nullptr)
         {
           FramebufferSettings fbSettings;
           fbSettings.depthStencil    = false;
           fbSettings.useDefaultDepth = false;
           fbSettings.width           = curRes.x;
           fbSettings.height          = curRes.y;
-          fb                         = MakeNewPtr<Framebuffer>();
-          fb->Init(fbSettings);
+
+          frameBuffer                = MakeNewPtr<Framebuffer>(fbSettings, "BloomDownSampleFB");
+          frameBuffer->Init();
         }
-        fb->ReconstructIfNeeded(curRes.x, curRes.y);
-        fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+
+        frameBuffer->ReconstructIfNeeded(curRes.x, curRes.y);
+        frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
       }
 
       m_currentIterationCount = iterationCount;

@@ -40,6 +40,14 @@ namespace ToolKit
 
   namespace Stats
   {
+    TK_API void SetGpuResourceLabel(StringView label, GpuResourceType resourceType, uint resourceId)
+    {
+      if (glLabelObjectEXT != nullptr && label.size() > 0)
+      {
+        String labelId = String(label) + "_" + std::to_string(resourceId);
+        glLabelObjectEXT((GLenum) resourceType, (GLuint) resourceId, -1, labelId.c_str());
+      }
+    }
 
     void BeginGpuScope(StringView name)
     {

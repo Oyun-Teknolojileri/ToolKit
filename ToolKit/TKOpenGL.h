@@ -20,6 +20,23 @@ namespace ToolKit
 
   // GL Extensions used by ToolKit.
 
+  // GL_EXT_debug_label
+  //////////////////////////////////////////
+  typedef void(
+      TK_STDCAL* TKGL_GetObjectLabelEXT)(GLenum type, GLuint object, GLsizei bufSize, GLsizei* length, GLchar* label);
+
+  extern TKGL_GetObjectLabelEXT tk_glGetObjectLabelEXT;
+
+#undef glGetObjectLabelEXT
+#define glGetObjectLabelEXT tk_glGetObjectLabelEXT
+
+  typedef void(TK_STDCAL* TKGL_LabelObjectEXT)(GLenum type, GLuint object, GLsizei length, const GLchar* label);
+
+  extern TKGL_LabelObjectEXT tk_glLabelObjectEXT;
+
+#undef glLabelObjectEXT
+#define glLabelObjectEXT tk_glLabelObjectEXT
+
   // GL_EXT_debug_marker
   //////////////////////////////////////////
 

@@ -17,7 +17,7 @@ namespace ToolKit
 
   ForwardPreProcessPass::ForwardPreProcessPass() : Pass("ForwardPreProcessPass")
   {
-    m_framebuffer            = MakeNewPtr<Framebuffer>();
+    m_framebuffer            = MakeNewPtr<Framebuffer>("ForwardPreProcessFB");
 
     m_linearMaterial         = MakeNewPtr<Material>();
     ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
@@ -33,10 +33,10 @@ namespace ToolKit
     oneChannelSet.Format          = GraphicTypes::FormatRGBA;
     oneChannelSet.Type            = GraphicTypes::TypeFloat;
     oneChannelSet.GenerateMipMap  = false;
-    m_normalRt                    = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet);
+    m_normalRt                    = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet, "NormalRT");
 
     oneChannelSet.InternalFormat  = GraphicTypes::FormatRGBA32F;
-    m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet);
+    m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet, "LinearDepthRT");
   }
 
   ForwardPreProcessPass::~ForwardPreProcessPass() {}

@@ -95,6 +95,7 @@ namespace ToolKit
 
   namespace Stats
   {
+    TK_API void SetGpuResourceLabel(StringView label, GpuResourceType resourceType, uint resourceId);
     TK_API void BeginGpuScope(StringView name);
     TK_API void EndGpuScope();
     TK_API void BeginTimeScope(StringView name);

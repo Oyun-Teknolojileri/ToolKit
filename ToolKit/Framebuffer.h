@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Resource.h"
 #include "Texture.h"
 
 namespace ToolKit
@@ -33,8 +34,11 @@ namespace ToolKit
     bool operator!=(const FramebufferSettings& other) const { return !(*this == other); }
   };
 
-  class TK_API Framebuffer
+  class TK_API Framebuffer : public Resource
   {
+   public:
+    TKDeclareClass(Framebuffer, Resource);
+
    public:
     enum class Attachment
     {
@@ -63,10 +67,15 @@ namespace ToolKit
 
    public:
     Framebuffer();
-    ~Framebuffer();
+    virtual ~Framebuffer();
 
-    void Init(const FramebufferSettings& settings);
-    void UnInit();
+    virtual void NativeConstruct(StringView label);
+    virtual void NativeConstruct(const FramebufferSettings& settings, StringView label = "");
+
+    void Init(bool flushClientSideArray = false) override;
+    void UnInit() override;
+    void Load() override;
+
     bool Initialized();
 
     RenderTargetPtr SetColorAttachment(Attachment atc,
@@ -95,11 +104,11 @@ namespace ToolKit
 
    public:
     static const int m_maxColorAttachmentCount = 8;
+    StringView m_label; //!< Debug label which appears in the gpu debuggers.
 
    private:
     FramebufferSettings m_settings;
 
-    bool m_initialized  = false;
     uint m_fboId        = 0;
     uint m_defaultRboId = 0;
     RenderTargetPtr m_colorAtchs[m_maxColorAttachmentCount];
