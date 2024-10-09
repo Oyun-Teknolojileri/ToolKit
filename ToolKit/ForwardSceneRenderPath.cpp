@@ -195,7 +195,6 @@ namespace ToolKit
     }
 
     m_forwardRenderPass->m_params.renderData        = &m_renderData;
-    m_forwardRenderPass->m_params.Lights            = lights;
     m_forwardRenderPass->m_params.Cam               = m_params.Cam;
     m_forwardRenderPass->m_params.FrameBuffer       = m_params.MainFramebuffer;
     m_forwardRenderPass->m_params.SsaoTexture       = m_params.Gfx.SSAOEnabled ? m_ssaoPass->m_ssaoTexture : nullptr;

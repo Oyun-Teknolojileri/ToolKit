@@ -52,7 +52,7 @@ namespace ToolKit
 
     if (m_params.hasForwardPrePass)
     {
-      renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
+      renderer->SetDepthTestFunc(CompareFunctions::FuncEqual);
     }
   }
 
