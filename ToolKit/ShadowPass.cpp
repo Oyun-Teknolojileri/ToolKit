@@ -270,6 +270,8 @@ namespace ToolKit
                {
                  return !mc->GetCastShadowVal();
                }
+
+               return false;
              });
 
     RenderJobProcessor::CreateRenderJobs(renderData.jobs, entities);
