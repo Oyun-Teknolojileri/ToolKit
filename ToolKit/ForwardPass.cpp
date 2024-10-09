@@ -19,26 +19,11 @@ namespace ToolKit
 
   ForwardRenderPass::ForwardRenderPass() : Pass("ForwardRenderPass") {}
 
-  ForwardRenderPass::ForwardRenderPass(const ForwardRenderPassParams& params) : ForwardRenderPass()
-  {
-    m_params = params;
-
-    // Create a default frame buffer.
-    if (m_params.FrameBuffer == nullptr)
-    {
-      FramebufferSettings fbSettings = {1024, 768, false, true, GetEngineSettings().Graphics.msaa};
-      m_params.FrameBuffer           = MakeNewPtr<Framebuffer>(fbSettings, "ForwardRenderPassFB");
-      m_params.FrameBuffer->Init();
-    }
-  }
-
   void ForwardRenderPass::Render()
   {
     RenderOpaque(m_params.renderData);
     RenderTranslucent(m_params.renderData);
   }
-
-  ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {

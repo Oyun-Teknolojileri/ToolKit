@@ -26,18 +26,6 @@ namespace ToolKit
     m_solidOverrideMaterial = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
   }
 
-  StencilRenderPass::StencilRenderPass(const StencilRenderPassParams& params) : StencilRenderPass()
-  {
-    m_params = params;
-  }
-
-  StencilRenderPass::~StencilRenderPass()
-  {
-    m_frameBuffer           = nullptr;
-    m_solidOverrideMaterial = nullptr;
-    m_copyStencilSubPass    = nullptr;
-  }
-
   void StencilRenderPass::Render()
   {
     assert(m_params.RenderJobs != nullptr && "Stencil Render Pass Render Jobs Are Not Given!");

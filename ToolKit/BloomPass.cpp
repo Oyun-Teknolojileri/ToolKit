@@ -21,16 +21,6 @@ namespace ToolKit
     m_pass             = MakeNewPtr<FullQuadPass>();
   }
 
-  BloomPass::BloomPass(const BloomPassParams& params) : BloomPass() { m_params = params; }
-
-  BloomPass::~BloomPass()
-  {
-    m_pass             = nullptr;
-    m_downsampleShader = nullptr;
-    m_upsampleShader   = nullptr;
-    m_tempTextures.clear();
-  }
-
   void BloomPass::Render()
   {
     RenderTargetPtr mainRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);

@@ -22,8 +22,6 @@ namespace ToolKit
   {
    public:
     BillboardPass();
-    explicit BillboardPass(const BillboardPassParams& params);
-    ~BillboardPass();
 
     void Render() override;
     void PreRender() override;

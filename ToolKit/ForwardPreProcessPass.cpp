@@ -39,8 +39,6 @@ namespace ToolKit
     m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet, "LinearDepthRT");
   }
 
-  ForwardPreProcessPass::~ForwardPreProcessPass() {}
-
   void ForwardPreProcessPass::InitBuffers(int width, int height, int sampleCount)
   {
     const FramebufferSettings& fbs = m_framebuffer->GetSettings();

@@ -24,16 +24,6 @@ namespace ToolKit
     m_dilateShader = GetShaderManager()->Create<Shader>(ShaderPath("dilateFrag.shader", true));
   }
 
-  OutlinePass::OutlinePass(const OutlinePassParams& params) : OutlinePass() { m_params = params; }
-
-  OutlinePass::~OutlinePass()
-  {
-    m_stencilPass  = nullptr;
-    m_outlinePass  = nullptr;
-    m_dilateShader = nullptr;
-    m_stencilAsRt  = nullptr;
-  }
-
   void OutlinePass::Render()
   {
     assert(m_params.RenderJobs != nullptr && "Outline Pass Render Jobs Are Not Given!");

@@ -29,8 +29,6 @@ namespace ToolKit
   {
    public:
     ForwardRenderPass();
-    ForwardRenderPass(const ForwardRenderPassParams& params);
-    ~ForwardRenderPass();
 
     void Render() override;
     void PreRender() override;

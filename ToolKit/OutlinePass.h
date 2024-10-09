@@ -29,8 +29,6 @@ namespace ToolKit
   {
    public:
     OutlinePass();
-    explicit OutlinePass(const OutlinePassParams& params);
-    ~OutlinePass();
 
     void Render() override;
     void PreRender() override;

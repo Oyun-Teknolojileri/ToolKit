@@ -19,7 +19,6 @@ namespace ToolKit
   {
    public:
     ForwardPreProcessPass();
-    ~ForwardPreProcessPass();
 
     void InitBuffers(int width, int height, int sampleCount);
     void Render() override;

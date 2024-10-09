@@ -26,8 +26,6 @@ namespace ToolKit
   {
    public:
     CubeMapPass();
-    explicit CubeMapPass(const CubeMapPassParams& params);
-    ~CubeMapPass();
 
     void Render() override;
     void PreRender() override;
