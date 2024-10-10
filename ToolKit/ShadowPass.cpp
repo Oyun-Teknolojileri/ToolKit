@@ -164,12 +164,13 @@ namespace ToolKit
       {
         int layer = dLight->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
+
         renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         Stats::AddHWRenderPass();
 
-        Vec2 coord       = dLight->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal().GetValue<float>();
-        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+        UVec2 coord     = dLight->m_shadowAtlasCoords[i];
+        uint resolution = (uint) light->GetShadowResVal().GetValue<float>();
+        renderer->SetViewportSize(coord.x, coord.y, resolution, resolution);
 
         RenderShadowMap(light, dLight->m_cascadeShadowCameras[i], dLight->m_cascadeCullCameras[i]);
 
@@ -184,17 +185,15 @@ namespace ToolKit
         int layer = light->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
 
-        Stats::AddHWRenderPass();
-
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
         renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         Stats::AddHWRenderPass();
 
-        Vec2 coord       = light->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal().GetValue<float>();
-        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+        UVec2 coord     = light->m_shadowAtlasCoords[i];
+        uint resolution = (uint) light->GetShadowResVal().GetValue<float>();
+        renderer->SetViewportSize(coord.x, coord.y, resolution, resolution);
 
         RenderShadowMap(light, light->m_shadowCamera, light->m_shadowCamera);
 
@@ -210,15 +209,14 @@ namespace ToolKit
                                               m_shadowAtlas,
                                               0,
                                               light->m_shadowAtlasLayers[0]);
-      Stats::AddHWRenderPass();
 
       renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       Stats::AddHWRenderPass();
 
-      Vec2 coord       = light->m_shadowAtlasCoords[0];
-      float resolution = light->GetShadowResVal().GetValue<float>();
+      UVec2 coord     = light->m_shadowAtlasCoords[0];
+      uint resolution = (uint) light->GetShadowResVal().GetValue<float>();
 
-      renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+      renderer->SetViewportSize(coord.x, coord.y, resolution, resolution);
       RenderShadowMap(light, light->m_shadowCamera, light->m_shadowCamera);
 
       // Depth is invalidated because, atlas has the shadow map.
