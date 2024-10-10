@@ -65,7 +65,7 @@ namespace ToolKit
      * To set the define values, the shader must be initialized.
      * This function won't add new defines or variants, only sets the existing shader variant.
      */
-    void SetDefine(const String& name, const String& val);
+    void SetDefine(const StringView name, const StringView val);
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
