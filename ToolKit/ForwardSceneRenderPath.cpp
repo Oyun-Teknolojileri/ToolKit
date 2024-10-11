@@ -119,14 +119,8 @@ namespace ToolKit
 
   void ForwardSceneRenderPath::SetPassParams()
   {
-    Stats::BeginTimeScope("FrustumCull");
-
     Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
     EntityRawPtrArray entities = m_params.Scene->m_aabbTree.VolumeQuery(frustum);
-
-    Stats::EndTimeScope("FrustumCull");
-
-    Stats::BeginTimeScope("CreateRenderJob");
 
     LightRawPtrArray lights;
     if (m_params.overrideLights.empty())
@@ -162,8 +156,6 @@ namespace ToolKit
     int dirEndIndx                                   = RenderJobProcessor::PreSortLights(lights);
     const EnvironmentComponentPtrArray& environments = m_params.Scene->GetEnvironmentVolumes();
     RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false, dirEndIndx, lights, environments);
-
-    Stats::EndTimeScope("CreateRenderJob");
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;

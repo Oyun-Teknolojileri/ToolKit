@@ -137,6 +137,7 @@ namespace ToolKit
 
    private:
     /**
+     * The map holds the compiled shader resource id for given key.
      * Shaders may hold multiple defines and multiple variants per define. Which leads to a combination of
      * Shaders based on defines and their values. The key string is constructed from the current define values and
      * points to the version of the compiled shader for the given combination. The look up table is used to find the

@@ -15,7 +15,6 @@
 	<uniform name = "roughness" />
   <uniform name = "normalMapInUse" />
 	<define name = "EnableDiscardPixel" val="0,1" />
-	<define name = "SMFormat16Bit" val="0,1" />
 	<source>
 	<!--
 		#version 300 es
