@@ -286,7 +286,7 @@ namespace ToolKit
 
     // Set material and program.
     MaterialPtr shadowMaterial = lightType == Light::LightType::Directional ? m_shadowMatOrtho : m_shadowMatPersp;
-    shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+    shadowMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
     m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
@@ -301,9 +301,7 @@ namespace ToolKit
     }
 
     // Draw alpha masked.
-    shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
-    shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "1");
-
+    shadowMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "1");
     m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
     renderer->BindProgram(m_program);
 
@@ -313,17 +311,7 @@ namespace ToolKit
       renderer->Render(*jobItr);
     }
 
-    // Draw translucent.
-    shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "0");
-
-    m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
-    renderer->BindProgram(m_program);
-
-    RenderJobItr jobItrEnd = renderData.jobs.end();
-    for (RenderJobItr jobItr = translucentBegin; jobItr < jobItrEnd; jobItr++)
-    {
-      renderer->Render(*jobItr);
-    }
+    // Translucent shadow is not supported.
 
     renderer->OverrideBlendState(false, BlendFunction::NONE);
   }

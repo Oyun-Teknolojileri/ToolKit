@@ -69,7 +69,7 @@ namespace ToolKit
     ConfigureProgram();
 
     // Render opaque.
-    m_programConfigMat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+    m_programConfigMat->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
     GpuProgramPtr gpuProgram =
         GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
 
@@ -78,7 +78,7 @@ namespace ToolKit
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
 
     // Render alpha masked.
-    m_programConfigMat->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
+    m_programConfigMat->m_fragmentShader->SetDefine("DrawAlphaMasked", "1");
     gpuProgram =
         GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
 
