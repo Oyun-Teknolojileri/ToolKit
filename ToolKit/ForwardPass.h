@@ -43,8 +43,16 @@ namespace ToolKit
                             RenderJobItr end,
                             GpuProgramPtr defaultGpuProgram);
 
+    void ConfigureProgram();
+
    public:
     ForwardRenderPassParams m_params;
+
+   private:
+    bool m_SMFormat16Bit = false;
+    bool m_EVSM4         = false;
+
+    MaterialPtr m_programConfigMat;
   };
 
   typedef std::shared_ptr<ForwardRenderPass> ForwardRenderPassPtr;

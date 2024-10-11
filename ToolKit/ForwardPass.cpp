@@ -17,7 +17,13 @@
 namespace ToolKit
 {
 
-  ForwardRenderPass::ForwardRenderPass() : Pass("ForwardRenderPass") {}
+  ForwardRenderPass::ForwardRenderPass() : Pass("ForwardRenderPass")
+  {
+    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
+    m_EVSM4                                           = graphicsSettings.useEVSM4;
+    m_SMFormat16Bit                                   = graphicsSettings.use32BitShadowMap;
+    m_programConfigMat                                = GetMaterialManager()->GetCopyOfDefaultMaterial();
+  }
 
   void ForwardRenderPass::Render()
   {
@@ -35,84 +41,69 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
     renderer->SetCamera(m_params.Cam, true);
 
+    // Adjust the depth test considering z-pre pass.
     if (m_params.hasForwardPrePass)
     {
+      // This is the optimal flag if the depth buffer is filled.
+      // Only the visible fragments will pass the test.
       renderer->SetDepthTestFunc(CompareFunctions::FuncEqual);
+    }
+    else
+    {
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
     }
   }
 
   void ForwardRenderPass::PostRender()
   {
     Pass::PostRender();
-    Renderer* renderer = GetRenderer();
 
-    if (m_params.hasForwardPrePass)
-    {
-      renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
-    }
+    // Set the default depth test.
+    Renderer* renderer = GetRenderer();
+    renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
   }
 
   void ForwardRenderPass::RenderOpaque(RenderData* renderData)
   {
-    const MaterialPtr mat = GetMaterialManager()->GetDefaultMaterial();
-    mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+    // Adjust program configuration.
+    ConfigureProgram();
 
-    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
-    mat->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
-    mat->m_fragmentShader->SetDefine("SMFormat16Bit", graphicsSettings.use32BitShadowMap ? "0" : "1");
+    // Render opaque.
+    m_programConfigMat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
+    GpuProgramPtr gpuProgram =
+        GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
 
-    GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
-
-    RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
-    RenderJobItr end         = renderData->GetForwardAlphaMaskedBegin();
+    RenderJobItr begin = renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = renderData->GetForwardAlphaMaskedBegin();
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
 
-    mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
-    gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
+    // Render alpha masked.
+    m_programConfigMat->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
+    gpuProgram =
+        GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
 
-    begin      = renderData->GetForwardAlphaMaskedBegin();
-    end        = renderData->GetForwardTranslucentBegin();
+    begin = renderData->GetForwardAlphaMaskedBegin();
+    end   = renderData->GetForwardTranslucentBegin();
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
-
-    mat->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
   }
 
   void ForwardRenderPass::RenderTranslucent(RenderData* renderData)
   {
-    RenderJobItr begin = renderData->GetForwardTranslucentBegin();
-    RenderJobItr end   = renderData->jobs.end();
+    ConfigureProgram();
 
-    RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
+    GpuProgramPtr program =
+        GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
 
     Renderer* renderer = GetRenderer();
-    auto renderFnc     = [&](RenderJob& job)
-    {
-      Material* mat = job.Material;
-      if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
-      {
-        mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job);
+    renderer->BindProgram(program);
 
-        mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job);
-
-        mat->GetRenderState()->cullMode = CullingType::TwoSided;
-      }
-      else
-      {
-        renderer->Render(job);
-      }
-    };
-
-    const MaterialPtr mat                             = GetMaterialManager()->GetDefaultMaterial();
-
-    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
-    mat->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
-
-    GpuProgramPtr program = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
+    RenderJobItr begin = renderData->GetForwardTranslucentBegin();
+    RenderJobItr end   = renderData->jobs.end();
+    RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
 
     if (begin != end)
     {
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
       renderer->EnableDepthWrite(false);
       for (RenderJobArray::iterator job = begin; job != end; job++)
       {
@@ -120,11 +111,22 @@ namespace ToolKit
         {
           renderer->BindProgramOfMaterial(job->Material);
         }
+
+        Material* mat = job->Material;
+        if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
+        {
+          mat->GetRenderState()->cullMode = CullingType::Front;
+          renderer->Render(*job);
+
+          mat->GetRenderState()->cullMode = CullingType::Back;
+          renderer->Render(*job);
+
+          mat->GetRenderState()->cullMode = CullingType::TwoSided;
+        }
         else
         {
-          renderer->BindProgram(program);
+          renderer->Render(*job);
         }
-        renderFnc(*job);
       }
       renderer->EnableDepthWrite(true);
     }
@@ -136,7 +138,6 @@ namespace ToolKit
                                              GpuProgramPtr defaultGpuProgram)
   {
     Renderer* renderer = GetRenderer();
-
     renderer->SetAmbientOcclusionTexture(m_params.SsaoTexture);
 
     for (RenderJobItr job = begin; job != end; job++)
@@ -150,6 +151,22 @@ namespace ToolKit
         renderer->BindProgram(defaultGpuProgram);
         renderer->Render(*job);
       }
+    }
+  }
+
+  void ForwardRenderPass::ConfigureProgram()
+  {
+    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
+    if (graphicsSettings.useEVSM4 != m_EVSM4)
+    {
+      m_EVSM4 = graphicsSettings.useEVSM4;
+      m_programConfigMat->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
+    }
+
+    if (graphicsSettings.use32BitShadowMap != m_SMFormat16Bit)
+    {
+      m_SMFormat16Bit = graphicsSettings.use32BitShadowMap;
+      m_programConfigMat->m_fragmentShader->SetDefine("SMFormat16Bit", graphicsSettings.use32BitShadowMap ? "0" : "1");
     }
   }
 

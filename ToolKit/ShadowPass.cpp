@@ -110,6 +110,8 @@ namespace ToolKit
   {
     Pass::PreRender();
 
+    Stats::BeginTimeScope("ShadowPassTime");
+
     EngineSettings& settings = GetEngineSettings();
     if (settings.Graphics.useParallelSplitPartitioning)
     {
@@ -147,7 +149,12 @@ namespace ToolKit
     InitShadowAtlas();
   }
 
-  void ShadowPass::PostRender() { Pass::PostRender(); }
+  void ShadowPass::PostRender()
+  {
+    Stats::EndTimeScope("ShadowPassTime");
+
+    Pass::PostRender();
+  }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
@@ -279,9 +286,7 @@ namespace ToolKit
 
     // Set material and program.
     MaterialPtr shadowMaterial = lightType == Light::LightType::Directional ? m_shadowMatOrtho : m_shadowMatPersp;
-    shadowMaterial->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
     shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
-    shadowMaterial->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
     m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
@@ -454,6 +459,14 @@ namespace ToolKit
 
     if (needChange && !m_lights.empty())
     {
+      // Update materials.
+      m_shadowMatOrtho->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
+      m_shadowMatOrtho->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
+
+      m_shadowMatPersp->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
+      m_shadowMatPersp->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
+
+      // Update layers.
       m_previousShadowCasters.resize(nextId);
 
       // Place shadow textures to atlas
