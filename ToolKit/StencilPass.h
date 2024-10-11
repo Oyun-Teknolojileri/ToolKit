@@ -28,8 +28,6 @@ namespace ToolKit
   {
    public:
     StencilRenderPass();
-    explicit StencilRenderPass(const StencilRenderPassParams& params);
-    ~StencilRenderPass();
 
     void Render() override;
     void PreRender() override;

@@ -39,8 +39,6 @@ namespace ToolKit
     m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet, "LinearDepthRT");
   }
 
-  ForwardPreProcessPass::~ForwardPreProcessPass() {}
-
   void ForwardPreProcessPass::InitBuffers(int width, int height, int sampleCount)
   {
     const FramebufferSettings& fbs = m_framebuffer->GetSettings();
@@ -67,32 +65,32 @@ namespace ToolKit
     // Currently transparent objects are not rendered to export screen space normals or linear depth
     // we want SSAO and DOF to effect on opaque objects only renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
 
-    Renderer* renderer                      = GetRenderer();
-
-    const auto renderLinearDepthAndNormalFn = [&](RenderJobItr begin, RenderJobItr end)
-    {
-      for (RenderJobItr job = begin; job != end; job++)
-      {
-        renderer->Render(*job);
-      }
-    };
+    RenderJobItr begin = m_params.renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = m_params.renderData->GetForwardAlphaMaskedBegin();
+    m_linearMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
-
-    RenderJobItr begin                   = m_params.renderData->GetForwardOpaqueBegin();
-    RenderJobItr end                     = m_params.renderData->GetForwardAlphaMaskedBegin();
-
-    m_linearMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
     m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
+
+    Renderer* renderer = GetRenderer();
     renderer->BindProgram(m_program);
-    renderLinearDepthAndNormalFn(begin, end);
+
+    for (RenderJobItr job = begin; job != end; job++)
+    {
+      renderer->Render(*job);
+    }
 
     begin = m_params.renderData->GetForwardAlphaMaskedBegin();
     end   = m_params.renderData->GetForwardTranslucentBegin();
-    m_linearMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
+    m_linearMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "1");
+
     m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
     renderer->BindProgram(m_program);
-    renderLinearDepthAndNormalFn(begin, end);
+
+    for (RenderJobItr job = begin; job != end; job++)
+    {
+      renderer->Render(*job);
+    }
   }
 
   void ForwardPreProcessPass::PreRender()

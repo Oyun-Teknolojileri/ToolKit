@@ -21,14 +21,6 @@ namespace ToolKit
     m_copyTexture                    = MakeNewPtr<RenderTarget>();
   }
 
-  DoFPass::DoFPass(const DoFPassParams& params) : DoFPass() { m_params = params; }
-
-  DoFPass::~DoFPass()
-  {
-    m_dofShader = nullptr;
-    m_quadPass  = nullptr;
-  }
-
   void DoFPass::PreRender()
   {
     Pass::PreRender();

@@ -25,15 +25,6 @@ namespace ToolKit
     m_material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
   }
 
-  FullQuadPass::FullQuadPass(const FullQuadPassParams& params) : FullQuadPass() { m_params = params; }
-
-  FullQuadPass::~FullQuadPass()
-  {
-    m_camera   = nullptr;
-    m_quad     = nullptr;
-    m_material = nullptr;
-  }
-
   void FullQuadPass::Render()
   {
     Renderer* renderer = GetRenderer();

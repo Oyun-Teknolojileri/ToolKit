@@ -71,7 +71,7 @@ namespace ToolKit
     m_initiated = false;
   }
 
-  void Shader::SetDefine(const String& name, const String& val)
+  void Shader::SetDefine(const StringView name, const StringView val)
   {
     // Sanity checks.
     if (!m_initiated)
@@ -104,14 +104,14 @@ namespace ToolKit
 
         if (variantIndx == -1)
         {
-          TK_WRN("Shader define can't be set. There is no variant: %s for define: %s", name.c_str(), val.c_str());
+          TK_WRN("Shader define can't be set. There is no variant: %s for define: %s", name.data(), val.data());
           return;
         }
       }
 
-      String defName  = m_defineArray[defineIndx].define;
-      String defVal   = m_defineArray[defineIndx].variants[variantIndx];
-      key            += defName + ":" + defVal + "|";
+      const String& defName  = m_defineArray[defineIndx].define;
+      const String& defVal   = m_defineArray[defineIndx].variants[variantIndx];
+      key                   += defName + ":" + defVal + "|";
     }
 
     key.pop_back();

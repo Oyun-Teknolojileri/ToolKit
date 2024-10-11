@@ -71,7 +71,7 @@ namespace ToolKit
 
     /** Template for volume queries. VolumeTypes: {Frustum, BoundingBox} */
     template <typename VolumeType>
-    EntityRawPtrArray VolumeQuery(const VolumeType& vol, bool threaded = true) const;
+    EntityRawPtrArray VolumeQuery(const VolumeType& vol, bool threaded = false) const;
 
     /**
      * Test ray against the tree and returns the nearest entity that hits the ray and the hit distance t.

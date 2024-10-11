@@ -110,6 +110,8 @@ namespace ToolKit
   {
     Pass::PreRender();
 
+    Stats::BeginTimeScope("ShadowPassTime");
+
     EngineSettings& settings = GetEngineSettings();
     if (settings.Graphics.useParallelSplitPartitioning)
     {
@@ -147,7 +149,12 @@ namespace ToolKit
     InitShadowAtlas();
   }
 
-  void ShadowPass::PostRender() { Pass::PostRender(); }
+  void ShadowPass::PostRender()
+  {
+    Stats::EndTimeScope("ShadowPassTime");
+
+    Pass::PostRender();
+  }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 
@@ -164,12 +171,13 @@ namespace ToolKit
       {
         int layer = dLight->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
+
         renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         Stats::AddHWRenderPass();
 
-        Vec2 coord       = dLight->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal().GetValue<float>();
-        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+        UVec2 coord     = dLight->m_shadowAtlasCoords[i];
+        uint resolution = (uint) light->GetShadowResVal().GetValue<float>();
+        renderer->SetViewportSize(coord.x, coord.y, resolution, resolution);
 
         RenderShadowMap(light, dLight->m_cascadeShadowCameras[i], dLight->m_cascadeCullCameras[i]);
 
@@ -184,17 +192,15 @@ namespace ToolKit
         int layer = light->m_shadowAtlasLayers[i];
         m_shadowFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_shadowAtlas, 0, layer);
 
-        Stats::AddHWRenderPass();
-
         light->m_shadowCamera->m_node->SetTranslation(light->m_node->GetTranslation());
         light->m_shadowCamera->m_node->SetOrientation(m_cubeMapRotations[i]);
 
         renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
         Stats::AddHWRenderPass();
 
-        Vec2 coord       = light->m_shadowAtlasCoords[i];
-        float resolution = light->GetShadowResVal().GetValue<float>();
-        renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+        UVec2 coord     = light->m_shadowAtlasCoords[i];
+        uint resolution = (uint) light->GetShadowResVal().GetValue<float>();
+        renderer->SetViewportSize(coord.x, coord.y, resolution, resolution);
 
         RenderShadowMap(light, light->m_shadowCamera, light->m_shadowCamera);
 
@@ -210,15 +216,14 @@ namespace ToolKit
                                               m_shadowAtlas,
                                               0,
                                               light->m_shadowAtlasLayers[0]);
-      Stats::AddHWRenderPass();
 
       renderer->ClearBuffer(GraphicBitFields::DepthBits, m_shadowClearColor);
       Stats::AddHWRenderPass();
 
-      Vec2 coord       = light->m_shadowAtlasCoords[0];
-      float resolution = light->GetShadowResVal().GetValue<float>();
+      UVec2 coord     = light->m_shadowAtlasCoords[0];
+      uint resolution = (uint) light->GetShadowResVal().GetValue<float>();
 
-      renderer->SetViewportSize((uint) coord.x, (uint) coord.y, (uint) resolution, (uint) resolution);
+      renderer->SetViewportSize(coord.x, coord.y, resolution, resolution);
       RenderShadowMap(light, light->m_shadowCamera, light->m_shadowCamera);
 
       // Depth is invalidated because, atlas has the shadow map.
@@ -270,6 +275,8 @@ namespace ToolKit
                {
                  return !mc->GetCastShadowVal();
                }
+
+               return false;
              });
 
     RenderJobProcessor::CreateRenderJobs(renderData.jobs, entities);
@@ -279,9 +286,7 @@ namespace ToolKit
 
     // Set material and program.
     MaterialPtr shadowMaterial = lightType == Light::LightType::Directional ? m_shadowMatOrtho : m_shadowMatPersp;
-    shadowMaterial->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
-    shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "0");
-    shadowMaterial->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
+    shadowMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
     m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
@@ -296,9 +301,7 @@ namespace ToolKit
     }
 
     // Draw alpha masked.
-    shadowMaterial->m_fragmentShader->SetDefine("EnableDiscardPixel", "1");
-    shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "1");
-
+    shadowMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "1");
     m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
     renderer->BindProgram(m_program);
 
@@ -308,17 +311,7 @@ namespace ToolKit
       renderer->Render(*jobItr);
     }
 
-    // Draw translucent.
-    shadowMaterial->m_fragmentShader->SetDefine("UseAlphaMask", "0");
-
-    m_program = gpuProgramManager->CreateProgram(shadowMaterial->m_vertexShader, shadowMaterial->m_fragmentShader);
-    renderer->BindProgram(m_program);
-
-    RenderJobItr jobItrEnd = renderData.jobs.end();
-    for (RenderJobItr jobItr = translucentBegin; jobItr < jobItrEnd; jobItr++)
-    {
-      renderer->Render(*jobItr);
-    }
+    // Translucent shadow is not supported.
 
     renderer->OverrideBlendState(false, BlendFunction::NONE);
   }
@@ -454,6 +447,14 @@ namespace ToolKit
 
     if (needChange && !m_lights.empty())
     {
+      // Update materials.
+      m_shadowMatOrtho->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
+      m_shadowMatOrtho->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
+
+      m_shadowMatPersp->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
+      m_shadowMatPersp->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
+
+      // Update layers.
       m_previousShadowCasters.resize(nextId);
 
       // Place shadow textures to atlas

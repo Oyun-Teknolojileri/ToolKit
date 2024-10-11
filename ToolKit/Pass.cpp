@@ -95,7 +95,7 @@ namespace ToolKit
 
     // Construct jobs.
     using poolstl::iota_iter;
-    std::for_each(TKExecByConditional(entities.size() > 100, WorkerManager::FramePool),
+    std::for_each(TKExecByConditional(entities.size() > 1000, WorkerManager::FramePool),
                   iota_iter<size_t>(0),
                   iota_iter<size_t>(entities.size()),
                   [&](size_t nttIndex)

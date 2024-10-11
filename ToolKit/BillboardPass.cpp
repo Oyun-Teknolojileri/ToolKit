@@ -14,10 +14,6 @@ namespace ToolKit
 {
   BillboardPass::BillboardPass() : Pass("BillboardPass") {}
 
-  BillboardPass::BillboardPass(const BillboardPassParams& params) : BillboardPass() {}
-
-  BillboardPass::~BillboardPass() {}
-
   void BillboardPass::Render()
   {
     Renderer* renderer = GetRenderer();

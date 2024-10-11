@@ -19,11 +19,6 @@ namespace ToolKit
     m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("gammaTonemapFxaa.shader", true));
   }
 
-  GammaTonemapFxaaPass::GammaTonemapFxaaPass(const GammaTonemapFxaaPassParams& params) : GammaTonemapFxaaPass()
-  {
-    m_params = params;
-  }
-
   void GammaTonemapFxaaPass::PreRender()
   {
     Pass::PreRender();

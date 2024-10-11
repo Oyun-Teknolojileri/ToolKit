@@ -4,8 +4,7 @@
 	<uniform name = "DiffuseTextureInUse" />
 	<uniform name = "ColorAlpha" />
 	<uniform name = "alphaMaskTreshold" />
-	<define name = "UseAlphaMask" val="0,1" />
-	<define name = "EnableDiscardPixel" val="0,1" />
+	<define name = "DrawAlphaMasked" val="0,1" />
 	<define name = "EVSM4" val="0,1" />
 	<source>
 	<!--
@@ -23,6 +22,7 @@ out vec4 fragColor;
 
 void main()
 {
+#if DrawAlphaMasked
 	float alpha = 1.0;
 	if (DiffuseTextureInUse == 1)
 	{
@@ -33,24 +33,16 @@ void main()
 		alpha = ColorAlpha;
 	}
 
-	#if EnableDiscardPixel
-		#if UseAlphaMask
-			if (alpha < alphaMaskTreshold)
-			{
-				discard;
-			}
-		#else 
-			if (alpha < 0.1)
-			{
-				discard;
-			}
-		#endif
-	#endif
+	if (alpha <= alphaMaskTreshold)
+	{
+		discard;
+	}
+#endif
 
 	vec2 exponents = EvsmExponents;
 	vec2 vsmDepth = WarpDepth(gl_FragCoord.z, exponents);
 
-	#if EVSM4
+#if EVSM4
 		fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy);
 	#else
 		fragColor = vec4(vsmDepth.xy, vsmDepth.xy * vsmDepth.xy).xzxz;

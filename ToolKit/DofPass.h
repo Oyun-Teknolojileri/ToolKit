@@ -33,8 +33,6 @@ namespace ToolKit
   {
    public:
     DoFPass();
-    explicit DoFPass(const DoFPassParams& params);
-    ~DoFPass();
 
     void Render() override;
     void PreRender() override;

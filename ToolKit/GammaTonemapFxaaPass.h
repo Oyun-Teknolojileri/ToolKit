@@ -33,7 +33,6 @@ namespace ToolKit
   {
    public:
     GammaTonemapFxaaPass();
-    GammaTonemapFxaaPass(const GammaTonemapFxaaPassParams& params);
 
     void PreRender() override;
     void Render() override;
