@@ -448,10 +448,10 @@ namespace ToolKit
     if (needChange && !m_lights.empty())
     {
       // Update materials.
-      m_shadowMatOrtho->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
+      m_shadowMatOrtho->m_fragmentShader->SetDefine("EVSM4", std::to_string(m_useEVSM4));
       m_shadowMatOrtho->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
 
-      m_shadowMatPersp->m_fragmentShader->SetDefine("EVSM4", m_useEVSM4 ? "1" : "0");
+      m_shadowMatPersp->m_fragmentShader->SetDefine("EVSM4", std::to_string(m_useEVSM4));
       m_shadowMatPersp->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(!m_use32BitShadowMap));
 
       // Update layers.

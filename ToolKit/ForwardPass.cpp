@@ -21,8 +21,12 @@ namespace ToolKit
   {
     EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
     m_EVSM4                                           = graphicsSettings.useEVSM4;
-    m_SMFormat16Bit                                   = graphicsSettings.use32BitShadowMap;
+    m_SMFormat16Bit                                   = !graphicsSettings.use32BitShadowMap;
+
     m_programConfigMat                                = GetMaterialManager()->GetCopyOfDefaultMaterial();
+
+    m_programConfigMat->m_fragmentShader->SetDefine("EVSM4", std::to_string(m_EVSM4));
+    m_programConfigMat->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(m_SMFormat16Bit));
   }
 
   void ForwardRenderPass::Render()
@@ -90,6 +94,8 @@ namespace ToolKit
   void ForwardRenderPass::RenderTranslucent(RenderData* renderData)
   {
     ConfigureProgram();
+
+    m_programConfigMat->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
 
     GpuProgramPtr program =
         GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
@@ -160,13 +166,14 @@ namespace ToolKit
     if (graphicsSettings.useEVSM4 != m_EVSM4)
     {
       m_EVSM4 = graphicsSettings.useEVSM4;
-      m_programConfigMat->m_fragmentShader->SetDefine("EVSM4", graphicsSettings.useEVSM4 ? "1" : "0");
+      m_programConfigMat->m_fragmentShader->SetDefine("EVSM4", std::to_string(m_EVSM4));
     }
 
-    if (graphicsSettings.use32BitShadowMap != m_SMFormat16Bit)
+    bool is16Bit = !graphicsSettings.use32BitShadowMap;
+    if (is16Bit != m_SMFormat16Bit)
     {
-      m_SMFormat16Bit = graphicsSettings.use32BitShadowMap;
-      m_programConfigMat->m_fragmentShader->SetDefine("SMFormat16Bit", graphicsSettings.use32BitShadowMap ? "0" : "1");
+      m_SMFormat16Bit = is16Bit;
+      m_programConfigMat->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(is16Bit));
     }
   }
 
