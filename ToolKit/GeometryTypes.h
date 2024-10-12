@@ -31,15 +31,13 @@ namespace ToolKit
     T Height; //!< The height of the rectangle.
   };
 
-  /**
-   * A typedef for an integer-based rectangle.
-   */
-  typedef Rect<int> IRectangle;
-
-  /**
-   *  A typedef for a float-based rectangle.
-   */
-  typedef Rect<float> FRectangle;
+  /** Intersection result enum. */
+  enum class IntersectResult
+  {
+    Outside,
+    Inside,
+    Intersect
+  };
 
   /**
    *  A struct representing a bounding box in 3D space.

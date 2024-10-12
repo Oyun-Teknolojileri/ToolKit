@@ -178,8 +178,6 @@ namespace ToolKit
   template <typename T>
   std::vector<T*> ToRawPtrArray(const std::vector<std::shared_ptr<T>>& objectArray)
   {
-    // static_assert(T::StaticClass()->IsA(Object));
-
     std::vector<T*> rawPtrArray;
     rawPtrArray.resize(objectArray.size());
     for (size_t i = 0; i < objectArray.size(); i++)
@@ -188,25 +186,6 @@ namespace ToolKit
     }
 
     return rawPtrArray;
-  }
-
-  /** Move entities of type T to filtered array. */
-  template <typename T>
-  void MoveByType(EntityRawPtrArray& entities, std::vector<T*>& filtered)
-  {
-    auto it = std::partition(entities.begin(),
-                             entities.end(),
-                             [&filtered](Entity* ntt)
-                             {
-                               if (static_cast<Object*>(ntt)->IsA<T>())
-                               {
-                                 filtered.emplace_back(static_cast<T*>(ntt));
-                                 return false; // Keep elements of type T.
-                               }
-                               return true; // Remove elements thats not of type T.
-                             });
-
-    entities.erase(it, entities.end());
   }
 
   TK_API void GetParents(const EntityPtr ntt, EntityPtrArray& parents);

@@ -39,6 +39,7 @@
 #include <future>
 #include <limits>
 #include <memory>
+#include <queue>
 #include <random>
 #include <set>
 #include <string>

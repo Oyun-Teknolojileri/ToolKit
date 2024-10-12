@@ -10,6 +10,7 @@
 #include "TKAssert.h"
 #include "TKOpenGL.h"
 #include "ToolKit.h"
+#include "Util.h"
 
 namespace ToolKit
 {

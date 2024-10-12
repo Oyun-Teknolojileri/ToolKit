@@ -8,6 +8,8 @@
 #define GLAD_GLES2_IMPLEMENTATION
 #include "TKOpenGL.h"
 
+#include "Types.h"
+
 namespace ToolKit
 {
 
@@ -21,9 +23,9 @@ namespace ToolKit
 
   TKGL_PushGroupMarker tk_glPushGroupMarkerEXT                                 = nullptr;
 
-  TKGL_GetObjectLabelEXT tk_glGetObjectLabelEXT                                = nullptr;
+  TKGL_GetObjectLabel tk_glGetObjectLabelEXT                                   = nullptr;
 
-  TKGL_LabelObjectEXT tk_glLabelObjectEXT                                      = nullptr;
+  TKGL_LabelObject tk_glLabelObjectEXT                                         = nullptr;
 
   int TK_GL_EXT_texture_filter_anisotropic                                     = 0;
 
@@ -76,6 +78,12 @@ namespace ToolKit
         (TKGL_RenderbufferStorageMultisample) glLoader("glRenderbufferStorageMultisampleEXT");
     tk_glFramebufferTexture2DMultisampleEXT =
         (TKGL_FramebufferTexture2DMultisample) glLoader("glFramebufferTexture2DMultisampleEXT");
+
+    tk_glInsertEventMarkerEXT         = (TKGL_InsertEventMarker) glLoader("glInsertEventMarkerEXT");
+    tk_glPopGroupMarkerEXT            = (TKGL_PopGroupMarker) glLoader("glPopGroupMarkerEXT");
+    tk_glPushGroupMarkerEXT           = (TKGL_PushGroupMarker) glLoader("glPushGroupMarkerEXT");
+    tk_glLabelObjectEXT               = (TKGL_LabelObject) glLoader("glLabelObjectEXT");
+    tk_glGetObjectLabelEXT            = (TKGL_GetObjectLabel) glLoader("glGetObjectLabelEXT");
 
     // String Checks for Extensions.
     PFNGLGETSTRINGPROC tk_glGetString = nullptr;

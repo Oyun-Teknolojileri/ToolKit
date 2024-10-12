@@ -110,8 +110,6 @@ namespace ToolKit
   {
     Pass::PreRender();
 
-    Stats::BeginTimeScope("ShadowPassTime");
-
     EngineSettings& settings = GetEngineSettings();
     if (settings.Graphics.useParallelSplitPartitioning)
     {
@@ -149,12 +147,7 @@ namespace ToolKit
     InitShadowAtlas();
   }
 
-  void ShadowPass::PostRender()
-  {
-    Stats::EndTimeScope("ShadowPassTime");
-
-    Pass::PostRender();
-  }
+  void ShadowPass::PostRender() { Pass::PostRender(); }
 
   RenderTargetPtr ShadowPass::GetShadowAtlas() { return m_shadowAtlas; }
 

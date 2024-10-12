@@ -23,16 +23,16 @@ namespace ToolKit
   // GL_EXT_debug_label
   //////////////////////////////////////////
   typedef void(
-      TK_STDCAL* TKGL_GetObjectLabelEXT)(GLenum type, GLuint object, GLsizei bufSize, GLsizei* length, GLchar* label);
+      TK_STDCAL* TKGL_GetObjectLabel)(GLenum type, GLuint object, GLsizei bufSize, GLsizei* length, GLchar* label);
 
-  extern TKGL_GetObjectLabelEXT tk_glGetObjectLabelEXT;
+  extern TKGL_GetObjectLabel tk_glGetObjectLabelEXT;
 
 #undef glGetObjectLabelEXT
 #define glGetObjectLabelEXT tk_glGetObjectLabelEXT
 
-  typedef void(TK_STDCAL* TKGL_LabelObjectEXT)(GLenum type, GLuint object, GLsizei length, const GLchar* label);
+  typedef void(TK_STDCAL* TKGL_LabelObject)(GLenum type, GLuint object, GLsizei length, const GLchar* label);
 
-  extern TKGL_LabelObjectEXT tk_glLabelObjectEXT;
+  extern TKGL_LabelObject tk_glLabelObjectEXT;
 
 #undef glLabelObjectEXT
 #define glLabelObjectEXT tk_glLabelObjectEXT

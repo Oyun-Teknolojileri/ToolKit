@@ -46,13 +46,6 @@ namespace ToolKit
   // Intersections
   //////////////////////////////////////////
 
-  enum class IntersectResult
-  {
-    Outside,
-    Inside,
-    Intersect
-  };
-
   TK_API float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b);
 
   TK_API bool SphereBoxIntersection(const BoundingSphere& s, const BoundingBox& b);

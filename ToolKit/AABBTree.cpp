@@ -7,7 +7,10 @@
 
 #include "AABBTree.h"
 
+#include "Entity.h"
 #include "MathUtil.h"
+#include "Primative.h"
+#include "Threads.h"
 
 namespace ToolKit
 {
@@ -393,8 +396,12 @@ namespace ToolKit
 
   void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const
   {
-    Traverse([&](const AABBNode* node) -> void
-             { boundingBoxes.push_back(CreateBoundingBoxDebugObject(node->aabb, ZERO, 1.0f)); });
+    Traverse(
+        [&](const AABBNode* node) -> void
+        {
+          LineBatchPtr boxLines = CreateBoundingBoxDebugObject(node->aabb, ZERO, 1.0f);
+          boundingBoxes.push_back(Cast<Entity>(boxLines));
+        });
   }
 
   void AABBTree::FreeNode(AABBNodeProxy node)
@@ -547,7 +554,7 @@ namespace ToolKit
   void AABBTree::VolumeQuery(EntityRawPtrArray& result,
                              std::atomic_int& threadCount,
                              AABBNodeProxy root,
-                             std::function<enum class IntersectResult(AABBNodeProxy)> queryFn) const
+                             std::function<IntersectResult(AABBNodeProxy)> queryFn) const
   {
     std::deque<AABBNodeProxy> stack;
     stack.emplace_back(root);

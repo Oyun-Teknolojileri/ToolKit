@@ -89,7 +89,7 @@ namespace ToolKit
     void VolumeQuery(EntityRawPtrArray& result,
                      std::atomic_int& threadCount,
                      AABBNodeProxy root,
-                     std::function<enum class IntersectResult(AABBNodeProxy)> queryFn) const;
+                     std::function<IntersectResult(AABBNodeProxy)> queryFn) const;
 
    private:
     AABBNodeProxy m_root;

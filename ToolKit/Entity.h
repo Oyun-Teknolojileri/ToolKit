@@ -23,6 +23,9 @@
 namespace ToolKit
 {
 
+  // Entity
+  //////////////////////////////////////////
+
   static VariantCategory EntityCategory {"Meta", 100};
 
   /**
@@ -232,6 +235,31 @@ namespace ToolKit
     ComponentPtrArray m_components;
   };
 
+  // Entity Container functions.
+  //////////////////////////////////////////
+
+  /** Move entities of type T to filtered array. */
+  template <typename T>
+  void MoveByType(EntityRawPtrArray& entities, std::vector<T*>& filtered)
+  {
+    auto it = std::partition(entities.begin(),
+                             entities.end(),
+                             [&filtered](Entity* ntt)
+                             {
+                               if (static_cast<Entity*>(ntt)->IsA<T>())
+                               {
+                                 filtered.emplace_back(static_cast<T*>(ntt));
+                                 return false; // Keep elements of type T.
+                               }
+                               return true; // Remove elements thats not of type T.
+                             });
+
+    entities.erase(it, entities.end());
+  }
+
+  // EntityNode
+  //////////////////////////////////////////
+
   class TK_API EntityNode : public Entity
   {
    public:
@@ -246,6 +274,9 @@ namespace ToolKit
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
+
+  // EntityFactory
+  //////////////////////////////////////////
 
   /**
    * DEPRECATED use ObjectFactory
