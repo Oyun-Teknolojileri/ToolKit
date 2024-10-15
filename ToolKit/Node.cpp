@@ -39,14 +39,24 @@ namespace ToolKit
 
   void Node::Translate(const Vec3& val, TransformationSpace space)
   {
-    Mat4 ts = glm::translate(Mat4(), val);
-    TransformImp(ts, space, &m_translation, nullptr, nullptr);
+    Vec3 translation = val;
+    if (space == TransformationSpace::TS_WORLD)
+    {
+      if (m_parent)
+      {
+        Quaternion parentWorldOrientation = m_parent->GetWorldOrientationCache();
+        translation                       = glm::inverse(parentWorldOrientation) * val;
+      }
+    }
+
+    m_translation += translation;
+    UpdateTransformCaches();
   }
 
   void Node::Rotate(const Quaternion& val, TransformationSpace space)
   {
     if (space == TransformationSpace::TS_LOCAL)
-    {
+      {
       m_orientation = m_orientation * val;
     }
     else
@@ -95,20 +105,13 @@ namespace ToolKit
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
   {
-    if (space == TransformationSpace::TS_LOCAL)
-    {
-      m_orientation = val;
-    }
-    else
+    m_orientation = val;
+    if (space == TransformationSpace::TS_WORLD)
     {
       if (m_parent)
       {
         Quaternion parentWorldOrientation = m_parent->GetWorldOrientationCache();
         m_orientation                     = glm::inverse(parentWorldOrientation) * val;
-      }
-      else
-      {
-        m_orientation = val;
       }
     }
 
