@@ -37,10 +37,26 @@ namespace ToolKit
     }
   }
 
-  void Node::Translate(const Vec3& val, TransformationSpace space)
+void Node::Translate(const Vec3& val, TransformationSpace space)
   {
-    Mat4 ts = glm::translate(Mat4(), val);
-    TransformImp(ts, space, &m_translation, nullptr, nullptr);
+    Vec3 adjustedVal = val;
+
+    // For local space, first transform by node's orientation
+    if (space == TransformationSpace::TS_LOCAL)
+    {
+      Quaternion ws = GetWorldOrientationCache();
+      adjustedVal   = ws * adjustedVal;
+    }
+
+    // Then if we have a parent, transform to parent space
+    if (m_parent)
+    {
+      Quaternion ps = m_parent->GetWorldOrientationCache();
+      adjustedVal   = glm::inverse(ps) * adjustedVal;
+    }
+
+    m_translation += adjustedVal;
+    UpdateTransformCaches();
   }
 
   void Node::Rotate(const Quaternion& val, TransformationSpace space)
@@ -51,7 +67,16 @@ namespace ToolKit
     }
     else
     {
-      m_orientation = val * m_orientation;
+      if (m_parent)
+      {
+        Quaternion ps = m_parent->GetWorldOrientationCache();
+        Quaternion ws = GetWorldOrientationCache();
+        m_orientation = glm::inverse(ps) * val * ws;
+      }
+      else
+      {
+        m_orientation = val * m_orientation;
+      }
     }
 
     UpdateTransformCaches();
@@ -82,7 +107,7 @@ namespace ToolKit
 
   void Node::SetTranslation(const Vec3& val, TransformationSpace space)
   {
-    Mat4 ts = glm::translate(Mat4(), val);
+    Mat4 ts = glm::translate(val);
     SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
   }
 
@@ -95,20 +120,13 @@ namespace ToolKit
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
   {
-    if (space == TransformationSpace::TS_LOCAL)
-    {
-      m_orientation = val;
-    }
-    else
+    m_orientation = val;
+    if (space == TransformationSpace::TS_WORLD)
     {
       if (m_parent)
       {
         Quaternion parentWorldOrientation = m_parent->GetWorldOrientationCache();
         m_orientation                     = glm::inverse(parentWorldOrientation) * val;
-      }
-      else
-      {
-        m_orientation = val;
       }
     }
 
@@ -148,6 +166,7 @@ namespace ToolKit
     {
       return;
     }
+
     Mat4 ts;
     Vec3 scale;
     if (preserveTransform)
@@ -454,10 +473,9 @@ namespace ToolKit
   void Node::UpdateTransformCaches()
   {
     // Update local transform cache.
-    Mat4 ts, rt, scl;
-    scl          = glm::scale(scl, m_scale);
-    rt           = glm::toMat4(m_orientation);
-    ts           = glm::translate(ts, m_translation);
+    Mat4 scl     = glm::scale(m_scale);
+    Mat4 rt      = glm::toMat4(m_orientation);
+    Mat4 ts      = glm::translate(m_translation);
     m_localCache = ts * rt * scl;
 
     // Let all children know they need to update their parent caches.

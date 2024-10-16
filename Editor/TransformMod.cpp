@@ -497,7 +497,7 @@ namespace ToolKit
 
       NodeRawPtrArray parents;
 
-      // Make all selecteds child of current & store their original parents.
+      // Make all selected entities child of current selection & store their original parents.
       for (EntityPtr ntt : roots)
       {
         parents.push_back(ntt->m_node->m_parent);
