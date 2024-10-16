@@ -105,7 +105,7 @@ namespace ToolKit
 
   void Node::SetTranslation(const Vec3& val, TransformationSpace space)
   {
-    Mat4 ts = glm::translate(Mat4(), val);
+    Mat4 ts = glm::translate(val);
     SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
   }
 
@@ -471,10 +471,9 @@ namespace ToolKit
   void Node::UpdateTransformCaches()
   {
     // Update local transform cache.
-    Mat4 ts, rt, scl;
-    scl          = glm::scale(scl, m_scale);
-    rt           = glm::toMat4(m_orientation);
-    ts           = glm::translate(ts, m_translation);
+    Mat4 scl     = glm::scale(m_scale);
+    Mat4 rt      = glm::toMat4(m_orientation);
+    Mat4 ts      = glm::translate(m_translation);
     m_localCache = ts * rt * scl;
 
     // Let all children know they need to update their parent caches.
