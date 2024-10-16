@@ -56,12 +56,21 @@ namespace ToolKit
   void Node::Rotate(const Quaternion& val, TransformationSpace space)
   {
     if (space == TransformationSpace::TS_LOCAL)
-      {
+    {
       m_orientation = m_orientation * val;
     }
     else
     {
-      m_orientation = val * m_orientation;
+      if (m_parent)
+      {
+        Quaternion ps = m_parent->GetWorldOrientationCache();
+        Quaternion ws = GetWorldOrientationCache();
+        m_orientation = glm::inverse(ps) * val * ws;
+      }
+      else
+      {
+        m_orientation = val * m_orientation;
+      }
     }
 
     UpdateTransformCaches();
@@ -151,6 +160,7 @@ namespace ToolKit
     {
       return;
     }
+
     Mat4 ts;
     Vec3 scale;
     if (preserveTransform)
