@@ -40,7 +40,11 @@ namespace ToolKit
   void Node::Translate(const Vec3& val, TransformationSpace space)
   {
     Vec3 translation = val;
-    if (space == TransformationSpace::TS_WORLD)
+    if (space == TransformationSpace::TS_LOCAL)
+    {
+      translation = GetWorldOrientationCache() * val;
+    }
+    else
     {
       if (m_parent)
       {
