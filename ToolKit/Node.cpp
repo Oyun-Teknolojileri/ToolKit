@@ -39,21 +39,33 @@ namespace ToolKit
 
   void Node::Translate(const Vec3& val, TransformationSpace space)
   {
-    Vec3 translation = val;
     if (space == TransformationSpace::TS_LOCAL)
     {
-      translation = GetWorldOrientationCache() * val;
+      if (m_parent)
+      {
+        Quaternion ps  = m_parent->GetWorldOrientationCache();
+        Quaternion ws  = GetWorldOrientationCache();
+        m_translation += glm::inverse(ps) * ws * val;
+      }
+      else
+      {
+        Quaternion ws  = GetWorldOrientationCache();
+        m_translation += ws * val;
+      }
     }
     else
     {
       if (m_parent)
       {
-        Quaternion parentWorldOrientation = m_parent->GetWorldOrientationCache();
-        translation                       = glm::inverse(parentWorldOrientation) * val;
+        Quaternion ps  = m_parent->GetWorldOrientationCache();
+        m_translation += glm::inverse(ps) * val;
+      }
+      else
+      {
+        m_translation += val;
       }
     }
 
-    m_translation += translation;
     UpdateTransformCaches();
   }
 
