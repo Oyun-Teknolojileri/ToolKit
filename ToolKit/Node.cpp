@@ -15,8 +15,11 @@
 namespace ToolKit
 {
 
-  Node::Node() : m_scale(Vec3(1.0f))
+  Node::Node()
   {
+    m_scale        = Vec3(1.0f);
+    m_prevScale       = Vec3(1.0f);
+
     m_id           = GetHandleManager()->GenerateHandle();
     m_parent       = nullptr;
     m_inheritScale = false;
@@ -37,7 +40,7 @@ namespace ToolKit
     }
   }
 
-void Node::Translate(const Vec3& val, TransformationSpace space)
+  void Node::Translate(const Vec3& val, TransformationSpace space)
   {
     Vec3 adjustedVal = val;
 
@@ -98,7 +101,7 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     SetTransformImp(val, space, &m_translation, &m_orientation, &m_scale);
   }
 
-  Mat4 Node::GetTransform(TransformationSpace space)
+  Mat4 Node::GetTransformInternal(TransformationSpace space)
   {
     Mat4 ts;
     GetTransformImp(space, &ts, nullptr, nullptr, nullptr);
@@ -111,11 +114,29 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     SetTransformImp(ts, space, &m_translation, nullptr, nullptr);
   }
 
-  Vec3 Node::GetTranslation(TransformationSpace space)
+  Mat4 Node::GetTransform(TransformationSpace space)
   {
-    Vec3 t;
-    GetTransformImp(space, nullptr, &t, nullptr, nullptr);
-    return t;
+    Mat4 ts;
+    GetPreviousTransformImp(space, &ts, nullptr, nullptr, nullptr);
+    return ts;
+  }
+
+  void Node::Update()
+  {
+    UpdateTransformCaches();
+
+    m_prevTranslation           = m_translation;
+    m_prevScale                 = m_scale;
+    m_prevOrientation           = m_orientation;
+
+    m_prevWorldTranslationCache = m_worldTranslationCache;
+    m_prevLocalCache            = m_localCache;
+    m_prevParentCache           = m_parentCache;
+    m_prevWorldCache            = m_worldCache;
+    m_pworldOrientationCache = m_worldOrientationCache;
+
+    // Invalidate entity's spatial caches.
+    InvalitadeSpatialCaches();
   }
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
@@ -133,25 +154,17 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     UpdateTransformCaches();
   }
 
-  Quaternion Node::GetOrientation(TransformationSpace space)
-  {
-    Quaternion q;
-    GetTransformImp(space, nullptr, nullptr, &q, nullptr);
-    return q;
-  }
-
   void Node::SetScale(const Vec3& val)
   {
     m_scale = val;
     UpdateTransformCaches();
   }
 
-  Vec3 Node::GetScale() { return m_scale; }
-
   Mat3 Node::GetTransformAxes()
   {
-    Quaternion q = GetOrientation();
-    Mat3 axes    = glm::toMat3(q);
+    Quaternion rotation;
+    GetTransformImp(TransformationSpace::TS_WORLD, nullptr, nullptr, &rotation, nullptr);
+    Mat3 axes = glm::toMat3(rotation);
 
     return axes;
   }
@@ -171,7 +184,7 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     Vec3 scale;
     if (preserveTransform)
     {
-      ts = child->GetTransform(TransformationSpace::TS_WORLD);
+      ts = child->GetTransformInternal(TransformationSpace::TS_WORLD);
     }
     else if (child->m_inheritScale)
     {
@@ -211,7 +224,7 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     Node* child = m_children[index];
     if (preserveTransform)
     {
-      ts = child->GetTransform(TransformationSpace::TS_WORLD);
+      ts = child->GetTransformInternal(TransformationSpace::TS_WORLD);
     }
 
     child->m_parent = nullptr;
@@ -270,16 +283,25 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
   {
     // Does not preserve parent / child relation
     // Look at Util/DeepCopy for preserving hierarchy.
-    Node* node                    = new Node();
+    Node* node                     = new Node();
 
-    node->m_inheritScale          = m_inheritScale;
-    node->m_translation           = m_translation;
-    node->m_orientation           = m_orientation;
-    node->m_scale                 = m_scale;
-    node->m_localCache            = m_localCache;
-    node->m_worldCache            = m_worldCache;
-    node->m_worldTranslationCache = m_worldTranslationCache;
-    node->m_worldOrientationCache = m_worldOrientationCache;
+    node->m_inheritScale           = m_inheritScale;
+    node->m_translation            = m_translation;
+    node->m_orientation            = m_orientation;
+    node->m_scale                  = m_scale;
+    node->m_localCache             = m_localCache;
+    node->m_worldCache             = m_worldCache;
+    node->m_worldTranslationCache  = m_worldTranslationCache;
+    node->m_worldOrientationCache  = m_worldOrientationCache;
+
+    node->m_prevTranslation           = m_prevTranslation;
+    node->m_prevScale                 = m_prevScale;
+    node->m_prevWorldTranslationCache = m_prevWorldTranslationCache;
+    node->m_prevLocalCache            = m_prevLocalCache;
+    node->m_prevParentCache           = m_prevParentCache;
+    node->m_prevWorldCache            = m_prevWorldCache;
+    node->m_prevOrientation           = m_prevOrientation;
+    node->m_pworldOrientationCache = m_pworldOrientationCache;
 
     return node;
   }
@@ -357,6 +379,22 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
 
     return nullptr;
   }
+
+  Vec3 Node::GetTranslation(TransformationSpace space)
+  {
+    Vec3 t;
+    GetPreviousTransformImp(space, nullptr, &t, nullptr, nullptr);
+    return t;
+  }
+
+  Quaternion Node::GetOrientation(TransformationSpace space)
+  {
+    Quaternion q;
+    GetPreviousTransformImp(space, nullptr, nullptr, &q, nullptr);
+    return q;
+  }
+
+  Vec3 Node::GetScale() { return m_prevScale; }
 
   void Node::SetInheritScaleDeep(bool val)
   {
@@ -470,6 +508,54 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     }
   }
 
+  void Node::GetPreviousTransformImp(TransformationSpace space,
+                                     Mat4* transform,
+                                     Vec3* translation,
+                                     Quaternion* orientation,
+                                     Vec3* scale)
+  {
+    switch (space)
+    {
+    case TransformationSpace::TS_WORLD:
+      if (m_parent != nullptr)
+      {
+        if (transform != nullptr)
+        {
+          *transform = m_prevWorldCache;
+        }
+        if (translation != nullptr)
+        {
+          *translation = m_prevWorldTranslationCache;
+        }
+        if (orientation != nullptr)
+        {
+          *orientation = m_pworldOrientationCache;
+        }
+        break;
+      } // Fall trough
+    case TransformationSpace::TS_LOCAL:
+    default:
+      if (transform != nullptr)
+      {
+        *transform = m_prevLocalCache;
+      }
+      if (translation != nullptr)
+      {
+        *translation = m_prevTranslation;
+      }
+      if (orientation != nullptr)
+      {
+        *orientation = m_prevOrientation;
+      }
+      break;
+    }
+
+    if (scale != nullptr)
+    {
+      *scale = m_prevScale;
+    }
+  }
+
   void Node::UpdateTransformCaches()
   {
     // Update local transform cache.
@@ -486,9 +572,6 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
 
     // Update individual transform caches.
     DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
-
-    // Invalidate entity's spatial caches.
-    InvalitadeSpatialCaches();
   }
 
   Mat4 Node::GetParentTransform()
@@ -502,7 +585,7 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
       }
 
       // This will climb up the hierarchy until a clean cache is found and start updating the tree downwards.
-      ps = m_parent->GetTransform(TransformationSpace::TS_WORLD);
+      ps = m_parent->GetTransformInternal(TransformationSpace::TS_WORLD);
 
       if (!m_inheritScale)
       {

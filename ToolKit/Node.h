@@ -214,7 +214,11 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
 
+    void Update();
+
    private:
+    Mat4 GetTransformInternal(TransformationSpace space);
+
     void TransformImp(const Mat4& val,
                       TransformationSpace space,
                       Vec3* translation,
@@ -232,6 +236,12 @@ namespace ToolKit
                          Vec3* translation,
                          Quaternion* orientation,
                          Vec3* scale);
+
+    void GetPreviousTransformImp(TransformationSpace space,
+                                 Mat4* transform,
+                                 Vec3* translation,
+                                 Quaternion* orientation,
+                                 Vec3* scale);
 
     void UpdateTransformCaches();
     Mat4 GetParentTransform();
@@ -264,6 +274,15 @@ namespace ToolKit
     Quaternion m_worldOrientationCache;
 
     bool m_dirty; //!< Hint for child to update its parent cache.
+
+    Vec3 m_prevTranslation;
+    Vec3 m_prevScale;
+    Vec3 m_prevWorldTranslationCache;
+    Mat4 m_prevLocalCache;
+    Mat4 m_prevParentCache;
+    Mat4 m_prevWorldCache;
+    Quaternion m_prevOrientation;
+    Quaternion m_pworldOrientationCache;
   };
 
   /** Recursively traverse each child of the parent and apply callback function. */

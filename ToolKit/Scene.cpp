@@ -148,6 +148,8 @@ namespace ToolKit
 
     for (const EntityPtr& ntt : m_entities)
     {
+      ntt->m_node->Update();
+
       // Update volume caches.
       if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
       {
