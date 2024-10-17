@@ -151,6 +151,13 @@ namespace ToolKit
     {
       m_deltaTime = deltaTime;
 
+      // Update editor entities.
+      m_cursor->m_node->Update();
+      m_origin->m_node->Update();
+      m_dbgArrow->m_node->Update();
+      m_grid->m_node->Update();
+      m_2dGrid->m_node->Update();
+
       // Update Mods.
       ModManager::GetInstance()->Update(deltaTime);
 

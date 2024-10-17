@@ -97,6 +97,12 @@ namespace ToolKit
 
     void EditorViewport::Update(float deltaTime)
     {
+      // Make sure camera is updated. It can be a non scene camera.
+      if (CameraPtr cam = GetCamera())
+      {
+        cam->m_node->Update();
+      }
+
       if (!IsActive())
       {
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);

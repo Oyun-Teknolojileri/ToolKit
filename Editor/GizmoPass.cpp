@@ -75,19 +75,18 @@ namespace ToolKit
 
       // Update.
       BillboardPtrArray& gizmoArray = m_params.GizmoArray;
-      gizmoArray.erase(std::remove_if(gizmoArray.begin(),
-                                      gizmoArray.end(),
-                                      [this](EditorBillboardPtr bb) -> bool
-                                      {
-                                        if (bb == nullptr)
-                                        {
-                                          return true;
-                                        }
+      erase_if(m_params.GizmoArray,
+               [this](EditorBillboardPtr bb) -> bool
+               {
+                 if (bb == nullptr)
+                 {
+                   return true;
+                 }
 
-                                        bb->LookAt(m_camera, m_params.Viewport->GetBillboardScale());
-                                        return false;
-                                      }),
-                       gizmoArray.end());
+                 bb->LookAt(m_camera, m_params.Viewport->GetBillboardScale());
+                 bb->m_node->Update(); // Forced update to reflect look at changes.
+                 return false;
+               });
     }
 
     void GizmoPass::PostRender() { Pass::PostRender(); }
