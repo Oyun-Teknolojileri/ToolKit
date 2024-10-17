@@ -42,6 +42,7 @@ namespace ToolKit
         {
           Mat4 ts = billboard->m_node->GetTransform();
           m_depthMaskSphere->m_node->SetTransform(ts, TransformationSpace::TS_WORLD);
+          m_depthMaskSphere->m_node->Update(); // Force update its location to be effective.
 
           renderer->ColorMask(false, false, false, false);
 
