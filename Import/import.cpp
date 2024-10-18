@@ -1198,15 +1198,16 @@ namespace ToolKit
     g_skeleton->SetFile(fullPath);
 
     // Print
-    std::function<void(aiNode * node, DynamicBoneMap::DynamicBone*)> setBoneHierarchyFn =
-        [&setBoneHierarchyFn](aiNode* node, DynamicBoneMap::DynamicBone* parentBone) -> void
+    using DynamicBone = DynamicBoneMap::DynamicBone;
+    std::function<void(aiNode * node, DynamicBone*)> setBoneHierarchyFn =
+        [&setBoneHierarchyFn](aiNode* node, DynamicBone* parentBone) -> void
     {
-      DynamicBoneMap::DynamicBone* searchDBone = parentBone;
+      DynamicBone* searchDBone = parentBone;
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
         assert(node->mName.length);
-        g_skeleton->m_Tpose.boneList.insert(std::make_pair(String(node->mName.C_Str()), DynamicBoneMap::DynamicBone()));
-        searchDBone                       = &g_skeleton->m_Tpose.boneList.find(node->mName.C_Str())->second;
+        g_skeleton->m_Tpose.m_boneMap.insert(std::make_pair(String(node->mName.C_Str()), DynamicBone()));
+        searchDBone                       = &g_skeleton->m_Tpose.m_boneMap.find(node->mName.C_Str())->second;
         searchDBone->node                 = new Node();
         searchDBone->node->m_inheritScale = true;
         searchDBone->boneIndx             = uint(g_skeleton->m_bones.size());
@@ -1215,6 +1216,7 @@ namespace ToolKit
         StaticBone* sBone = new StaticBone(node->mName.C_Str());
         g_skeleton->m_bones.push_back(sBone);
       }
+
       for (unsigned int i = 0; i < node->mNumChildren; i++)
       {
         setBoneHierarchyFn(node->mChildren[i], searchDBone);
@@ -1229,7 +1231,7 @@ namespace ToolKit
 
         // Set bone node transformation
         {
-          DynamicBoneMap::DynamicBone& dBone = g_skeleton->m_Tpose.boneList[node->mName.C_Str()];
+          DynamicBone& dBone = g_skeleton->m_Tpose.m_boneMap[node->mName.C_Str()];
           Vec3 t, s;
           Quaternion r;
           DecomposeAssimpMatrix(node->mTransformation, &t, &r, &s);
@@ -1258,7 +1260,7 @@ namespace ToolKit
         }
       }
 
-      for (unsigned int i = 0; i < node->mNumChildren; i++)
+      for (uint i = 0; i < node->mNumChildren; i++)
       {
         setTransformationsFn(node->mChildren[i]);
       }

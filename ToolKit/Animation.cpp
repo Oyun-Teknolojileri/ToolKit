@@ -18,8 +18,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 static constexpr bool SERIALIZE_ANIMATION_AS_BINARY = false;
 
 namespace ToolKit
@@ -80,7 +78,7 @@ namespace ToolKit
     Vec3 scale;
 
     EntityPtr owner = skeleton->OwnerEntity();
-    for (auto& dBoneIter : skeleton->m_map->boneList)
+    for (auto& dBoneIter : skeleton->m_map->m_boneMap)
     {
       auto entry = m_keys.find(dBoneIter.first);
       if (entry == m_keys.end())
@@ -633,7 +631,7 @@ namespace ToolKit
       std::vector<std::pair<Node*, uint>> boneNodes;
 
       // Iterate all bones for the key frame and get node transformations
-      for (auto& dBoneIter : skeleton->m_Tpose.boneList)
+      for (auto& dBoneIter : skeleton->m_Tpose.m_boneMap)
       {
         const String& name                 = dBoneIter.first;
         DynamicBoneMap::DynamicBone& dBone = dBoneIter.second;
