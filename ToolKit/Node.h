@@ -282,7 +282,7 @@ namespace ToolKit
     Mat4 m_prevParentCache;
     Mat4 m_prevWorldCache;
     Quaternion m_prevOrientation;
-    Quaternion m_pworldOrientationCache;
+    Quaternion m_prevWorldOrientationCache;
   };
 
   /** Recursively traverse each child of the parent and apply callback function. */

@@ -18,7 +18,7 @@ namespace ToolKit
   Node::Node()
   {
     m_scale        = Vec3(1.0f);
-    m_prevScale       = Vec3(1.0f);
+    m_prevScale    = Vec3(1.0f);
 
     m_id           = GetHandleManager()->GenerateHandle();
     m_parent       = nullptr;
@@ -133,7 +133,7 @@ namespace ToolKit
     m_prevLocalCache            = m_localCache;
     m_prevParentCache           = m_parentCache;
     m_prevWorldCache            = m_worldCache;
-    m_pworldOrientationCache = m_worldOrientationCache;
+    m_prevWorldOrientationCache = m_worldOrientationCache;
 
     // Invalidate entity's spatial caches.
     InvalitadeSpatialCaches();
@@ -188,7 +188,7 @@ namespace ToolKit
     }
     else if (child->m_inheritScale)
     {
-      scale = child->GetScale();
+      scale = child->m_scale;
     }
 
     m_children.insert(m_children.begin() + index, child);
@@ -283,16 +283,16 @@ namespace ToolKit
   {
     // Does not preserve parent / child relation
     // Look at Util/DeepCopy for preserving hierarchy.
-    Node* node                     = new Node();
+    Node* node                        = new Node();
 
-    node->m_inheritScale           = m_inheritScale;
-    node->m_translation            = m_translation;
-    node->m_orientation            = m_orientation;
-    node->m_scale                  = m_scale;
-    node->m_localCache             = m_localCache;
-    node->m_worldCache             = m_worldCache;
-    node->m_worldTranslationCache  = m_worldTranslationCache;
-    node->m_worldOrientationCache  = m_worldOrientationCache;
+    node->m_inheritScale              = m_inheritScale;
+    node->m_translation               = m_translation;
+    node->m_orientation               = m_orientation;
+    node->m_scale                     = m_scale;
+    node->m_localCache                = m_localCache;
+    node->m_worldCache                = m_worldCache;
+    node->m_worldTranslationCache     = m_worldTranslationCache;
+    node->m_worldOrientationCache     = m_worldOrientationCache;
 
     node->m_prevTranslation           = m_prevTranslation;
     node->m_prevScale                 = m_prevScale;
@@ -301,7 +301,7 @@ namespace ToolKit
     node->m_prevParentCache           = m_prevParentCache;
     node->m_prevWorldCache            = m_prevWorldCache;
     node->m_prevOrientation           = m_prevOrientation;
-    node->m_pworldOrientationCache = m_pworldOrientationCache;
+    node->m_prevWorldOrientationCache = m_prevWorldOrientationCache;
 
     return node;
   }
@@ -529,7 +529,7 @@ namespace ToolKit
         }
         if (orientation != nullptr)
         {
-          *orientation = m_pworldOrientationCache;
+          *orientation = m_prevWorldOrientationCache;
         }
         break;
       } // Fall trough
