@@ -1006,8 +1006,21 @@ namespace ToolKit
 
               String path, name;
               DecomposePath(fullPath, &path, &name, &ext);
-              std::filesystem::create_directories(path);
-              std::filesystem::copy(line, fullPath, std::filesystem::copy_options::overwrite_existing);
+
+              std::error_code fileOpErr;
+              std::filesystem::create_directories(path, fileOpErr);
+              if (fileOpErr)
+              {
+                TK_ERR("Folder creation failed: %s", fileOpErr.message().c_str());
+              }
+              else
+              {
+                std::filesystem::copy(line, fullPath, std::filesystem::copy_options::overwrite_existing, fileOpErr);
+                if (fileOpErr)
+                {
+                  TK_ERR("File copy failed: %s", fileOpErr.message().c_str());
+                }
+              }
             }
           }
         }

@@ -248,15 +248,11 @@ namespace ToolKit
   // Range checks added by OTSoftware.
   // https://github.com/triplepointfive/ogldev/blob/master/tutorial39/mesh.cpp
 
-  bool LessEqual(float a, float b, float eps)
+  bool EpsilonLessEqual(float a, float b, float epsilon)
   {
-    float diff = a - b;
-    return diff < -eps || diff == 0.0f;
+    // Return true if a is less than b or if they are approximately equal
+    return (a < b) || glm::epsilonEqual(a, b, epsilon);
   }
-
-  bool IsEqual(float a, float b, float eps) { return abs(a - b) < eps; }
-
-  bool IsZero(float a, float eps) { return abs(a) < eps; }
 
   int GetMax(int a, int b) { return a > b ? a : b; }
 
@@ -266,15 +262,13 @@ namespace ToolKit
   {
     for (uint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime, static_cast<float>(pNodeAnim->mPositionKeys[i + 1].mTime), g_animEps))
+      if (EpsilonLessEqual(AnimationTime, (float) pNodeAnim->mPositionKeys[i + 1].mTime, g_animEps))
       {
         return i;
       }
     }
 
-    assert(0);
-
-    return 0;
+    return GetMax(0, pNodeAnim->mNumPositionKeys - 2);
   }
 
   uint FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -283,15 +277,13 @@ namespace ToolKit
 
     for (uint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime, static_cast<float>(pNodeAnim->mRotationKeys[i + 1].mTime), g_animEps))
+      if (EpsilonLessEqual(AnimationTime, (float) (pNodeAnim->mRotationKeys[i + 1].mTime), g_animEps))
       {
         return i;
       }
     }
 
-    assert(0);
-
-    return 0;
+    return GetMax(0, pNodeAnim->mNumPositionKeys - 2);
   }
 
   uint FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -300,15 +292,13 @@ namespace ToolKit
 
     for (uint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
     {
-      if (LessEqual(AnimationTime, static_cast<float>(pNodeAnim->mScalingKeys[i + 1].mTime), g_animEps))
+      if (EpsilonLessEqual(AnimationTime, (float) (pNodeAnim->mScalingKeys[i + 1].mTime), g_animEps))
       {
         return i;
       }
     }
 
-    assert(0);
-
-    return 0;
+    return GetMax(0, pNodeAnim->mNumPositionKeys - 2);
   }
 
   void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -322,22 +312,14 @@ namespace ToolKit
     uint PositionIndex     = FindPosition(AnimationTime, pNodeAnim);
     uint NextPositionIndex = (PositionIndex + 1);
     assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-    float DeltaTime = static_cast<float>(pNodeAnim->mPositionKeys[NextPositionIndex].mTime -
-                                         pNodeAnim->mPositionKeys[PositionIndex].mTime);
 
-    float Factor    = (AnimationTime - static_cast<float>(pNodeAnim->mPositionKeys[PositionIndex].mTime)) / DeltaTime;
+    float DeltaTime =
+        (float) (pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
 
-    if (IsZero(Factor, 0.001f))
-    {
-      Factor = 0.0f;
-    }
+    float Factor = (AnimationTime - (float) (pNodeAnim->mPositionKeys[PositionIndex].mTime)) / DeltaTime;
 
-    if (IsEqual(Factor, 1.0f, 0.001f))
-    {
-      Factor = 1.0f;
-    }
+    glm::clamp(Factor, 0.0f, 1.0f);
 
-    assert(Factor >= 0.0f && Factor <= 1.0f);
     const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
     const aiVector3D& End   = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
     aiVector3D Delta        = End - Start;
@@ -357,26 +339,15 @@ namespace ToolKit
     uint NextRotationIndex = (RotationIndex + 1);
     assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
 
-    float DeltaTime = static_cast<float>(pNodeAnim->mRotationKeys[NextRotationIndex].mTime -
-                                         pNodeAnim->mRotationKeys[RotationIndex].mTime);
+    float DeltaTime =
+        (float) (pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
 
-    float Factor    = (AnimationTime - static_cast<float>(pNodeAnim->mRotationKeys[RotationIndex].mTime)) / DeltaTime;
+    float Factor = (AnimationTime - (float) (pNodeAnim->mRotationKeys[RotationIndex].mTime)) / DeltaTime;
 
-    if (IsZero(Factor, g_animEps))
-    {
-      Factor = 0.0f;
-    }
+    glm::clamp(Factor, 0.0f, 1.0f);
 
-    if (IsEqual(Factor, 1.0f, g_animEps))
-    {
-      Factor = 1.0f;
-    }
-
-    assert(Factor >= 0.0f && Factor <= 1.0f);
     const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
-
     const aiQuaternion& EndRotationQ   = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
-
     aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
     Out = Out.Normalize();
   }
@@ -393,22 +364,13 @@ namespace ToolKit
     uint NextScalingIndex = (ScalingIndex + 1);
     assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
 
-    float DeltaTime = static_cast<float>(pNodeAnim->mScalingKeys[NextScalingIndex].mTime -
-                                         pNodeAnim->mScalingKeys[ScalingIndex].mTime);
+    float DeltaTime =
+        (float) (pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
 
-    float Factor    = (AnimationTime - static_cast<float>(pNodeAnim->mScalingKeys[ScalingIndex].mTime)) / DeltaTime;
+    float Factor = (AnimationTime - (float) (pNodeAnim->mScalingKeys[ScalingIndex].mTime)) / DeltaTime;
 
-    if (IsZero(Factor, 0.001f))
-    {
-      Factor = 0.0f;
-    }
+    glm::clamp(Factor, 0.0f, 1.0f);
 
-    if (IsEqual(Factor, 1.0f, 0.001f))
-    {
-      Factor = 1.0f;
-    }
-
-    assert(Factor >= 0.0f && Factor <= 1.0f);
     const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
     const aiVector3D& End   = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
     aiVector3D Delta        = End - Start;
@@ -436,7 +398,6 @@ namespace ToolKit
       AnimationPtr tAnim = MakeNewPtr<Animation>();
 
       double fps         = anim->mTicksPerSecond == 0 ? g_desiredFps : anim->mTicksPerSecond;
-
       double duration    = anim->mDuration / fps;
       uint frameCount    = (uint) ceil(duration * g_desiredFps);
 
@@ -444,20 +405,20 @@ namespace ToolKit
       int cr, ct, cs, cmax;
       cr = ct = cs = cmax = 0;
 
-      for (unsigned int chIndx = 0; chIndx < anim->mNumChannels; chIndx++)
+      for (uint chIndx = 0; chIndx < anim->mNumChannels; chIndx++)
       {
         KeyArray keys;
         aiNodeAnim* nodeAnim = anim->mChannels[chIndx];
         for (uint frame = 1; frame < frameCount; frame++)
         {
-          float timeInTicks = (frame / g_desiredFps) * static_cast<float>(anim->mTicksPerSecond);
+          float timeInTicks = (frame / g_desiredFps) * (float) anim->mTicksPerSecond;
 
           aiVector3D t;
           if (
               // Timer is not yet reach the animation begin. Skip frames.
               // Happens when there aren't keys at the beginning of the
               // animation.
-              LessEqual(timeInTicks, static_cast<float>(nodeAnim->mPositionKeys[0].mTime), 0.001f))
+              EpsilonLessEqual(timeInTicks, (float) nodeAnim->mPositionKeys[0].mTime, g_animEps))
           {
             continue;
           }
@@ -468,7 +429,7 @@ namespace ToolKit
           }
 
           aiQuaternion r;
-          if (LessEqual(timeInTicks, static_cast<float>(nodeAnim->mRotationKeys[0].mTime), 0.001f))
+          if (EpsilonLessEqual(timeInTicks, (float) (nodeAnim->mRotationKeys[0].mTime), g_animEps))
           {
             continue;
           }
@@ -479,7 +440,7 @@ namespace ToolKit
           }
 
           aiVector3D s;
-          if (LessEqual(timeInTicks, static_cast<float>(nodeAnim->mScalingKeys[0].mTime), 0.001f))
+          if (EpsilonLessEqual(timeInTicks, (float) (nodeAnim->mScalingKeys[0].mTime), g_animEps))
           {
             continue;
           }
@@ -503,9 +464,9 @@ namespace ToolKit
         tAnim->m_keys.insert(std::make_pair(nodeAnim->mNodeName.C_Str(), keys));
       }
 
-      // Recalculate duration. May be misleading dueto shifted animations.
-      tAnim->m_duration = static_cast<float>(cmax / g_desiredFps);
-      tAnim->m_fps      = static_cast<float>(g_desiredFps);
+      // Recalculate duration. May be misleading due to shifted animations.
+      tAnim->m_duration = (float) (cmax / g_desiredFps);
+      tAnim->m_fps      = (float) (g_desiredFps);
 
       CreateFileAndSerializeObject(tAnim.get(), animFilePath);
     }
@@ -576,7 +537,7 @@ namespace ToolKit
       return tTexture;
     };
 
-    for (unsigned int i = 0; i < g_scene->mNumMaterials; i++)
+    for (uint i = 0; i < g_scene->mNumMaterials; i++)
     {
       aiMaterial* material  = g_scene->mMaterials[i];
       string name           = GetMaterialName(material, i);
@@ -691,7 +652,7 @@ namespace ToolKit
     }
 
     tMesh->m_clientSideVertices.resize(mesh->mNumVertices);
-    for (unsigned int vIndex = 0; vIndex < mesh->mNumVertices; vIndex++)
+    for (uint vIndex = 0; vIndex < mesh->mNumVertices; vIndex++)
     {
       auto& v = tMesh->m_clientSideVertices[vIndex];
       v.pos   = Vec3(mesh->mVertices[vIndex].x, mesh->mVertices[vIndex].y, mesh->mVertices[vIndex].z);
@@ -719,7 +680,7 @@ namespace ToolKit
         {
           for (int j = 0; j < 4; j++)
           {
-            if (j >= static_cast<int>(skinData[vIndex].size()))
+            if (j >= (int) (skinData[vIndex].size()))
             {
               skinData[vIndex].push_back(std::pair<int, float>(0, 0.0f));
             }
@@ -746,8 +707,8 @@ namespace ToolKit
     }
 
     tMesh->m_loaded      = true;
-    tMesh->m_vertexCount = static_cast<int>(tMesh->m_clientSideVertices.size());
-    tMesh->m_indexCount  = static_cast<int>(tMesh->m_clientSideIndices.size());
+    tMesh->m_vertexCount = (int) (tMesh->m_clientSideVertices.size());
+    tMesh->m_indexCount  = (int) (tMesh->m_clientSideIndices.size());
     tMesh->m_material    = tMaterials[mesh->mMaterialIndex];
     for (ubyte i = 0; i < 3; i++)
     {
@@ -1173,21 +1134,20 @@ namespace ToolKit
     }
 
     // Assign indices
-    std::function<void(aiNode*, unsigned int&)> assignBoneIndexFn = [&assignBoneIndexFn](aiNode* node,
-                                                                                         unsigned int& index) -> void
+    std::function<void(aiNode*, uint&)> assignBoneIndexFn = [&assignBoneIndexFn](aiNode* node, uint& index) -> void
     {
       if (g_skeletonMap.find(node->mName.C_Str()) != g_skeletonMap.end())
       {
         g_skeletonMap[node->mName.C_Str()].boneIndex = index++;
       }
 
-      for (unsigned int i = 0; i < node->mNumChildren; i++)
+      for (uint i = 0; i < node->mNumChildren; i++)
       {
         assignBoneIndexFn(node->mChildren[i], index);
       }
     };
 
-    unsigned int boneIndex = 0;
+    uint boneIndex = 0;
     assignBoneIndexFn(g_scene->mRootNode, boneIndex);
 
     string name, path;
@@ -1209,13 +1169,13 @@ namespace ToolKit
         searchDBone                       = &g_skeleton->m_Tpose.boneList.find(node->mName.C_Str())->second;
         searchDBone->node                 = new Node();
         searchDBone->node->m_inheritScale = true;
-        searchDBone->boneIndx             = uint(g_skeleton->m_bones.size());
+        searchDBone->boneIndx             = (uint) g_skeleton->m_bones.size();
         g_skeleton->m_Tpose.AddDynamicBone(node->mName.C_Str(), *searchDBone, parentBone);
 
         StaticBone* sBone = new StaticBone(node->mName.C_Str());
         g_skeleton->m_bones.push_back(sBone);
       }
-      for (unsigned int i = 0; i < node->mNumChildren; i++)
+      for (uint i = 0; i < node->mNumChildren; i++)
       {
         setBoneHierarchyFn(node->mChildren[i], searchDBone);
       }
@@ -1258,7 +1218,7 @@ namespace ToolKit
         }
       }
 
-      for (unsigned int i = 0; i < node->mNumChildren; i++)
+      for (uint i = 0; i < node->mNumChildren; i++)
       {
         setTransformationsFn(node->mChildren[i]);
       }
@@ -1276,7 +1236,7 @@ namespace ToolKit
     // Embedded textures.
     if (g_scene->HasTextures())
     {
-      for (unsigned int i = 0; i < g_scene->mNumTextures; i++)
+      for (uint i = 0; i < g_scene->mNumTextures; i++)
       {
         aiTexture* texture = g_scene->mTextures[i];
         string embId       = GetEmbeddedTextureName(texture, i);
