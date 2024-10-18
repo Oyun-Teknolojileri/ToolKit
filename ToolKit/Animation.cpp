@@ -671,7 +671,9 @@ namespace ToolKit
       // After getting all node transformations re-calculate dirty nodes transformations
       for (auto& node : boneNodes)
       {
-        StaticBone* sBone         = skeleton->m_bones[node.second];
+        StaticBone* sBone = skeleton->m_bones[node.second];
+
+        node.first->Update();
 
         const Mat4 boneTransform  = node.first->GetTransform(TransformationSpace::TS_WORLD);
         const Mat4 totalTransform = boneTransform * sBone->m_inverseWorldMatrix;
