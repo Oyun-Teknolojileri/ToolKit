@@ -297,6 +297,8 @@ namespace ToolKit
     ReadVec(subNode, tempRot);
     dBone.node->SetOrientation(tempRot);
 
+    dBone.node->Update();
+
     XmlNode* bindPoseNode = node->first_node("bindPose");
     if (bindPoseNode != nullptr)
     {
@@ -369,6 +371,7 @@ namespace ToolKit
     {
       return nullptr;
     }
+
     return m_bones[index];
   }
 
