@@ -304,6 +304,8 @@ namespace ToolKit
   {
     if (entity != nullptr)
     {
+      entity->m_node->Update(); // Force update the node to be correctly inserted into aabb tree.
+
       bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
       assert(isUnique);
 
