@@ -230,6 +230,7 @@ namespace ToolKit
     EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
 
     // Adjust light's camera.
+    shadowCamera->m_node->Update();
     renderer->SetCamera(shadowCamera, false);
 
     Light::LightType lightType = light->GetLightType();
@@ -247,8 +248,9 @@ namespace ToolKit
       Vec3 outerPoint             = pos - glm::normalize(dir) * glm::distance(sceneBox.min, sceneBox.max) * 0.5f;
 
       cullCamera->m_node->SetTranslation(outerPoint); // Set the camera position.
-      cullCamera->SetNearClipVal(0.0f);
+      cullCamera->m_node->Update();
 
+      cullCamera->SetNearClipVal(0.0f);
       // New far clip is calculated. Its the distance newly calculated outer poi
       cullCamera->SetFarClipVal(glm::distance(outerPoint, pos) + cullCamera->Far());
     }

@@ -129,6 +129,7 @@ namespace ToolKit
   {
     Mat4 lightTs = m_node->GetTransform();
     m_shadowCamera->m_node->SetTransform(lightTs);
+    m_shadowCamera->m_node->Update();
   }
 
   XmlNode* Light::SerializeImp(XmlDocument* doc, XmlNode* parent) const
@@ -241,6 +242,7 @@ namespace ToolKit
   {
     for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
     {
+      m_cascadeShadowCameras[i]->m_node->Update();
       m_shadowMapCascadeCameraProjectionViewMatrices[i] = m_cascadeShadowCameras[i]->GetProjectViewMatrix();
     }
   }
@@ -273,6 +275,7 @@ namespace ToolKit
 
     lightCamera->m_node->SetOrientation(m_node->GetOrientation()); // shadow camera direction aligned with light.
     lightCamera->m_node->SetTranslation(center);                   // shadow camera is at the frustum center.
+    lightCamera->m_node->Update();
 
     EngineSettings& settings = GetEngineSettings();
 
@@ -312,6 +315,7 @@ namespace ToolKit
     // exactly max z units. If we not perform this, frustum center will be placed to origin, from 0 to max.z will stay
     // behind the camera.
     lightCamera->m_node->SetTranslation(center - lightCamera->Direction() * tightShadowVolume.max.z);
+    lightCamera->m_node->Update();
 
     // Set the lens such that it only captures everything inside the frustum.
     float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
