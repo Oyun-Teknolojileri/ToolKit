@@ -16,8 +16,6 @@
 #include "Node.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -94,6 +92,9 @@ namespace ToolKit
       Quaternion camOrientation = cam->m_node->GetOrientation();
       m_node->SetOrientation(camOrientation);
     }
+
+    // Look at usually a render time operation, which usually set immediately.
+    m_node->Update();
   }
 
   Entity* Billboard::CopyTo(Entity* copyTo) const

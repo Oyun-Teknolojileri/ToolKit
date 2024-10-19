@@ -60,7 +60,6 @@ namespace ToolKit
                   // Update billboards.
                   BillboardPtr cbb = Cast<Billboard>(bb);
                   cbb->LookAt(cam, vpScale);
-                  cbb->m_node->Update(); // Forced update to reflect look at changes.
 
                   // Return separation condition.
                   return cbb->m_settings.bypassDepthTest;

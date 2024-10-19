@@ -387,7 +387,6 @@ namespace ToolKit
           {
             Billboard* bb = static_cast<Billboard*>(billboard.get());
             bb->LookAt(viewportCamera, viewport->GetBillboardScale());
-            bb->m_node->Update();
 
             RenderJobProcessor::CreateRenderJobs(billboardJobs, billboard);
           }

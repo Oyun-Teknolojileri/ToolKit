@@ -85,7 +85,6 @@ namespace ToolKit
                  }
 
                  bb->LookAt(m_camera, m_params.Viewport->GetBillboardScale());
-                 bb->m_node->Update(); // Forced update to reflect look at changes.
                  return false;
                });
     }

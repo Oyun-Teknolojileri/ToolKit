@@ -54,11 +54,11 @@ namespace ToolKit
 
     void FlipNode(Node* node)
     {
-      node->Update();
       Vec3 scl = node->GetScale();
       if (scl.y > 0.0f)
       {
         node->Scale(Vec3(1.0f, -1.0f, 1.0f));
+        node->Update();
       }
     }
 
