@@ -140,6 +140,7 @@ namespace ToolKit
       cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
+      cam->m_node->Update();
 
       m_frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                         cubemap,
@@ -165,9 +166,7 @@ namespace ToolKit
     HdriPtr hdr           = GetHdri();
     uint size             = (uint) GetIBLTextureSizeVal().GetValue<int>();
 
-    // hdr->m_diffuseEnvMap = hdr->m_cubemap;
     hdr->m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(hdr->m_cubemap, size);
-
     hdr->m_specularEnvMap = renderer->GenerateSpecularEnvMap(hdr->m_cubemap, size, RHIConstants::SpecularIBLLods);
   }
 

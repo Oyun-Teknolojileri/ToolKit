@@ -491,11 +491,11 @@ namespace ToolKit
         }
 
         // If entity is gradient sky create a "Update IBL Textures" button
-        if (ntt->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
+        if (GradientSky* gSky = ntt->As<GradientSky>())
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
-            Cast<Sky>(ntt)->ReInit();
+            gSky->ReInit();
           }
           UI::EndCenteredTextButton();
         }

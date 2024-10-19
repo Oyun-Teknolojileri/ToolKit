@@ -159,17 +159,19 @@ namespace ToolKit
       if (job.animData.currentAnimation != nullptr)
       {
         // animation
-        AnimationPlayer* animPlayer = GetAnimationPlayer();
-        SetTexture(3,
-                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal())
-                       ->m_textureId);
+        AnimationPlayer* player = GetAnimationPlayer();
+        DataTexturePtr data =
+            player->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal());
+
+        SetTexture(3, data->m_textureId);
 
         // animation to blend
         if (job.animData.blendAnimation != nullptr)
         {
-          SetTexture(2,
-                     animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal())
-                         ->m_textureId);
+          DataTexturePtr blendData =
+              player->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal());
+
+          SetTexture(2, blendData->m_textureId);
         }
       }
       else
@@ -597,6 +599,8 @@ namespace ToolKit
   void Renderer::DrawCube(CameraPtr cam, MaterialPtr mat, const Mat4& transform)
   {
     m_dummyDrawCube->m_node->SetTransform(transform);
+    m_dummyDrawCube->m_node->Update(); // Force update.
+
     m_dummyDrawCube->GetMaterialComponent()->SetFirstMaterial(mat);
     SetCamera(cam, true);
 
@@ -1374,6 +1378,7 @@ namespace ToolKit
       cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
+      cam->m_node->Update(); // Force update.
 
       m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                                           cubeMapRt,
@@ -1441,6 +1446,7 @@ namespace ToolKit
       cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
       cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
       cam->m_node->SetScale(sca);
+      cam->m_node->Update(); // Force update.
 
       m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                                           cubeMapRt,
@@ -1528,6 +1534,7 @@ namespace ToolKit
         cam->m_node->SetTranslation(ZERO, TransformationSpace::TS_WORLD);
         cam->m_node->SetOrientation(rot, TransformationSpace::TS_WORLD);
         cam->m_node->SetScale(sca);
+        cam->m_node->Update(); // Force update.
 
         m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
                                                             mipCubeRt,

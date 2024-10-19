@@ -32,6 +32,7 @@ namespace ToolKit
     Pass::PreRender();
 
     m_cube->m_node->SetTransform(m_params.Transform);
+    m_cube->m_node->Update(); // Force update.
 
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
