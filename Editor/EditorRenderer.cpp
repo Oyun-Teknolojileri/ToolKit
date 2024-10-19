@@ -383,11 +383,11 @@ namespace ToolKit
           }
 
           // Add billboards to draw list
-          EntityPtr billboard = m_params.App->GetCurrentScene()->GetBillboard(entity);
-
-          if (billboard)
+          if (EntityPtr billboard = m_params.App->GetCurrentScene()->GetBillboard(entity))
           {
-            static_cast<Billboard*>(billboard.get())->LookAt(viewportCamera, viewport->GetBillboardScale());
+            Billboard* bb = static_cast<Billboard*>(billboard.get());
+            bb->LookAt(viewportCamera, viewport->GetBillboardScale());
+            bb->m_node->Update();
 
             RenderJobProcessor::CreateRenderJobs(billboardJobs, billboard);
           }
