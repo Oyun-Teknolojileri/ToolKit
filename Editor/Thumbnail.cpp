@@ -101,7 +101,6 @@ namespace ToolKit
           skelComp->Init();
         }
 
-        m_entity->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_entity);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
@@ -117,7 +116,6 @@ namespace ToolKit
           mc->SetFirstMaterial(mat);
         }
 
-        m_sphere->InvalidateSpatialCaches();
         m_thumbnailScene->AddEntity(m_sphere);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
@@ -144,7 +142,6 @@ namespace ToolKit
         float w      = (texture->m_width / maxDim) * m_maxThumbSize;
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
-        m_surface->InvalidateSpatialCaches();
         m_surface->Update(Vec2(w, h));
         m_surface->UpdateGeometry(false);
 
@@ -165,6 +162,7 @@ namespace ToolKit
         return g_app->m_thumbnailManager.GetDefaultThumbnail();
       }
 
+      m_cam->m_node->Update();
       m_thumbnailScene->Update(0.0f);
 
       m_thumbnailRT = MakeNewPtr<RenderTarget>(m_maxThumbSize, m_maxThumbSize, TextureSettings());
