@@ -54,6 +54,7 @@ namespace ToolKit
 
     void FlipNode(Node* node)
     {
+      node->Update();
       Vec3 scl = node->GetScale();
       if (scl.y > 0.0f)
       {
