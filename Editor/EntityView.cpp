@@ -493,11 +493,14 @@ namespace ToolKit
         // If entity is gradient sky create a "Update IBL Textures" button
         if (GradientSky* gSky = ntt->As<GradientSky>())
         {
-          if (UI::BeginCenteredTextButton("Update IBL Textures"))
+          if (category.Name.compare("Sky") == 0)
           {
-            gSky->ReInit();
+            if (UI::BeginCenteredTextButton("Update IBL Textures"))
+            {
+              gSky->ReInit();
+            }
+            UI::EndCenteredTextButton();
           }
-          UI::EndCenteredTextButton();
         }
 
         if (category.Name == PrefabCategory.Name)
