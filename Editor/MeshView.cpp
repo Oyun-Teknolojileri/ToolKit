@@ -27,8 +27,11 @@ namespace ToolKit
       m_viewport = MakeNewPtr<PreviewViewport>();
       m_viewport->Init({300.0f, 300.0f});
 
-      ScenePtr scene  = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
-      m_previewEntity = scene->GetFirstByTag("target");
+      ScenePtr scene = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
+      scene->Init();
+
+      m_previewEntity                   = scene->GetFirstByTag("target");
+      m_previewEntity->m_partOfAABBTree = true;
 
       m_viewport->SetScene(scene);
     }
@@ -115,6 +118,8 @@ namespace ToolKit
         skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
         skelComp->Init();
       }
+
+      m_previewEntity->InvalidateSpatialCaches();
 
       ResetCamera();
     }
