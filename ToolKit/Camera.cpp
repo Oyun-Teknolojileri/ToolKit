@@ -156,12 +156,21 @@ namespace ToolKit
       return;
     }
 
+    // Compute bounding box center and radius
     Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
-    float r        = glm::max(glm::distance(geoCenter, bb.max) * margin, 1.5f);
-    float d        = r / glm::tan(m_fov / 2.0f);
-    Vec3 eye       = geoCenter + glm::normalize(Vec3(1.0f)) * d;
-    m_node->SetTranslation(eye, TransformationSpace::TS_WORLD);
-    GetComponent<DirectionComponent>()->LookAt(geoCenter);
+    float r        = glm::max(glm::distance(geoCenter, bb.max), 1.5f);
+    float d   = r / glm::tan(m_fov / 2.0f); // Based on fov, how far away put the camera such that it covers entire box.
+
+    // Calculate the initial eye position
+    Vec3 eye  = geoCenter + Vec3(d * margin);
+    eye      -= Vec3(Vec2(d * 0.5f), 0.0f);
+
+    // Calculate the initial camera orientation (25 degrees)
+    Quaternion looking = glm::angleAxis(glm::radians(25.0f), Y_AXIS) * glm::angleAxis(-glm::radians(25.0f), X_AXIS);
+
+    // Set the initial translation and orientation
+    m_node->SetTranslation(eye);
+    m_node->SetOrientation(looking);
   }
 
   Vec3Array Camera::ExtractFrustumCorner()
@@ -179,7 +188,7 @@ namespace ToolKit
     Mat4 project                  = GetProjectionMatrix();
     const Mat4 inverseSpaceMatrix = glm::inverse(project * view);
 
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 8; i++)
     {
       const Vec4 t = inverseSpaceMatrix * Vec4(frustum[i], 1.0f);
       frustum[i]   = Vec3(t.x / t.w, t.y / t.w, t.z / t.w);

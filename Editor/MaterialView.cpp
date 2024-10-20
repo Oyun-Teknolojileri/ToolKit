@@ -55,7 +55,11 @@ namespace ToolKit
 
     void MaterialView::SetMaterials(const MaterialPtrArray& mat) { m_materials = mat; }
 
-    void MaterialView::ResetCamera() { m_viewport->ResetCamera(); }
+    void MaterialView::ResetCamera()
+    {
+      CameraPtr cam = m_viewport->GetCamera();
+      cam->FocusToBoundingBox(BoundingBox(Vec3(-0.5f, -1.0f, -0.5f), Vec3(0.5f, 2.8f, -0.5f)), 1.1f);
+    }
 
     void MaterialView::UpdatePreviewScene()
     {

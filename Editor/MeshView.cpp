@@ -35,14 +35,7 @@ namespace ToolKit
 
     MeshView::~MeshView() { m_viewport = nullptr; }
 
-    void MeshView::ResetCamera()
-    {
-      m_previewEntity->InvalidateSpatialCaches();
-      ScenePtr scene = m_viewport->GetScene();
-      scene->Update(0.0f);
-      BoundingBox aabb = scene->GetSceneBoundary();
-      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.5f);
-    }
+    void MeshView::ResetCamera() { m_viewport->ResetCamera(); }
 
     void MeshView::Show()
     {
