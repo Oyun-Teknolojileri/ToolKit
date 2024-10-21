@@ -58,40 +58,38 @@ namespace ToolKit
     return glm::column(transform, 0);
   }
 
-  void DirectionComponent::LookAt(Vec3 target)
+  void DirectionComponent::LookAt(const Vec3& target)
   {
-    Vec3 eye  = glm::column(GetOwnerWorldTransform(), 3);
-    Vec3 tdir = target - eye;
-    tdir.y    = 0.0f; // project on xz
-    tdir      = glm::normalize(tdir);
-    Vec3 dir  = GetDirection();
-    dir.y     = 0.0f; // project on xz
-    dir       = glm::normalize(dir);
+    Mat4 worldTs   = GetOwnerWorldTransform();
+    Vec3 pos       = glm::column(worldTs, 3); // Owner's current position
 
-    if (glm::all(glm::epsilonEqual(tdir, dir, {0.0001f, 0.0001f, 0.0001f})))
+    Vec3 targetDir = -glm::normalize(target - pos); // Direction to target
+
+    // Calculate right and up vectors using cross products.
+    Vec3 up, right;
+    float dotVal = glm::abs(glm::dot(Y_AXIS, targetDir));
+    if (glm::epsilonEqual(dotVal, 1.0f, 0.0001f)) // Check if up and target collinear.
     {
-      return;
+      right = glm::normalize(GetRight());
+      up    = glm::normalize(glm::cross(targetDir, right));
+    }
+    else
+    {
+      right = glm::normalize(glm::cross(Y_AXIS, targetDir));
+      up    = glm::normalize(glm::cross(targetDir, right));
     }
 
-    Vec3 rotAxis  = glm::normalize(glm::cross(dir, tdir));
-    float yaw     = glm::acos(glm::dot(tdir, dir));
+    // Construct orientation matrix
+    Mat3 orientation = Mat3(right, up, targetDir);
 
-    yaw          *= glm::sign(glm::dot(Y_AXIS, rotAxis));
-    RotateOnUpVector(yaw);
+    // Set the orientation using a quaternion
+    OwnerEntity()->m_node->SetOrientation(glm::toQuat(orientation));
+  }
 
-    tdir         = target - eye;
-    tdir         = glm::normalize(tdir);
-    dir          = glm::normalize(GetDirection());
-    rotAxis      = glm::normalize(glm::cross(dir, tdir));
-    float pitch  = glm::acos(glm::dot(tdir, dir));
-    pitch       *= glm::sign(glm::dot(GetRight(), rotAxis));
-    Pitch(pitch);
-
-    // Check upside down case
-    if (glm::dot(GetUp(), Y_AXIS) < 0.0f)
-    {
-      Roll(glm::pi<float>());
-    }
+  void DirectionComponent::LookAt(const Vec3& eye, const Vec3& target)
+  {
+    OwnerEntity()->m_node->SetTranslation(eye);
+    LookAt(target);
   }
 
   XmlNode* DirectionComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const
