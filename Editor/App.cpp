@@ -781,8 +781,7 @@ namespace ToolKit
         EditorViewportPtr vp = MakeNewPtr<EditorViewport>();
         vp->Init(vpSize);
         vp->m_name = g_3dViewport;
-        vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
-        vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
+        vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(5.0f, 3.0f, 5.0f), Vec3(0.0f));
         m_windows.push_back(vp);
         GetUIManager()->RegisterViewport(vp);
 
@@ -796,11 +795,12 @@ namespace ToolKit
         // Isometric viewport.
         vp = MakeNewPtr<EditorViewport>();
         vp->Init(vpSize);
-        vp->m_name = g_IsoViewport;
-        vp->GetCamera()->m_node->SetTranslation({0.0f, 10.0f, 0.0f});
-        vp->GetCamera()->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
-        vp->GetCamera()->m_orthographicScale = 0.02f;
-        vp->GetCamera()->GetComponent<DirectionComponent>()->Pitch(glm::radians(-90.0f));
+        vp->m_name    = g_IsoViewport;
+        CameraPtr cam = vp->GetCamera();
+        cam->m_node->SetTranslation({0.0f, 10.0f, 0.0f});
+        cam->SetLens(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f);
+        cam->m_orthographicScale = 0.02f;
+        cam->GetComponent<DirectionComponent>()->Pitch(glm::radians(-90.0f));
         vp->m_cameraAlignment = CameraAlignment::Top;
         vp->m_orbitLock       = true;
         m_windows.push_back(vp);

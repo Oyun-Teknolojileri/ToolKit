@@ -58,7 +58,7 @@ namespace ToolKit
     return glm::column(transform, 0);
   }
 
-  void DirectionComponent::LookAt(Vec3 target)
+  void DirectionComponent::LookAt(const Vec3& target)
   {
     Mat4 worldTs   = GetOwnerWorldTransform();
     Vec3 pos       = glm::column(worldTs, 3); // Owner's current position
@@ -84,6 +84,14 @@ namespace ToolKit
 
     // Set the orientation using a quaternion
     OwnerEntity()->m_node->SetOrientation(glm::toQuat(orientation));
+  }
+
+  void DirectionComponent::LookAt(const Vec3& eye, const Vec3& target)
+  {
+    Node* node = OwnerEntity()->m_node;
+    node->SetTranslation(eye);
+    node->Update();
+    LookAt(target);
   }
 
   XmlNode* DirectionComponent::SerializeImp(XmlDocument* doc, XmlNode* parent) const

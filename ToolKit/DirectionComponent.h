@@ -34,7 +34,8 @@ namespace ToolKit
     void RotateOnUpVector(float angle);
     Vec3 GetUp() const;
     Vec3 GetRight() const;
-    void LookAt(Vec3 target);
+    void LookAt(const Vec3& target);
+    void LookAt(const Vec3& eye, const Vec3& target);
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;

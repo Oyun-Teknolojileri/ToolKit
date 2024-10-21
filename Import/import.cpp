@@ -852,9 +852,10 @@ namespace ToolKit
       {
         DirectionalLightPtr dirLight = MakeNewPtr<DirectionalLight>();
         dirLight->SetNameVal(light->mName.C_Str());
-        dirLight->m_node->SetTranslation(Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
         dirLight->GetComponent<DirectionComponent>()->LookAt(
+            Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z),
             Vec3(light->mDirection.x, light->mDirection.y, light->mDirection.z));
+
         dirLight->SetColorVal(Vec3(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b));
         tkLight = dirLight;
       }
@@ -872,9 +873,10 @@ namespace ToolKit
       {
         SpotLightPtr spotLight = MakeNewPtr<SpotLight>();
         spotLight->SetNameVal(light->mName.C_Str());
-        spotLight->m_node->SetTranslation(Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
         spotLight->GetComponent<DirectionComponent>()->LookAt(
+            Vec3(light->mPosition.x, light->mPosition.y, light->mPosition.z),
             Vec3(light->mDirection.x, light->mDirection.y, light->mDirection.z));
+
         spotLight->SetRadiusVal(light->mAttenuationConstant);
         spotLight->SetColorVal(Vec3(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b));
         spotLight->SetInnerAngleVal(glm::degrees(light->mAngleInnerCone));
