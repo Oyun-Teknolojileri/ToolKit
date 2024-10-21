@@ -33,6 +33,10 @@ namespace ToolKit
       m_previewEntity                   = scene->GetFirstByTag("target");
       m_previewEntity->m_partOfAABBTree = true;
 
+      // Make sure preview entity is part of aabb.
+      scene->RemoveEntity(m_previewEntity->GetIdVal());
+      scene->AddEntity(m_previewEntity);
+
       m_viewport->SetScene(scene);
     }
 
