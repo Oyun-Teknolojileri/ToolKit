@@ -209,7 +209,7 @@ namespace ToolKit
     void SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale);
 
     /** Odd number of negative values in scale requires back / front culling to be flipped for proper winding order. */
-    bool RequresCullFlip();
+    bool RequireCullFlip();
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
@@ -273,7 +273,8 @@ namespace ToolKit
     /** World orientation cache. Never access directly. It may be dirty. */
     Quaternion m_worldOrientationCache;
 
-    bool m_dirty; //!< Hint for child to update its parent cache.
+    bool m_dirty;                //!< Hint for child to update its parent cache.
+    bool m_requireTransformSwap; //!< Transforms updated they must be exposed to prev versions.
 
     Vec3 m_prevTranslation;
     Vec3 m_prevScale;

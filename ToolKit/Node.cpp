@@ -17,13 +17,14 @@ namespace ToolKit
 
   Node::Node()
   {
-    m_scale        = Vec3(1.0f);
-    m_prevScale    = Vec3(1.0f);
+    m_scale                = Vec3(1.0f);
+    m_prevScale            = Vec3(1.0f);
 
-    m_id           = GetHandleManager()->GenerateHandle();
-    m_parent       = nullptr;
-    m_inheritScale = false;
-    m_dirty        = true;
+    m_id                   = GetHandleManager()->GenerateHandle();
+    m_parent               = nullptr;
+    m_inheritScale         = false;
+    m_dirty                = true;
+    m_requireTransformSwap = true;
   }
 
   Node::~Node()
@@ -123,27 +124,27 @@ namespace ToolKit
 
   void Node::Update()
   {
-    bool invalidationIsRequired = m_dirty;
-    if (invalidationIsRequired)
+    if (m_dirty)
     {
       UpdateTransformCaches();
     }
 
-    m_prevTranslation           = m_translation;
-    m_prevScale                 = m_scale;
-    m_prevOrientation           = m_orientation;
-
-    m_prevWorldTranslationCache = m_worldTranslationCache;
-    m_prevLocalCache            = m_localCache;
-    m_prevParentCache           = m_parentCache;
-    m_prevWorldCache            = m_worldCache;
-    m_prevWorldOrientationCache = m_worldOrientationCache;
-
-    // Invalidate entity's spatial caches.
-    if (invalidationIsRequired)
+    if (m_requireTransformSwap)
     {
+      m_prevTranslation           = m_translation;
+      m_prevScale                 = m_scale;
+      m_prevOrientation           = m_orientation;
+
+      m_prevWorldTranslationCache = m_worldTranslationCache;
+      m_prevLocalCache            = m_localCache;
+      m_prevParentCache           = m_parentCache;
+      m_prevWorldCache            = m_worldCache;
+      m_prevWorldOrientationCache = m_worldOrientationCache;
+
       InvalitadeSpatialCaches();
     }
+
+    m_requireTransformSwap = false;
   }
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
@@ -334,7 +335,7 @@ namespace ToolKit
     UpdateTransformCaches();
   }
 
-  bool Node::RequresCullFlip()
+  bool Node::RequireCullFlip()
   {
     Mat3 basis = GetWorldCache();
     float det  = glm::determinant(basis);
@@ -571,14 +572,16 @@ namespace ToolKit
     Mat4 ts      = glm::translate(m_translation);
     m_localCache = ts * rt * scl;
 
-    // Let all children know they need to update their parent caches.
-    SetChildrenDirty();
-
     // Update world cache. Iteratively goes up until the root or a clean parent.
     m_worldCache = GetParentTransform() * m_localCache;
 
     // Update individual transform caches.
     DecomposeMatrix(m_worldCache, &m_worldTranslationCache, &m_worldOrientationCache, nullptr);
+
+    // Let all children know they need to update their parent caches.
+    SetChildrenDirty();
+
+    m_requireTransformSwap = true;
   }
 
   Mat4 Node::GetParentTransform()
