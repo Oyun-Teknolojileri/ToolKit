@@ -62,16 +62,14 @@ namespace ToolKit
   // DynamicBoneMap
   //////////////////////////////////////////
 
-  void DynamicBoneMap::AddDynamicBone(const String& boneName,
-                                      DynamicBoneMap::DynamicBone& bone,
-                                      DynamicBoneMap::DynamicBone* parent)
+  void DynamicBoneMap::AddDynamicBone(const String& boneName, DynamicBone& bone, DynamicBone* parent)
   {
-    if (parent)
+    if (parent != nullptr)
     {
       parent->node->AddChild(bone.node);
     }
 
-    boneList.insert(std::make_pair(boneName, bone));
+    m_boneMap.insert({boneName, bone});
   }
 
   void DynamicBoneMap::Init(const Skeleton* skeleton)
@@ -82,30 +80,30 @@ namespace ToolKit
     }
 
     // Create a copy of each bone (but create new pointers for Nodes)
-    for (const auto& tPoseBone : skeleton->m_Tpose.boneList)
+    for (const auto& tPoseBone : skeleton->m_Tpose.m_boneMap)
     {
       DynamicBone newBone;
       newBone.boneIndx = tPoseBone.second.boneIndx;
       newBone.node     = new Node();
       *newBone.node    = *tPoseBone.second.node;
-      boneList.insert(std::make_pair(tPoseBone.first, newBone));
+      m_boneMap.insert({tPoseBone.first, newBone});
     }
 
     // Fix parent/child relations
     //  ChildBone's node points to Skeleton's list rather than newly created one
-    for (const auto& tPoseBone : skeleton->m_Tpose.boneList)
+    for (const auto& tPoseBone : skeleton->m_Tpose.m_boneMap)
     {
-      auto& newBoneIter = boneList[tPoseBone.first];
+      auto& newBoneIter = m_boneMap[tPoseBone.first];
 
       // Find the index of the each child bone in T-Pose list
       // Then set newBone's child bone pointer to the child
       for (Node*& childBoneNode : newBoneIter.node->m_children)
       {
-        for (const auto& tPoseSearchBone : skeleton->m_Tpose.boneList)
+        for (const auto& tPoseSearchBone : skeleton->m_Tpose.m_boneMap)
         {
           if (tPoseSearchBone.second.node == childBoneNode)
           {
-            childBoneNode           = boneList[tPoseSearchBone.first].node;
+            childBoneNode           = m_boneMap[tPoseSearchBone.first].node;
             childBoneNode->m_parent = newBoneIter.node;
             break;
           }
@@ -114,30 +112,36 @@ namespace ToolKit
     }
   }
 
+  DynamicBoneMap::DynamicBoneMap() {}
+
   DynamicBoneMap::~DynamicBoneMap()
   {
-    for (auto& dBoneIter : boneList)
+    for (auto& dBoneIter : m_boneMap)
     {
       dBoneIter.second.node->m_parent = nullptr;
       dBoneIter.second.node->m_children.clear();
+
       SafeDel(dBoneIter.second.node);
       dBoneIter.second.node = nullptr;
     }
 
-    boneList.clear();
+    m_boneMap.clear();
   }
 
-  void DynamicBoneMap::ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc)
+  // Find skeleton's each child bone from its child nodes
+  // Then call childProcessFunc (should be recursive to traverse all childs)
+  void DynamicBoneMap::ForEachRootBone(std::function<void(const DynamicBone*)> childProcessFunc) const
   {
     // For each parent bone of the skeleton, access child bones recursively
-    for (auto& bone : boneList)
+    for (auto& bone : m_boneMap)
     {
       if (bone.second.node->m_parent == nullptr)
       {
-        Node* childNode        = bone.second.node;
+        Node* childNode              = bone.second.node;
+
         // Dynamic child node
-        DynamicBone* childBone = nullptr;
-        for (auto& boneSearch : boneList)
+        const DynamicBone* childBone = nullptr;
+        for (auto& boneSearch : m_boneMap)
         {
           if (boneSearch.second.node == childNode)
           {
@@ -166,35 +170,6 @@ namespace ToolKit
   Skeleton::~Skeleton() { UnInit(); }
 
   void Skeleton::Init(bool flushClientSideArray) {}
-
-  // Find skeleton's each child bone from its child nodes
-  // Then call childProcessFunc (should be recursive to traverse all childs)
-  void DynamicBoneMap::ForEachRootBone(std::function<void(const DynamicBone*)> childProcessFunc) const
-  {
-    // For each parent bone of the skeleton, access child bones recursively
-    for (auto& bone : boneList)
-    {
-      if (bone.second.node->m_parent == nullptr)
-      {
-        Node* childNode              = bone.second.node;
-        // Dynamic child node
-        const DynamicBone* childBone = nullptr;
-        for (auto& boneSearch : boneList)
-        {
-          if (boneSearch.second.node == childNode)
-          {
-            childBone = &boneSearch.second;
-            break;
-          }
-        }
-        // If there is a child bone
-        if (childBone)
-        {
-          childProcessFunc(childBone);
-        }
-      }
-    }
-  }
 
   void Skeleton::UnInit()
   {
@@ -262,7 +237,7 @@ namespace ToolKit
     {
       // Find child bone
       const DynamicBoneMap::DynamicBone* childBone = nullptr;
-      for (auto& boneSearch : skeleton->m_Tpose.boneList)
+      for (auto& boneSearch : skeleton->m_Tpose.m_boneMap)
       {
         if (boneSearch.second.node == childNode)
         {
@@ -336,16 +311,14 @@ namespace ToolKit
       subNode = bindPoseNode->first_node("rotation");
       ReadVec(subNode, rt);
 
-      Mat4 tsm;
-      tsm = glm::translate(tsm, ts);
-      Mat4 sclm;
-      sclm                        = glm::scale(sclm, scl);
+      Mat4 tsm                    = glm::translate(ts);
+      Mat4 sclm                   = glm::scale(scl);
       Mat4 rtm                    = glm::toMat4(rt);
 
       sBone->m_inverseWorldMatrix = tsm * rtm * sclm;
     }
 
-    dBone.boneIndx = uint(skeleton->m_bones.size());
+    dBone.boneIndx = (uint) skeleton->m_bones.size();
     skeleton->m_bones.push_back(sBone);
     skeleton->m_Tpose.AddDynamicBone(sBone->m_name, dBone, parent);
 
@@ -364,12 +337,10 @@ namespace ToolKit
     }
 
     m_bindPoseTexture = CreateBoneTransformTexture(this);
-    for (uint64_t boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
+    for (uint boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
     {
-      Mat4 transform = m_Tpose.boneList[m_bones[boneIndx]->m_name].node->GetTransform();
-      uploadBoneMatrix(transform * m_bones[boneIndx]->m_inverseWorldMatrix,
-                       m_bindPoseTexture,
-                       static_cast<uint>(boneIndx));
+      Mat4 transform = m_Tpose.m_boneMap[m_bones[boneIndx]->m_name].node->GetTransform();
+      uploadBoneMatrix(transform * m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, (uint) boneIndx);
     }
 
     m_initiated = true;
@@ -397,6 +368,7 @@ namespace ToolKit
     {
       return nullptr;
     }
+
     return m_bones[index];
   }
 

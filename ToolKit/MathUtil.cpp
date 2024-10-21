@@ -399,27 +399,31 @@ namespace ToolKit
   Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap, bool isAnimated)
   {
 
-    Vec3 transformedPos = {};
+    Vec3 transformedPos;
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
     {
       uint currentBone  = (uint) vertex->bones[boneIndx];
       StaticBone* sBone = skel->m_bones[currentBone];
+
       if (isAnimated)
       {
         // Get animated pose
-        ToolKit::Mat4 boneTransform =
-            dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 boneTransform =
+            dynamicBoneMap->m_boneMap.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
+
         transformedPos +=
             Vec3((boneTransform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
       }
       else
       {
         // Get bind pose
-        Mat4 transform = skel->m_Tpose.boneList.find(sBone->m_name)->second.node->GetTransform();
+        Mat4 transform = skel->m_Tpose.m_boneMap.find(sBone->m_name)->second.node->GetTransform();
+
         transformedPos +=
             Vec3((transform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
       }
     }
+
     return transformedPos;
   }
 
