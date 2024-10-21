@@ -60,14 +60,24 @@ namespace ToolKit
 
   void DirectionComponent::LookAt(Vec3 target)
   {
-    Mat4 worldTs     = GetOwnerWorldTransform();
-    Vec3 pos         = glm::column(worldTs, 3); // Owner's current position
+    Mat4 worldTs   = GetOwnerWorldTransform();
+    Vec3 pos       = glm::column(worldTs, 3); // Owner's current position
 
-    Vec3 targetDir   = -glm::normalize(target - pos); // Direction to target
+    Vec3 targetDir = -glm::normalize(target - pos); // Direction to target
 
-    // Calculate right and up vectors using cross products
-    Vec3 right       = glm::normalize(glm::cross(Y_AXIS, targetDir));
-    Vec3 up          = glm::normalize(glm::cross(targetDir, right));
+    // Calculate right and up vectors using cross products.
+    Vec3 up, right;
+    float dotVal = glm::abs(glm::dot(Y_AXIS, targetDir));
+    if (glm::epsilonEqual(dotVal, 1.0f, 0.0001f)) // Check if up and target collinear.
+    {
+      right = glm::normalize(GetRight());
+      up    = glm::normalize(glm::cross(targetDir, right));
+    }
+    else
+    {
+      right = glm::normalize(glm::cross(Y_AXIS, targetDir));
+      up    = glm::normalize(glm::cross(targetDir, right));
+    }
 
     // Construct orientation matrix
     Mat3 orientation = Mat3(right, up, targetDir);
