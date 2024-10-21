@@ -286,9 +286,6 @@ namespace ToolKit
 
   void Main::Frame(float deltaTime)
   {
-    GetRenderSystem()->DecrementSkipFrame();
-    GetRenderSystem()->ExecuteRenderTasks();
-
     // Update animations.
     GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
     GetUIManager()->Update(deltaTime);
@@ -297,6 +294,9 @@ namespace ToolKit
     {
       scene->Update(deltaTime);
     }
+
+    GetRenderSystem()->DecrementSkipFrame();
+    GetRenderSystem()->ExecuteRenderTasks();
   }
 
   void Main::RegisterPreUpdateFunction(TKUpdateFn preUpdateFn) { m_preUpdateFunctions.push_back(preUpdateFn); }
