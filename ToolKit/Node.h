@@ -209,7 +209,7 @@ namespace ToolKit
     void SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale);
 
     /** Odd number of negative values in scale requires back / front culling to be flipped for proper winding order. */
-    bool RequresCullFlip();
+    bool RequireCullFlip();
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);

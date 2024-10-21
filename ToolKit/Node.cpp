@@ -305,7 +305,7 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     UpdateTransformCaches();
   }
 
-  bool Node::RequresCullFlip()
+  bool Node::RequireCullFlip()
   {
     Mat3 basis = GetWorldCache();
     float det  = glm::determinant(basis);

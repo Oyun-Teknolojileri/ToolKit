@@ -113,7 +113,7 @@ namespace ToolKit
                     MeshRawPtrArray allMeshes;
                     parentMesh->GetAllMeshes(allMeshes);
 
-                    bool cullFlip  = ntt->m_node->RequresCullFlip();
+                    bool cullFlip  = ntt->m_node->RequireCullFlip();
                     Mat4 transform = ntt->m_node->GetTransform();
                     for (int subMeshIndx = 0; subMeshIndx < (int) allMeshes.size(); subMeshIndx++)
                     {
