@@ -124,7 +124,10 @@ namespace ToolKit
   void Node::Update()
   {
     bool invalidationIsRequired = m_dirty;
-    UpdateTransformCaches();
+    if (invalidationIsRequired)
+    {
+      UpdateTransformCaches();
+    }
 
     m_prevTranslation           = m_translation;
     m_prevScale                 = m_scale;
