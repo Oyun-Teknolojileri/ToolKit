@@ -27,22 +27,22 @@ namespace ToolKit
       m_viewport = MakeNewPtr<PreviewViewport>();
       m_viewport->Init({300.0f, 300.0f});
 
-      ScenePtr scene  = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
-      m_previewEntity = scene->GetFirstByTag("target");
+      ScenePtr scene = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
+      scene->Init();
+
+      m_previewEntity                   = scene->GetFirstByTag("target");
+      m_previewEntity->m_partOfAABBTree = true;
+
+      // Make sure preview entity is part of aabb.
+      scene->RemoveEntity(m_previewEntity->GetIdVal());
+      scene->AddEntity(m_previewEntity);
 
       m_viewport->SetScene(scene);
     }
 
     MeshView::~MeshView() { m_viewport = nullptr; }
 
-    void MeshView::ResetCamera()
-    {
-      m_previewEntity->InvalidateSpatialCaches();
-      ScenePtr scene = m_viewport->GetScene();
-      scene->Update(0.0f);
-      BoundingBox aabb = scene->GetSceneBoundary();
-      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.5f);
-    }
+    void MeshView::ResetCamera() { m_viewport->ResetCamera(); }
 
     void MeshView::Show()
     {
@@ -122,6 +122,8 @@ namespace ToolKit
         skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
         skelComp->Init();
       }
+
+      m_previewEntity->InvalidateSpatialCaches();
 
       ResetCamera();
     }

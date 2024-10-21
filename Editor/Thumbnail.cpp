@@ -105,7 +105,7 @@ namespace ToolKit
         m_thumbnailScene->AddEntity(m_entity);
 
         m_cam->SetLens(glm::half_pi<float>(), 1.0f);
-        m_cam->FocusToBoundingBox(m_entity->GetBoundingBox(true), 1.5f);
+        m_cam->FocusToBoundingBox(m_entity->GetBoundingBox(true), 1.1f);
       }
       else if (dirEnt.m_ext == MATERIAL)
       {
