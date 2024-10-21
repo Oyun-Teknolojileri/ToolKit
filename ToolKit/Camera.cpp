@@ -165,12 +165,14 @@ namespace ToolKit
     Vec3 eye  = geoCenter + Vec3(d * margin);
     eye      -= Vec3(Vec2(d * 0.5f), 0.0f);
 
-    // Calculate the initial camera orientation (25 degrees)
-    Quaternion looking = glm::angleAxis(glm::radians(25.0f), Y_AXIS) * glm::angleAxis(-glm::radians(25.0f), X_AXIS);
-
     // Set the initial translation and orientation
     m_node->SetTranslation(eye);
-    m_node->SetOrientation(looking);
+    m_node->Update();
+
+    if (DirectionComponent* dcom = GetComponentFast<DirectionComponent>())
+    {
+      dcom->LookAt(geoCenter);
+    }
   }
 
   Vec3Array Camera::ExtractFrustumCorner()
