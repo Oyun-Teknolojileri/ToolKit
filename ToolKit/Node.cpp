@@ -123,6 +123,7 @@ namespace ToolKit
 
   void Node::Update()
   {
+    bool invalidationIsRequired = m_dirty;
     UpdateTransformCaches();
 
     m_prevTranslation           = m_translation;
@@ -136,7 +137,10 @@ namespace ToolKit
     m_prevWorldOrientationCache = m_worldOrientationCache;
 
     // Invalidate entity's spatial caches.
-    InvalitadeSpatialCaches();
+    if (invalidationIsRequired)
+    {
+      InvalitadeSpatialCaches();
+    }
   }
 
   void Node::SetOrientation(const Quaternion& val, TransformationSpace space)
