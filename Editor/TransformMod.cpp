@@ -502,6 +502,7 @@ namespace ToolKit
       {
         parents.push_back(ntt->m_node->m_parent);
         ntt->m_node->OrphanSelf(true);
+        ntt->m_node->Update();
       }
 
       for (EntityPtr ntt : roots)
@@ -509,6 +510,7 @@ namespace ToolKit
         if (ntt != currentNtt)
         {
           currentNtt->m_node->AddChild(ntt->m_node, true);
+          ntt->m_node->Update();
         }
       }
 
@@ -537,11 +539,15 @@ namespace ToolKit
       // Set original parents back.
       for (size_t i = 0; i < roots.size(); i++)
       {
-        roots[i]->m_node->OrphanSelf(true);
+        Node* rootNode = roots[i]->m_node;
+        rootNode->OrphanSelf(true);
+        rootNode->Update();
+
         Node* parent = parents[i];
         if (parent != nullptr)
         {
-          parent->AddChild(roots[i]->m_node, true);
+          parent->AddChild(rootNode, true);
+          rootNode->Update();
         }
       }
     }
