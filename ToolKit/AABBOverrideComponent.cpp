@@ -36,9 +36,9 @@ namespace ToolKit
 
   BoundingBox AABBOverrideComponent::GetBoundingBox()
   {
-    BoundingBox aabb = {};
-    aabb.min         = GetPositionOffsetVal();
-    aabb.max         = GetPositionOffsetVal() + GetSizeVal();
+    BoundingBox aabb;
+    aabb.min = GetPositionOffsetVal();
+    aabb.max = GetPositionOffsetVal() + GetSizeVal();
     return aabb;
   }
 
@@ -76,14 +76,6 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
-  }
-
-  void AABBOverrideComponent::InvalidateSpatialCaches()
-  {
-    if (EntityPtr ntt = m_entity.lock())
-    {
-      ntt->InvalidateSpatialCaches();
-    }
   }
 
 } //  namespace ToolKit

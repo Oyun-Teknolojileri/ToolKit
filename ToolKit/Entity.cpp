@@ -97,12 +97,12 @@ namespace ToolKit
 
   const BoundingBox& Entity::GetBoundingBox(bool inWorld)
   {
-    if (!m_transformCacheInvalidated)
+    if (!m_spatialCachesInvalidated)
     {
       return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
     }
 
-    UpdateBoundingBoxCaches();
+    UpdateSpatialCaches();
 
     return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
   }
@@ -121,10 +121,6 @@ namespace ToolKit
 
   void Entity::InvalidateSpatialCaches()
   {
-    // Get access in components wrongly clears the spatial invalidation.
-    // The better fix is, invalidate all at frame 0 and update all at the beginning on frame 1.
-    // TODO: Post Transform Update.
-
     if (DirectionComponent* dirComp = GetComponentFast<DirectionComponent>())
     {
       dirComp->m_spatialCachesInvalidated = true;
@@ -135,20 +131,15 @@ namespace ToolKit
       envComp->m_spatialCachesInvalidated = true;
     }
 
-    if (m_transformCacheInvalidated)
-    {
-      return;
-    }
-
-    m_transformCacheInvalidated = true;
-
     if (m_aabbTreeNodeProxy != AABBTree::nullNode)
     {
       if (ScenePtr scene = m_scene.lock())
       {
-        scene->m_aabbTree.UpdateNode(m_aabbTreeNodeProxy);
+        scene->m_aabbTree.Invalidate(m_aabbTreeNodeProxy);
       }
     }
+
+    m_spatialCachesInvalidated = true;
   }
 
   Entity* Entity::CopyTo(Entity* other) const
@@ -363,8 +354,9 @@ namespace ToolKit
     }
   }
 
-  void Entity::UpdateBoundingBoxCaches()
+  void Entity::UpdateSpatialCaches()
   {
+    // Update bounding box.
     UpdateLocalBoundingBox();
 
     if (AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>())
@@ -381,7 +373,7 @@ namespace ToolKit
     m_worldBoundingBoxCache = m_localBoundingBoxCache;
     TransformAABB(m_worldBoundingBoxCache, m_node->GetTransform());
 
-    m_transformCacheInvalidated = false;
+    m_spatialCachesInvalidated = false;
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }

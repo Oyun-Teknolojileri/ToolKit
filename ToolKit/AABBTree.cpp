@@ -48,6 +48,7 @@ namespace ToolKit
     m_nodes[m_nodeCapacity - 1].parent = m_nodeCapacity - 1;
 
     m_freeList                         = 0;
+    m_invalidNodes.clear();
   }
 
   AABBNodeProxy AABBTree::CreateNode(EntityWeakPtr entity, const BoundingBox& aabb)
@@ -64,7 +65,6 @@ namespace ToolKit
     m_nodes[newNode].aabb.min = aabb.min;
     m_nodes[newNode].entity   = entity;
     m_nodes[newNode].parent   = nullNode;
-    m_nodes[newNode].moved    = true;
 
     // Insert a reference to self to create leafs struct properly in the tree.
     m_nodes[newNode].leafs.insert(newNode);
@@ -74,26 +74,32 @@ namespace ToolKit
     return newNode;
   }
 
-  void AABBTree::UpdateNode(AABBNodeProxy node)
-  {
-    assert(0 <= node && node < m_nodeCapacity);
-    assert(m_nodes[node].IsLeaf());
+  void AABBTree::Invalidate(AABBNodeProxy node) { m_invalidNodes.insert(node); }
 
-    BoundingBox aabb = m_nodes[node].aabb;
-    if (!m_nodes[node].entity.expired())
+  void AABBTree::UpdateTree()
+  {
+    if (m_invalidNodes.empty())
     {
-      EntityPtr ntt = m_nodes[node].entity.lock();
-      aabb          = ntt->GetBoundingBox(true);
+      return;
     }
 
-    aabb.max = aabb.max;
-    aabb.min = aabb.min;
+    // Update node will invalidate m_invalidNodes set, so this copy is needed.
+    AABBNodeSet invalidNodes = m_invalidNodes;
+    for (AABBNodeProxy node : invalidNodes)
+    {
+      RemoveLeaf(node);
 
-    RemoveLeaf(node);
+      BoundingBox aabb = m_nodes[node].aabb;
+      if (!m_nodes[node].entity.expired())
+      {
+        EntityPtr ntt = m_nodes[node].entity.lock();
+        aabb          = ntt->GetBoundingBox(true);
+      }
 
-    m_nodes[node].aabb = aabb;
+      m_nodes[node].aabb = aabb;
 
-    InsertLeaf(node);
+      InsertLeaf(node);
+    }
   }
 
   void AABBTree::RemoveNode(AABBNodeProxy node)
@@ -105,12 +111,14 @@ namespace ToolKit
     FreeNode(node);
   }
 
-  void AABBTree::Traverse(std::function<void(const AABBNode*)> callback) const
+  void AABBTree::Traverse(std::function<void(const AABBNode*)> callback)
   {
     if (m_root == nullNode)
     {
       return;
     }
+
+    UpdateTree();
 
     std::deque<AABBNodeProxy> stack;
     stack.emplace_back(m_root);
@@ -133,8 +141,9 @@ namespace ToolKit
 
   void AABBTree::Rebuild()
   {
-    // Rebuild tree with bottom up approach
+    m_invalidNodes.clear();
 
+    // Rebuild tree with bottom up approach.
     std::vector<AABBNodeProxy> leaves;
     leaves.resize(m_nodeCount);
     int32 count = 0;
@@ -219,8 +228,10 @@ namespace ToolKit
     }
   }
 
-  const BoundingBox& AABBTree::GetRootBoundingBox() const
+  const BoundingBox& AABBTree::GetRootBoundingBox()
   {
+    UpdateTree();
+
     if (m_root != nullNode)
     {
       return m_nodes[m_root].aabb;
@@ -256,7 +267,6 @@ namespace ToolKit
     m_nodes[node].parent = nullNode;
     m_nodes[node].child1 = nullNode;
     m_nodes[node].child2 = nullNode;
-    m_nodes[node].moved  = false;
     m_nodes[node].entity.reset();
     m_nodes[node].leafs.clear();
     ++m_nodeCount;
@@ -265,14 +275,15 @@ namespace ToolKit
   }
 
   /** Test tree against a frustum. */
-  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const Frustum& frustum, bool threaded) const;
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const Frustum& frustum, bool threaded);
 
   /** Test tree against a box. */
-  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const BoundingBox& box, bool threaded) const;
+  template TK_API EntityRawPtrArray AABBTree::VolumeQuery(const BoundingBox& box, bool threaded);
 
   template <typename VolumeType>
-  EntityRawPtrArray AABBTree::VolumeQuery(const VolumeType& vol, bool threaded) const
+  EntityRawPtrArray AABBTree::VolumeQuery(const VolumeType& vol, bool threaded)
   {
+    UpdateTree();
 
     EntityRawPtrArray entities;
     if (m_root == nullNode)
@@ -327,12 +338,14 @@ namespace ToolKit
     return entities;
   }
 
-  EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t, const IDArray& ignoreList) const
+  EntityPtr AABBTree::RayQuery(const Ray& ray, bool deep, float* t, const IDArray& ignoreList)
   {
     if (m_root == nullNode)
     {
       return nullptr;
     }
+
+    UpdateTree();
 
     std::deque<AABBNodeProxy> stack;
     stack.emplace_back(m_root);
@@ -394,7 +407,7 @@ namespace ToolKit
     return hitEntity;
   }
 
-  void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const
+  void AABBTree::GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes)
   {
     Traverse(
         [&](const AABBNode* node) -> void
@@ -743,6 +756,9 @@ namespace ToolKit
   {
     assert(0 <= leaf && leaf < m_nodeCapacity);
     assert(m_nodes[leaf].IsLeaf());
+
+    // Remove the leaf if its in invalid nodes.
+    m_invalidNodes.erase(leaf);
 
     AABBNodeProxy parent = m_nodes[leaf].parent;
     if (parent == nullNode) // node is root

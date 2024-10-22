@@ -174,8 +174,11 @@ namespace ToolKit
      */
     Entity* GetPrefabRoot() const;
 
-    /** BVH & Bounding boxes are invalidated. */
+    /** Bounding boxes, AABB tree are invalidated. */
     virtual void InvalidateSpatialCaches();
+
+    /** Updates spatial caches related to entity. AABB tree is updated upon access. */
+    virtual void UpdateSpatialCaches();
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;
@@ -187,7 +190,6 @@ namespace ToolKit
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     virtual void UpdateLocalBoundingBox();
-    void UpdateBoundingBoxCaches();
 
    public:
     TKDeclareParam(String, Name);
@@ -221,7 +223,7 @@ namespace ToolKit
     SceneWeakPtr m_scene;
 
     /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
-    bool m_transformCacheInvalidated = true;
+    bool m_spatialCachesInvalidated = true;
 
    protected:
     BoundingBox m_localBoundingBoxCache;

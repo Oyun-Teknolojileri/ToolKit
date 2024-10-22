@@ -18,8 +18,6 @@
 #include "SkeletonComponent.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -33,6 +31,18 @@ namespace ToolKit
   {
     Super::NativeConstruct();
     m_serializableComponent = serializable;
+  }
+
+  EntityPtr Component::OwnerEntity() const { return m_entity.lock(); }
+
+  void Component::OwnerEntity(EntityPtr owner) { m_entity = owner; }
+
+  void Component::InvalidateSpatialCaches()
+  {
+    if (EntityPtr ntt = m_entity.lock())
+    {
+      ntt->InvalidateSpatialCaches();
+    }
   }
 
   void Component::ParameterConstructor()

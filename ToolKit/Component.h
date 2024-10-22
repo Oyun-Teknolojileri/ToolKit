@@ -60,13 +60,16 @@ namespace ToolKit
      * Getter function for owner entity.
      * @return Owner EntityPtr.
      */
-    EntityPtr OwnerEntity() const { return m_entity.lock(); }
+    EntityPtr OwnerEntity() const;
 
     /**
      * Setter function for owner entity.
      * @param owner owning EntityPtr.
      */
-    void OwnerEntity(EntityPtr owner) { m_entity = owner; }
+    void OwnerEntity(EntityPtr owner);
+
+    /** Owner entity gets invalidated. */
+    virtual void InvalidateSpatialCaches();
 
    protected:
     void ParameterConstructor() override;

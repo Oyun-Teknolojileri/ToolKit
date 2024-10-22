@@ -39,12 +39,12 @@ namespace ToolKit
       AABBNodeProxy child1;
       AABBNodeProxy child2;
       AABBNodeProxy next;
-      bool moved;
 
       AABBNodeProxySet leafs;
     };
 
     typedef std::vector<AABBNode> AABBNodeArray;
+    typedef std::set<AABBNodeProxy> AABBNodeSet;
 
    public:
     AABBTree();
@@ -55,29 +55,37 @@ namespace ToolKit
 
     void Reset();
     AABBNodeProxy CreateNode(EntityWeakPtr entity, const BoundingBox& aabb);
-    /** Updates the tree via reinserting the provided node. */
-    void UpdateNode(AABBNodeProxy node);
+
+    /** Updates the aabb tree for every invalid node, if any. */
+    void UpdateTree();
+
+    /** Invalidates the given node. */
+    void Invalidate(AABBNodeProxy node);
+
+    /** Removes given node from aabb tree. */
     void RemoveNode(AABBNodeProxy node);
-    void Traverse(std::function<void(const AABBNode*)> callback) const;
+
+    /** Calls the callback function for each node in a depth first manner. */
+    void Traverse(std::function<void(const AABBNode*)> callback);
 
     /** Creates an optimum aabb tree in bottom up fashion but its very slow to use even at scene loading.  */
     void Rebuild();
 
     /** Return debug boxes for each node in the tree. */
-    void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes) const;
+    void GetDebugBoundingBoxes(EntityPtrArray& boundingBoxes);
 
     /** Returns the bounding box that covers all entities. */
-    const BoundingBox& GetRootBoundingBox() const;
+    const BoundingBox& GetRootBoundingBox();
 
     /** Template for volume queries. VolumeTypes: {Frustum, BoundingBox} */
     template <typename VolumeType>
-    EntityRawPtrArray VolumeQuery(const VolumeType& vol, bool threaded = false) const;
+    EntityRawPtrArray VolumeQuery(const VolumeType& vol, bool threaded = false);
 
     /**
      * Test ray against the tree and returns the nearest entity that hits the ray and the hit distance t.
      * If the deep parameter passed as true, it checks mesh level intersection.
      */
-    EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr, const IDArray& ignoreList = {}) const;
+    EntityPtr RayQuery(const Ray& ray, bool deep, float* t = nullptr, const IDArray& ignoreList = {});
 
    private:
     AABBNodeProxy AllocateNode();
@@ -96,6 +104,8 @@ namespace ToolKit
     AABBNodeProxy m_freeList;
 
     AABBNodeArray m_nodes;
+    AABBNodeSet m_invalidNodes;
+
     int m_nodeCapacity;
     int m_nodeCount;
 
