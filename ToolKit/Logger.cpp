@@ -9,23 +9,22 @@
 
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
-  const uint64 buffLen = 4096;
-  static char buff[buffLen];
+  constexpr uint TKMessageBufferLength = 4096;
 
   void OutputUtil(ConsoleOutputFn logFn, LogType logType, const char* msg, va_list args)
   {
+    char messageBuffer[TKMessageBufferLength];
+
     if (logFn == nullptr)
     {
       return;
     }
 
-    vsprintf(buff, msg, args);
+    vsprintf(messageBuffer, msg, args);
 
-    logFn(logType, String(buff));
+    logFn(logType, String(messageBuffer));
   }
 
   Logger::Logger() { m_logFile.open("Log.txt", std::ios::out); }
@@ -34,11 +33,15 @@ namespace ToolKit
 
   void Logger::Log(const String& message)
   {
-#ifdef __EMSCRIPTEN__
-    String emLog = message + "\n";
-    printf("%s", emLog.c_str());
-#endif
-    m_logFile << message << std::endl;
+    if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
+    {
+      String emLog = message + "\n";
+      printf("%s", emLog.c_str());
+    }
+    else
+    {
+      m_logFile << message << std::endl;
+    }
   }
 
   void Logger::Log(LogType logType, const char* msg, ...)
@@ -48,37 +51,33 @@ namespace ToolKit
 
     static const char* logTypes[] = {"[Memo]", "[Error]", "[Warning]", "[Command]"};
 
-    vsprintf(buff, msg, args);
+    char messageBuffer[TKMessageBufferLength];
+    vsprintf(messageBuffer, msg, args);
 
-    m_logFile << logTypes[(int) logType] << buff << std::endl;
+    m_logFile << logTypes[(int) logType] << messageBuffer << std::endl;
 
     if (m_writeConsoleFn != nullptr)
     {
-      m_writeConsoleFn(logType, buff);
+      m_writeConsoleFn(logType, messageBuffer);
     }
 
     if (m_platfromConsoleFn != nullptr)
     {
-      m_platfromConsoleFn(logType, buff);
+      m_platfromConsoleFn(logType, messageBuffer);
     }
 
     va_end(args);
   }
 
-  void Logger::SetWriteConsoleFn(ConsoleOutputFn fn) { m_writeConsoleFn = fn; }
-
-  void Logger::SetClearConsoleFn(ClearConsoleFn fn) { m_clearConsoleFn = fn; }
-
-  void Logger::SetPlatformConsoleFn(ConsoleOutputFn fn) { m_platfromConsoleFn = fn; }
-
-  void Logger::ClearConsole() { m_clearConsoleFn(); }
-
   void Logger::WriteTKConsole(LogType logType, const char* msg, ...)
   {
-    if (strlen(msg) >= buffLen)
+    if (strlen(msg) >= TKMessageBufferLength)
     {
-      m_writeConsoleFn(LogType::Warning, "maximum size for WriteConsole exceeded, cannot format.");
-      m_writeConsoleFn(logType, msg);
+      if (m_platfromConsoleFn)
+      {
+        m_platfromConsoleFn(LogType::Warning, "Maximum size for WriteConsole exceeded, cannot format.");
+        m_platfromConsoleFn(logType, msg);
+      }
       return;
     }
     va_list args;
@@ -97,10 +96,13 @@ namespace ToolKit
 
   void Logger::WritePlatformConsole(LogType logType, const char* msg, ...)
   {
-    if (strlen(msg) >= buffLen)
+    if (strlen(msg) >= TKMessageBufferLength)
     {
-      m_platfromConsoleFn(logType, "maximum size for WriteConsole exceeded, cannot format.");
-      m_platfromConsoleFn(logType, msg);
+      if (m_platfromConsoleFn)
+      {
+        m_platfromConsoleFn(logType, "Maximum size for WriteConsole exceeded, cannot format.");
+        m_platfromConsoleFn(logType, msg);
+      }
       return;
     }
     va_list args;
@@ -110,5 +112,13 @@ namespace ToolKit
 
     va_end(args);
   }
+
+  void Logger::SetWriteConsoleFn(ConsoleOutputFn fn) { m_writeConsoleFn = fn; }
+
+  void Logger::SetClearConsoleFn(ClearConsoleFn fn) { m_clearConsoleFn = fn; }
+
+  void Logger::SetPlatformConsoleFn(ConsoleOutputFn fn) { m_platfromConsoleFn = fn; }
+
+  void Logger::ClearConsole() { m_clearConsoleFn(); }
 
 } // namespace ToolKit

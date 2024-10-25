@@ -176,8 +176,9 @@ namespace ToolKit
           ImGui::EndPopup();
         }
 
-        const Vec2 size = {canvasPanel->GetBoundingBox(true).GetWidth(), canvasPanel->GetBoundingBox(true).GetHeight()};
-        float res[]     = {size.x, size.y};
+        const BoundingBox& box = canvasPanel->GetBoundingBox(true);
+        Vec2 size              = {box.GetWidth(), box.GetHeight()};
+        float res[]            = {size.x, size.y};
         if (ImGui::InputFloat2("New resolution:", res))
         {
           canvasPanel->ApplyRecursiveResizePolicy(res[0], res[1]);
@@ -191,13 +192,13 @@ namespace ToolKit
           float w = 0, h = 0;
 
           {
-            pos                    = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            w                      = canvasPanel->GetSizeVal().x;
-            h                      = canvasPanel->GetSizeVal().y;
-            pos                   -= Vec3(w / 2.f, h / 2.f, 0.f);
-            const Vec3 surfacePos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
-            position[0]            = surfacePos.x - (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
-            position[1]            = surfacePos.y - (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
+            pos              = canvasPanel->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            w                = canvasPanel->GetSizeVal().x;
+            h                = canvasPanel->GetSizeVal().y;
+            pos             -= Vec3(w / 2.f, h / 2.f, 0.f);
+            Vec3 surfacePos  = surface->m_node->GetTranslation(TransformationSpace::TS_WORLD);
+            position[0]      = surfacePos.x - (pos.x + w * surface->m_anchorParams.m_anchorRatios[0]);
+            position[1]      = surfacePos.y - (pos.y + h * surface->m_anchorParams.m_anchorRatios[2]);
           }
           ImGui::DragFloat("Position X", &position[0], 0.25f, pos.x, pos.x + w);
           ImGui::DragFloat("Position Y", &position[1], 0.25f, pos.y, pos.y + h);
@@ -256,12 +257,28 @@ namespace ToolKit
       // Missing data reporter.
       if (ntt->IsDrawable())
       {
-        MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
+        MeshRawPtrArray meshes;
+        if (Prefab* prefab = ntt->As<Prefab>())
+        {
+          const EntityPtrArray subEntities = prefab->GetInstancedEntities();
+          for (EntityPtr subNtt : subEntities)
+          {
+            if (subNtt->IsDrawable())
+            {
+              MeshPtr mesh = subNtt->GetComponent<MeshComponent>()->GetMeshVal();
+              MeshRawPtrArray subMeshes;
+              mesh->GetAllMeshes(subMeshes);
+              meshes.insert(meshes.end(), subMeshes.begin(), subMeshes.end());
+            }
+          }
+        }
+        else
+        {
+          MeshPtr mesh = ntt->GetComponent<MeshComponent>()->GetMeshVal();
+          mesh->GetAllMeshes(meshes);
+        }
 
         StringArray missingData;
-        MeshRawPtrArray meshes;
-        mesh->GetAllMeshes(meshes);
-
         for (const Mesh* subMesh : meshes)
         {
           if (!subMesh->_missingFile.empty())
@@ -424,8 +441,8 @@ namespace ToolKit
 
         ImGui::Separator();
 
-        BoundingBox bb = ntt->GetBoundingBox(true);
-        Vec3 dim       = bb.max - bb.min;
+        const BoundingBox& bb = ntt->GetBoundingBox(true);
+        Vec3 dim              = bb.max - bb.min;
         ImGui::Text("Bounding box dimensions:");
         ImGui::Text("x: %.2f", dim.x);
         ImGui::SameLine();

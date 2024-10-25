@@ -9,7 +9,6 @@
 
 #include "AABBOverrideComponent.h"
 #include "Audio.h"
-#include "BVH.h"
 #include "Camera.h"
 #include "Canvas.h"
 #include "DirectionComponent.h"
@@ -21,6 +20,7 @@
 #include "Node.h"
 #include "Prefab.h"
 #include "Primative.h"
+#include "Scene.h"
 #include "Skeleton.h"
 #include "Sky.h"
 #include "Surface.h"
@@ -70,7 +70,6 @@ namespace ToolKit
   {
     if (MeshComponent* meshComp = GetComponentFast<MeshComponent>())
     {
-      // meshComp->Init(false);
       if (const MeshPtr& mesh = meshComp->GetMeshVal())
       {
         return mesh->TotalVertexCount() > 0;
@@ -96,14 +95,14 @@ namespace ToolKit
     anim->GetPose(m_node, time);
   }
 
-  BoundingBox Entity::GetBoundingBox(bool inWorld)
+  const BoundingBox& Entity::GetBoundingBox(bool inWorld)
   {
-    if (!m_boundingBoxCacheInvalidated)
+    if (!m_spatialCachesInvalidated)
     {
       return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
     }
 
-    UpdateBoundingBoxCaches();
+    UpdateSpatialCaches();
 
     return inWorld ? m_worldBoundingBoxCache : m_localBoundingBoxCache;
   }
@@ -122,22 +121,25 @@ namespace ToolKit
 
   void Entity::InvalidateSpatialCaches()
   {
-    m_boundingBoxCacheInvalidated = true;
+    if (DirectionComponent* dirComp = GetComponentFast<DirectionComponent>())
+    {
+      dirComp->m_spatialCachesInvalidated = true;
+    }
 
     if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
     {
       envComp->m_spatialCachesInvalidated = true;
     }
 
-    if (DirectionComponent* dirComp = GetComponentFast<DirectionComponent>())
+    if (m_aabbTreeNodeProxy != AABBTree::nullNode)
     {
-      dirComp->m_spatialCachesInvalidated = true;
+      if (ScenePtr scene = m_scene.lock())
+      {
+        scene->m_aabbTree.Invalidate(m_aabbTreeNodeProxy);
+      }
     }
 
-    if (BVHPtr bvh = m_bvh.lock())
-    {
-      bvh->UpdateEntity(Self<Entity>());
-    }
+    m_spatialCachesInvalidated = true;
   }
 
   Entity* Entity::CopyTo(Entity* other) const
@@ -150,8 +152,6 @@ namespace ToolKit
       ComponentPtr copy = m_components[i]->Copy(other->Self<Entity>());
       other->m_components.push_back(copy);
     }
-
-    other->m_bvh = m_bvh;
 
     return other;
   }
@@ -354,8 +354,9 @@ namespace ToolKit
     }
   }
 
-  void Entity::UpdateBoundingBoxCaches()
+  void Entity::UpdateSpatialCaches()
   {
+    // Update bounding box.
     UpdateLocalBoundingBox();
 
     if (AABBOverrideComponent* overrideComp = GetComponentFast<AABBOverrideComponent>())
@@ -372,7 +373,7 @@ namespace ToolKit
     m_worldBoundingBoxCache = m_localBoundingBoxCache;
     TransformAABB(m_worldBoundingBoxCache, m_node->GetTransform());
 
-    m_boundingBoxCacheInvalidated = false;
+    m_spatialCachesInvalidated = false;
   }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
@@ -420,7 +421,7 @@ namespace ToolKit
     }
   }
 
-  EntityNode::EntityNode() {}
+  EntityNode::EntityNode() { m_partOfAABBTree = false; }
 
   EntityNode::EntityNode(const String& name) { SetNameVal(name); }
 

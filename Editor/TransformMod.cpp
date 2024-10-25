@@ -20,7 +20,7 @@ namespace ToolKit
   {
 
     // StateMoveBase
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     StateTransformBase::StateTransformBase()
     {
@@ -104,7 +104,7 @@ namespace ToolKit
     bool StateTransformBase::IsPlaneMod() { return m_gizmo->GetGrabbedAxis() > AxisLabel::Z; }
 
     // StateTransformBegin
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     void StateTransformBegin::TransitionIn(State* prevState) { StateTransformBase::TransitionIn(prevState); }
 
@@ -337,7 +337,7 @@ namespace ToolKit
     }
 
     // TransformAction
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     TransformAction::TransformAction(EntityPtr ntt)
     {
@@ -359,7 +359,7 @@ namespace ToolKit
     }
 
     // StateTransformTo
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     void StateTransformTo::TransitionIn(State* prevState)
     {
@@ -497,7 +497,7 @@ namespace ToolKit
 
       NodeRawPtrArray parents;
 
-      // Make all selecteds child of current & store their original parents.
+      // Make all selected entities child of current selection & store their original parents.
       for (EntityPtr ntt : roots)
       {
         parents.push_back(ntt->m_node->m_parent);
@@ -642,8 +642,8 @@ namespace ToolKit
       scaleAxes[(int) AxisLabel::ZX]   = ZX_AXIS;
       scaleAxes[(int) AxisLabel::XYZ]  = Vec3(1.0f);
 
-      BoundingBox bb                   = ntt->GetBoundingBox();
-      Vec3 aabbSize                    = bb.max - bb.min;
+      const BoundingBox& box           = ntt->GetBoundingBox();
+      Vec3 aabbSize                    = box.max - box.min;
 
       int axisIndex                    = int(m_gizmo->GetGrabbedAxis());
       Vec3 axis                        = scaleAxes[axisIndex];
@@ -711,7 +711,7 @@ namespace ToolKit
 
       if (g_app->m_snapsEnabled)
       {
-        for (uint32_t i = 0; i < 3; i++)
+        for (uint i = 0; i < 3; i++)
         {
           delta[i] = glm::round(delta[i] / spacing) * spacing;
         }
@@ -725,7 +725,7 @@ namespace ToolKit
     }
 
     // StateTransformEnd
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     void StateTransformEnd::TransitionOut(State* nextState)
     {
@@ -758,7 +758,7 @@ namespace ToolKit
     String StateTransformEnd::GetType() { return StateType::StateTransformEnd; }
 
     // MoveMod
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     TransformMod::TransformMod(ModId id) : BaseMod(id) { m_gizmo = nullptr; }
 

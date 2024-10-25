@@ -14,8 +14,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -170,15 +168,7 @@ namespace ToolKit
     // All PBR opaque materials should be rendered at deferred renderer
     if (IsPBR())
     {
-      if (IsTranslucent())
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
-      }
-      else
-      {
-        m_fragmentShader = GetShaderManager()->GetPbrDefferedShader();
-      }
-
+      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
       m_fragmentShader->Init();
     }
   }
@@ -216,7 +206,7 @@ namespace ToolKit
   bool Material::IsPBR()
   {
     const String& file = m_fragmentShader->GetFile();
-    return file == GetShaderManager()->PbrDefferedShaderFile() || file == GetShaderManager()->PbrForwardShaderFile();
+    return file == GetShaderManager()->PbrForwardShaderFile();
   }
 
   void Material::UpdateRuntimeVersion()
@@ -329,18 +319,20 @@ namespace ToolKit
         XmlAttribute* attr = node->first_attribute(XmlNodeName.data());
         String path        = attr->value();
         NormalizePath(path);
-        ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(path));
-        if (shader->m_shaderType == ShaderType::VertexShader)
+        if (ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath(path)))
         {
-          m_vertexShader = shader;
-        }
-        else if (shader->m_shaderType == ShaderType::FragmentShader)
-        {
-          m_fragmentShader = shader;
-        }
-        else
-        {
-          assert(false);
+          if (shader->m_shaderType == ShaderType::VertexShader)
+          {
+            m_vertexShader = shader;
+          }
+          else if (shader->m_shaderType == ShaderType::FragmentShader)
+          {
+            m_fragmentShader = shader;
+          }
+          else
+          {
+            assert(false && "Shader type is not supported.");
+          }
         }
       }
       else if (strcmp("color", node->name()) == 0)
@@ -404,10 +396,6 @@ namespace ToolKit
     {
       m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
     }
-    else if (m_fragmentShader->GetFile() == GetShaderManager()->PbrDefferedShaderFile())
-    {
-      m_fragmentShader = GetShaderManager()->GetPbrForwardShader();
-    }
 
     if (m_fragmentShader == nullptr)
     {
@@ -444,32 +432,14 @@ namespace ToolKit
     m_defaultMaterial                                 = material;
     m_storage[MaterialPath("default.material", true)] = material;
 
-    // Phong material
-    material                                          = MakeNewPtr<Material>();
-    material->m_isShaderMaterial                      = true;
-    material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader = GetShaderManager()->GetPhongForwardShader();
-    material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
-    material->Init();
-    m_storage[MaterialPath("phongForward.material", true)] = material;
-
     // Unlit material
-    material                                               = MakeNewPtr<Material>();
+    material                                          = MakeNewPtr<Material>();
     material->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
     material->m_isShaderMaterial                    = true;
     m_storage[MaterialPath("unlit.material", true)] = material;
-
-    // Alpha masked PBR default material
-    material                                        = MakeNewPtr<Material>();
-    material->m_vertexShader = GetShaderManager()->Create<Shader>(ShaderPath("defaultVertex.shader", true));
-    material->m_fragmentShader =
-        GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment_alphamask.shader", true));
-    material->Init();
-    m_defaultAlphaMaskedMaterial                                = material;
-    m_storage[MaterialPath("default_alphamask.material", true)] = material;
   }
 
   bool MaterialManager::CanStore(ClassMeta* Class) { return Class == Material::StaticClass(); }
@@ -477,8 +447,6 @@ namespace ToolKit
   String MaterialManager::GetDefaultResource(ClassMeta* Class) { return MaterialPath("missing.material", true); }
 
   MaterialPtr MaterialManager::GetDefaultMaterial() { return m_defaultMaterial; }
-
-  MaterialPtr MaterialManager::GetDefaultAlphaMaskedMaterial() { return m_defaultAlphaMaskedMaterial; }
 
   MaterialPtr MaterialManager::GetCopyOfUnlitMaterial(bool storeInMaterialManager)
   {
@@ -504,12 +472,6 @@ namespace ToolKit
   MaterialPtr MaterialManager::GetCopyOfDefaultMaterial(bool storeInMaterialManager)
   {
     ResourcePtr source = m_storage[MaterialPath("default.material", true)];
-    return Copy<Material>(source, storeInMaterialManager);
-  }
-
-  MaterialPtr MaterialManager::GetCopyOfPhongMaterial(bool storeInMaterialManager)
-  {
-    ResourcePtr source = m_storage[MaterialPath("phongForward.material", true)];
     return Copy<Material>(source, storeInMaterialManager);
   }
 

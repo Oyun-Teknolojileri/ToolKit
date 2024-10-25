@@ -40,8 +40,8 @@ namespace ToolKit
 
     ConstructSkyMaterial(vert, frag);
 
-    m_frameBuffer = MakeNewPtr<Framebuffer>();
-    m_frameBuffer->Init({0, 0, false, false});
+    m_frameBuffer = MakeNewPtr<Framebuffer>(FramebufferSettings {0, 0, false, false}, "SkyFB");
+    m_frameBuffer->Init();
 
     RenderTask task {[this](Renderer* renderer) -> void
                      {
@@ -148,7 +148,7 @@ namespace ToolKit
                                         (Framebuffer::CubemapFace) i);
       if (i > 0)
       {
-        AddHWRenderPass();
+        Stats::AddHWRenderPass();
       }
 
       renderer->SetFramebuffer(m_frameBuffer, GraphicBitFields::None);

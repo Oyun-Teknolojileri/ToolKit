@@ -57,7 +57,10 @@ namespace ToolKit
       m_prefabViews.push_back((uint) ViewType::Mesh);
     }
 
-    PropInspectorWindow::PropInspectorWindow(XmlNode* node) : PropInspectorWindow() { DeSerialize(SerializationFileInfo(), node); }
+    PropInspectorWindow::PropInspectorWindow(XmlNode* node) : PropInspectorWindow()
+    {
+      DeSerialize(SerializationFileInfo(), node);
+    }
 
     PropInspectorWindow::~PropInspectorWindow()
     {
@@ -74,7 +77,7 @@ namespace ToolKit
       return static_cast<MaterialView*>(m_views[(uint) ViewType::Material]);
     }
 
-    void PropInspectorWindow::DeterminateSelectedMaterial(EntityPtr curEntity)
+    void PropInspectorWindow::DetermineSelectedMaterial(EntityPtr curEntity)
     {
       // if material view is active. determinate selected material
       MaterialView* matView = dynamic_cast<MaterialView*>(m_views[(uint) m_activeView]);
@@ -85,7 +88,7 @@ namespace ToolKit
 
       if (curEntity == nullptr)
       {
-        // set empty array, there is no material sellected
+        // set empty array, there is no material selected.
         matView->SetMaterials({});
         return;
       }
@@ -135,7 +138,7 @@ namespace ToolKit
         const ImVec2 spacing         = ImGui::GetStyle().ItemSpacing;
         const ImVec2 sidebarSize     = ImVec2(spacing.x + sidebarIconSize.x + spacing.x, windowSize.y);
 
-        DeterminateSelectedMaterial(curEntity);
+        DetermineSelectedMaterial(curEntity);
 
         if (ImGui::BeginChildFrame(ImGui::GetID("ViewTypeSidebar"), sidebarSize, 0))
         {

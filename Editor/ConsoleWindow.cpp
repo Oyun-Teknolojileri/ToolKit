@@ -50,6 +50,21 @@ namespace ToolKit
     }
 
     // Executors
+    bool BoolCheck(const TagArg& arg)
+    {
+      if (arg.second.empty())
+      {
+        return false;
+      }
+
+      if (arg.second.front() == "1")
+      {
+        return true;
+      }
+
+      return false;
+    }
+
     void BoolCheck(const TagArgArray& tagArgs, bool* val)
     {
       if (tagArgs.empty())
@@ -57,22 +72,7 @@ namespace ToolKit
         return;
       }
 
-      if (tagArgs.front().second.empty())
-      {
-        return;
-      }
-
-      String args = tagArgs.front().second.front();
-
-      if (args == "1")
-      {
-        *val = true;
-      }
-
-      if (args == "0")
-      {
-        *val = false;
-      }
+      *val = BoolCheck(tagArgs.front());
     }
 
     void ShowPickDebugExec(TagArgArray tagArgs)
@@ -553,7 +553,8 @@ namespace ToolKit
 
         // Checks for invalid bb & outlier.
         RenderJobArray jobs;
-        RenderJobProcessor::CreateRenderJobs(scene->GetEntities(), jobs);
+        EntityRawPtrArray rawNtties = ToEntityRawPtrArray(scene->GetEntities());
+        RenderJobProcessor::CreateRenderJobs(jobs, rawNtties);
 
         float stdev;
         Vec3 mean;
@@ -597,6 +598,64 @@ namespace ToolKit
     void ShowSceneBoundary(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showSceneBoundary); }
 
     void ShowBVHNodes(TagArgArray tagArgs) { BoolCheck(tagArgs, &g_app->m_showBVHNodes); }
+
+    void DeleteSelection(TagArgArray tagArgs)
+    {
+      bool isDeep = false;
+      BoolCheck(tagArgs, &isDeep);
+
+      EditorScenePtr scene = g_app->GetCurrentScene();
+
+      EntityPtrArray selection;
+      scene->GetSelectedEntities(selection);
+
+      scene->RemoveEntity(selection, isDeep);
+    }
+
+    void ShowProfileTimer(TagArgArray tagArgs)
+    {
+      if (tagArgs.empty())
+      {
+        return;
+      }
+
+      for (auto& arg : tagArgs)
+      {
+        if (arg.first == "all")
+        {
+          bool val = BoolCheck(tagArgs.front());
+          for (auto itr = TKStatTimerMap.begin(); itr != TKStatTimerMap.end(); itr++)
+          {
+            itr->second.enabled = val;
+          }
+
+          return;
+        }
+        else if (arg.first == "list")
+        {
+          for (auto itr = TKStatTimerMap.begin(); itr != TKStatTimerMap.end(); itr++)
+          {
+            TK_LOG("%s", itr->first.data());
+          }
+        }
+        else if (arg.first == "reset")
+        {
+          for (auto itr = TKStatTimerMap.begin(); itr != TKStatTimerMap.end(); itr++)
+          {
+            bool isEnabled      = itr->second.enabled;
+            itr->second         = {};
+            itr->second.enabled = isEnabled;
+          }
+        }
+        else
+        {
+          if (TKStatTimerMap.find(arg.first) != TKStatTimerMap.end())
+          {
+            TKStatTimerMap[arg.first].enabled = BoolCheck(arg);
+          }
+        }
+      }
+    }
 
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
@@ -660,6 +719,8 @@ namespace ToolKit
       CreateCommand(g_checkSceneHealth, CheckSceneHealth);
       CreateCommand(g_showSceneBoundary, ShowSceneBoundary);
       CreateCommand(g_showBVHNodes, ShowBVHNodes);
+      CreateCommand(g_deleteSelection, DeleteSelection);
+      CreateCommand(g_showProfileTimer, ShowProfileTimer);
     }
 
     ConsoleWindow::~ConsoleWindow() {}
@@ -842,10 +903,10 @@ namespace ToolKit
       {
         prefixed = "[" + tag + "] " + log;
       }
-
-      m_items.push_back(prefixed);
       m_scrollToBottom = true;
 
+      std::unique_lock<std::mutex> lock(m_itemMutex);
+      m_items.push_back(prefixed);
       if (m_items.size() > 1024)
       {
         ClearLog();
@@ -955,11 +1016,6 @@ namespace ToolKit
         String tag;
         tag = values.front();
         pop_front(values);
-
-        if (values.empty())
-        {
-          continue;
-        }
 
         TagArg input(tag, values);
         tagArgs.push_back(input);

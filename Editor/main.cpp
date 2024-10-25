@@ -26,7 +26,6 @@
 #include <ImGui/backends/imgui_impl_sdl2.h>
 #include <PluginManager.h>
 #include <SDL.h>
-#include <TKProfiler.h>
 #include <Types.h>
 #include <locale.h>
 
@@ -149,10 +148,12 @@ namespace ToolKit
       g_proxy->PreInit();
 
       // Platform dependent function assignments.
-      g_proxy->m_pluginManager->FreeModule      = &PlatformHelpers::TKFreeModule;
-      g_proxy->m_pluginManager->LoadModule      = &PlatformHelpers::TKLoadModule;
-      g_proxy->m_pluginManager->GetFunction     = &PlatformHelpers::TKGetFunction;
-      g_proxy->m_pluginManager->GetCreationTime = &PlatformHelpers::GetCreationTime;
+      GetPluginManager()->FreeModule      = &PlatformHelpers::TKFreeModule;
+      GetPluginManager()->LoadModule      = &PlatformHelpers::TKLoadModule;
+      GetPluginManager()->GetFunction     = &PlatformHelpers::TKGetFunction;
+      GetPluginManager()->GetCreationTime = &PlatformHelpers::GetCreationTime;
+      GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
+                                        { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
     }
 
     void Init()
@@ -183,16 +184,8 @@ namespace ToolKit
 #endif
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-
-        if (settings.Graphics.MSAA > 0)
-        {
-          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-          SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.Graphics.MSAA);
-        }
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
 #ifdef TK_DEBUG
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -295,18 +288,12 @@ namespace ToolKit
             g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
             g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
 
-            GetLogger()->SetPlatformConsoleFn([](LogType type, const String& msg) -> void
-                                              { ToolKit::PlatformHelpers::OutputLog((int) type, msg.c_str()); });
-
-            UI::Init();
             g_app->Init();
 
             // Register update functions
 
             TKUpdateFn preUpdateFn = [](float deltaTime)
             {
-              PUSH_CPU_MARKER("SDL Poll Event");
-
               SDL_Event sdlEvent;
               while (SDL_PollEvent(&sdlEvent))
               {
@@ -314,31 +301,19 @@ namespace ToolKit
                 ProcessEvent(sdlEvent);
               }
 
-              POP_CPU_MARKER();
+              g_app->Frame(deltaTime);
             };
             g_proxy->RegisterPreUpdateFunction(preUpdateFn);
 
             TKUpdateFn postUpdateFn = [](float deltaTime)
             {
-              PUSH_CPU_MARKER("App Frame");
-
-              g_app->Frame(deltaTime);
-
-              POP_CPU_MARKER();
-              PUSH_CPU_MARKER("Swap Window");
-
               SDL_GL_MakeCurrent(g_window, g_context);
               SDL_GL_SwapWindow(g_window);
 
-              POP_CPU_MARKER();
-              PUSH_CPU_MARKER("Clear SDL Event Pool");
-
               g_sdlEventPool->ClearPool(); // Clear after consumption.
 
-              g_app->m_lastFrameHWRenderPassCount = GetHWRenderPassCount();
-              g_app->m_lastFrameDrawCallCount     = GetDrawCallCount();
-
-              POP_CPU_MARKER();
+              g_app->m_lastFrameHWRenderPassCount = Stats::GetHWRenderPassCount();
+              g_app->m_lastFrameDrawCallCount     = Stats::GetDrawCallCount();
             };
             g_proxy->RegisterPostUpdateFunction(postUpdateFn);
 
@@ -353,7 +328,6 @@ namespace ToolKit
     {
       g_proxy->PreUninit();
 
-      UI::UnInit();
       SafeDel(g_app);
 
       g_proxy->Uninit();
@@ -371,8 +345,6 @@ namespace ToolKit
     {
       while (g_running)
       {
-        PUSH_CPU_MARKER("Whole Frame");
-
         if (g_proxy->SyncFrameTime())
         {
           g_proxy->FrameBegin();
@@ -381,8 +353,6 @@ namespace ToolKit
 
           g_app->m_fps = g_proxy->GetCurrentFPS();
         }
-
-        POP_CPU_MARKER();
       }
     }
 

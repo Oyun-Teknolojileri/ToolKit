@@ -120,7 +120,7 @@ namespace ToolKit
 
         IVec2 res;
         ReadAttr(resNode, "sizeX", res.x);
-        ReadAttr(resNode, "sizeX", res.y);
+        ReadAttr(resNode, "sizeY", res.y);
 
         m_screenResolutions.push_back(res);
         m_emulatorResolutionNames.push_back(name);

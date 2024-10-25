@@ -9,18 +9,17 @@
 
 #include "EditorLight.h"
 #include "FolderWindow.h"
-#include "SceneRenderPath.h"
 
 namespace ToolKit
 {
   namespace Editor
   {
 
-    class ThumbnailRenderer : private SceneRenderPath
+    class ThumbnailRenderer : private ForwardSceneRenderPath
     {
      public:
       ThumbnailRenderer();
-      ~ThumbnailRenderer();
+      virtual ~ThumbnailRenderer();
 
       RenderTargetPtr RenderThumbnail(Renderer* renderer, const DirectoryEntry& dirEnt);
 
@@ -34,6 +33,7 @@ namespace ToolKit
       EntityPtr m_entity                     = nullptr;
       CameraPtr m_cam                        = nullptr;
       ThreePointLightSystemPtr m_lightSystem = nullptr;
+      GradientSkyPtr m_sky                   = nullptr;
     };
 
     class ThumbnailManager

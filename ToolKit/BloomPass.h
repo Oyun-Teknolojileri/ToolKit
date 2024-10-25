@@ -25,8 +25,6 @@ namespace ToolKit
   {
    public:
     BloomPass();
-    explicit BloomPass(const BloomPassParams& params);
-    ~BloomPass();
 
     void Render() override;
     void PreRender() override;

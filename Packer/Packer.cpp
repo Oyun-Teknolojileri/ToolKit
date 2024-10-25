@@ -72,6 +72,8 @@ namespace ToolKit
     int PackResources();
 
    public:
+    /** Just packs the resources. Does not perform publishing. */
+    bool m_onlyPack = false;
     String m_icon;
     String m_appName;
     int m_minSdk            = 27;
@@ -106,12 +108,16 @@ namespace ToolKit
 
   int Packer::Publish()
   {
-    String packPath = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    String packPath   = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
 
-    if (m_publishConfig == PublishConfig::Deploy || !std::filesystem::exists(packPath))
+    bool needPacking  = m_publishConfig == PublishConfig::Deploy;
+    needPacking      |= !std::filesystem::exists(packPath);
+    needPacking      |= m_onlyPack;
+
+    if (needPacking)
     {
       int packResult = PackResources();
-      if (packResult != 0)
+      if (packResult != 0 || m_onlyPack)
       {
         return packResult;
       }
@@ -128,7 +134,7 @@ namespace ToolKit
     case ToolKit::PublishPlatform::Android:
       return AndroidPublish();
     default:
-      TK_ERR("unknown publish platform: %i\n", (int) m_platform);
+      TK_ERR("Unknown publish platform: %i\n", (int) m_platform);
       return -1;
     }
   }
@@ -191,24 +197,30 @@ namespace ToolKit
     TK_LOG("Run toolkit compile script\n");
     Path newWorkDir(ConcatPaths({m_toolkitPath, "BuildScripts"}));
     std::filesystem::current_path(newWorkDir);
+
     int toolKitCompileResult = -1;
-    const char* scriptName   = nullptr;
+    String buildConfig;
+    String script   = "Build.bat";
+    String cmakeSrc = " ../../";
+
     if (m_publishConfig == PublishConfig::Debug)
     {
-      scriptName = "WinBuildDebug.bat";
+      buildConfig = " Debug";
     }
     else if (m_publishConfig == PublishConfig::Develop)
     {
-      scriptName = "WinBuildRelWithDebugInfo.bat";
+      buildConfig = " RelWithDebInfo";
     }
-    else // if (m_publishConfig == PublishConfig::Deploy)
+    else
     {
-      scriptName = "WinBuildRelease.bat";
+      buildConfig = " Release";
     }
-    toolKitCompileResult = std::system(scriptName);
+
+    String cmd           = script + buildConfig + cmakeSrc;
+    toolKitCompileResult = std::system(cmd.c_str());
     if (toolKitCompileResult != 0)
     {
-      returnLoggingError(scriptName, true);
+      returnLoggingError(cmd, true);
       TK_ERR("ToolKit could not be compiled\n");
       return -1;
     }
@@ -222,10 +234,12 @@ namespace ToolKit
     }
 
     int pluginCompileResult = -1;
-    pluginCompileResult     = std::system(scriptName);
+    cmakeSrc                = " ../../Codes";
+    cmd                     = script + buildConfig + cmakeSrc;
+    pluginCompileResult     = std::system(cmd.c_str());
     if (pluginCompileResult != 0)
     {
-      returnLoggingError(scriptName, true);
+      returnLoggingError(cmd, true);
       TK_ERR("Windows build has failed!\n");
       return -1;
     }
@@ -787,6 +801,7 @@ namespace ToolKit
     packer.m_icon             = arguments[8];
     packer.m_icon             = std::filesystem::absolute(packer.m_icon).string();
     packer.m_publishConfig    = (PublishConfig) std::atoi(arguments[9].c_str());
+    packer.m_onlyPack         = std::atoi(arguments[10].c_str());
 
     // Set resource root to project's Resources folder
     g_proxy->m_resourceRoot   = ConcatPaths({workspacePath, activeProjectName, "Resources"});

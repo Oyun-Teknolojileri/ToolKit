@@ -22,7 +22,6 @@
 #include "Scene.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "Threads.h"
 #include "UIManager.h"
@@ -236,9 +235,9 @@ namespace ToolKit
 
   void Main::FrameBegin()
   {
-    ResetDrawCallCounter();
-    ResetHWRenderPassCounter();
-    ResetLightCacheInvalidationPerFrame();
+    Stats::ResetDrawCallCounter();
+    Stats::ResetHWRenderPassCounter();
+    Stats::ResetLightCacheInvalidationPerFrame();
   }
 
   void Main::FrameUpdate()
@@ -273,29 +272,31 @@ namespace ToolKit
 
     m_timing.LastTime = m_timing.CurrentTime;
     GetRenderSystem()->EndFrame();
+
+    // Display stat times.
+    for (auto& timeStat : TKStatTimerMap)
+    {
+      TKStats::TimeArgs& args = timeStat.second;
+      if (args.enabled)
+      {
+        TK_LOG("%s avg t: %f -- t: %f", timeStat.first.data(), args.accumulatedTime / args.hitCount, args.elapsedTime);
+      }
+    }
   }
 
   void Main::Frame(float deltaTime)
   {
-
-    PUSH_CPU_MARKER("Exec Render Tasks");
-    GetRenderSystem()->DecrementSkipFrame();
-    GetRenderSystem()->ExecuteRenderTasks();
-    POP_CPU_MARKER();
-
-    PUSH_CPU_MARKER("Animation Update");
     // Update animations.
     GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
-    POP_CPU_MARKER();
-
     GetUIManager()->Update(deltaTime);
 
-    PUSH_CPU_MARKER("Update Scene");
     if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
     {
       scene->Update(deltaTime);
     }
-    POP_CPU_MARKER();
+
+    GetRenderSystem()->DecrementSkipFrame();
+    GetRenderSystem()->ExecuteRenderTasks();
   }
 
   void Main::RegisterPreUpdateFunction(TKUpdateFn preUpdateFn) { m_preUpdateFunctions.push_back(preUpdateFn); }

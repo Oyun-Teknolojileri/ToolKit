@@ -18,7 +18,10 @@ namespace ToolKit
 
     EditorBillboardBase::EditorBillboardBase() {}
 
-    EditorBillboardBase::EditorBillboardBase(const Settings& settings) : Billboard(settings) {}
+    EditorBillboardBase::EditorBillboardBase(const Settings& settings) : Billboard(settings)
+    {
+      m_partOfAABBTree = false;
+    }
 
     void EditorBillboardBase::NativeConstruct()
     {

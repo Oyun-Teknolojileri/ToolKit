@@ -28,4 +28,38 @@ namespace ToolKit
   #define TK_WEB
 #endif
 
+#ifdef TK_WIN // Windows.
+  #define TK_STDCAL __stdcall
+  #ifdef TK_DLL_EXPORT // Dynamic binding.
+    #define TK_API __declspec(dllexport)
+  #elif defined(TK_DLL_IMPORT)
+    #define TK_API __declspec(dllimport)
+  #else // Static binding.
+    #define TK_API
+  #endif
+#elif defined(TK_ANDROID)
+  #define TK_API __attribute__((visibility("default")))
+  #define TK_STDCAL
+#endif
+
+#ifdef TK_WIN // Windows.
+  #define TK_PLUGIN_API __declspec(dllexport)
+#else // Other OS.
+  #define TK_PLUGIN_API
+#endif
+
+#ifdef _MSC_VER
+  #if defined(__aarch64__) || defined(__arm__)
+    #define HyperThreadPause() __yield()
+  #else
+    #define HyperThreadPause() _mm_pause()
+  #endif
+#else
+  #if defined(__aarch64__) || defined(__arm__)
+    #define HyperThreadPause() asm volatile("yield");
+  #else
+    #define HyperThreadPause() __builtin_ia32_pause()
+  #endif
+#endif
+
 } // namespace ToolKit

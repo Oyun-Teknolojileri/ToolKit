@@ -8,6 +8,7 @@
 #include "Texture.h"
 
 #include "DirectionComponent.h"
+#include "EngineSettings.h"
 #include "FileManager.h"
 #include "FullQuadPass.h"
 #include "Logger.h"
@@ -25,7 +26,7 @@ namespace ToolKit
 {
 
   // Texture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(Texture, Resource);
 
@@ -48,13 +49,20 @@ namespace ToolKit
 
   Texture::Texture(const String& file) : Texture() { SetFile(file); }
 
-  void Texture::NativeConstruct(int width, int height, const TextureSettings& settings)
+  void Texture::NativeConstruct(StringView label)
+  {
+    Super::NativeConstruct();
+    m_label = label;
+  }
+
+  void Texture::NativeConstruct(int width, int height, const TextureSettings& settings, StringView label)
   {
     Super::NativeConstruct();
 
     m_width    = width;
     m_height   = height;
     m_settings = settings;
+    m_label    = label;
   }
 
   Texture::~Texture()
@@ -122,7 +130,7 @@ namespace ToolKit
                    GL_UNSIGNED_BYTE,
                    m_image);
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      Stats::AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
     }
     else
     {
@@ -136,7 +144,7 @@ namespace ToolKit
                    GL_FLOAT,
                    m_imagef);
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      Stats::AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
     }
 
     if (m_settings.GenerateMipMap)
@@ -150,15 +158,17 @@ namespace ToolKit
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) m_settings.WarpS);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) m_settings.WarpT);
 
-// android does not have support for this
-#ifndef __ANDROID__
-    if constexpr (GL_EXT_texture_filter_anisotropic)
+    if (TK_GL_EXT_texture_filter_anisotropic == 1)
     {
-      float aniso = 0.0f;
-      glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
+      float maxAniso = 1.0f;
+      glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+
+      EngineSettings& settings = GetEngineSettings();
+      float aniso              = glm::max(1.0f, float(settings.Graphics.anisotropicTextureFiltering));
+      aniso                    = glm::min(maxAniso, aniso);
+
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
     }
-#endif
 
     if (flushClientSideArray)
     {
@@ -177,15 +187,16 @@ namespace ToolKit
 
     if (m_settings.Target == GraphicTypes::Target2D)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      Stats::RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
+      Stats::RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) *
+                                    m_settings.Layers);
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
-      RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
+      Stats::RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) * 6);
     }
     else
     {
@@ -212,7 +223,7 @@ namespace ToolKit
   }
 
   // DepthTexture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(DepthTexture, Texture);
 
@@ -220,25 +231,34 @@ namespace ToolKit
 
   void DepthTexture::Clear() { UnInit(); }
 
-  void DepthTexture::Init(int width, int height, bool stencil)
+  void DepthTexture::Init(int width, int height, bool stencil, int multiSample)
   {
     if (m_initiated)
     {
       return;
     }
-    m_initiated = true;
-    m_width     = width;
-    m_height    = height;
-    m_stencil   = stencil;
 
-    // Create a default depth, depth-stencil buffer
+    m_initiated   = true;
+    m_width       = width;
+    m_height      = height;
+    m_stencil     = stencil;
+    m_multiSample = multiSample;
+
     glGenRenderbuffers(1, &m_textureId);
     glBindRenderbuffer(GL_RENDERBUFFER, m_textureId);
-    GLenum component = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
-    glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+
+    if (m_multiSample > 0 && glRenderbufferStorageMultisampleEXT != nullptr)
+    {
+      glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_multiSample, (GLenum) GetDepthFormat(), m_width, m_height);
+    }
+    else
+    {
+      GLenum component = (GLenum) GetDepthFormat();
+      glRenderbufferStorage(GL_RENDERBUFFER, component, m_width, m_height);
+    }
 
     uint64 internalFormatSize = stencil ? 4 : 3;
-    AddVRAMUsageInBytes(m_width * m_height * internalFormatSize);
+    Stats::AddVRAMUsageInBytes((uint64) (m_width * m_height) * internalFormatSize);
   }
 
   void DepthTexture::UnInit()
@@ -251,14 +271,21 @@ namespace ToolKit
     glDeleteRenderbuffers(1, &m_textureId);
 
     uint64 internalFormatSize = m_stencil ? 4 : 3;
-    RemoveVRAMUsageInBytes(m_width * m_height * internalFormatSize);
+    Stats::RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * internalFormatSize);
 
-    m_textureId = 0;
-    m_initiated = false;
+    m_textureId   = 0;
+    m_initiated   = false;
+    m_constructed = false;
+    m_stencil     = false;
+  }
+
+  GraphicTypes DepthTexture::GetDepthFormat()
+  {
+    return m_stencil ? GraphicTypes::FormatDepth24Stencil8 : GraphicTypes::FormatDepth24;
   }
 
   // DataTexture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(DataTexture, Texture);
 
@@ -302,7 +329,7 @@ namespace ToolKit
     }
 
     RHI::DeleteTextures(1, &m_textureId);
-    RemoveVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+    Stats::RemoveVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat));
 
     m_textureId = 0;
     m_loaded    = false;
@@ -310,7 +337,7 @@ namespace ToolKit
   };
 
   // CubeMap
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(CubeMap, Texture);
 
@@ -430,7 +457,7 @@ namespace ToolKit
       glTexImage2D(sides[i], 0, GL_RGBA, m_width, m_width, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_images[i]);
     }
 
-    AddVRAMUsageInBytes(m_width * m_height * 4 * 6);
+    Stats::AddVRAMUsageInBytes(m_width * m_height * 4 * 6);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -467,7 +494,7 @@ namespace ToolKit
   }
 
   // Hdri
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(Hdri, Texture);
 
@@ -564,7 +591,7 @@ namespace ToolKit
   bool Hdri::IsTextureAssigned() { return !GetFile().empty(); }
 
   // RenderTarget
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TKDefineClass(RenderTarget, Texture);
 
@@ -595,6 +622,8 @@ namespace ToolKit
     glGenTextures(1, &m_textureId);
     RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
 
+    Stats::SetGpuResourceLabel(m_label, GpuResourceType::Texture, m_textureId);
+
     if (m_settings.Target == GraphicTypes::Target2D)
     {
       glTexImage2D(GL_TEXTURE_2D,
@@ -607,7 +636,7 @@ namespace ToolKit
                    (int) m_settings.Type,
                    0);
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
+      Stats::AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat));
     }
     else if (m_settings.Target == GraphicTypes::TargetCubeMap)
     {
@@ -624,12 +653,13 @@ namespace ToolKit
                      0);
       }
 
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * 6);
+      Stats::AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) * 6);
     }
     else if (m_settings.Target == GraphicTypes::Target2DArray)
     {
       glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, (int) m_settings.InternalFormat, m_width, m_height, m_settings.Layers);
-      AddVRAMUsageInBytes(m_width * m_height * BytesOfFormat(m_settings.InternalFormat) * m_settings.Layers);
+      Stats::AddVRAMUsageInBytes((uint64) (m_width * m_height) * BytesOfFormat(m_settings.InternalFormat) *
+                                 m_settings.Layers);
     }
 
     glTexParameteri((int) m_settings.Target, GL_TEXTURE_WRAP_S, (int) m_settings.WarpS);
@@ -657,16 +687,19 @@ namespace ToolKit
     Init();
   }
 
-  void RenderTarget::ReconstructIfNeeded(int width, int height)
+  void RenderTarget::ReconstructIfNeeded(int width, int height, const TextureSettings* settings)
   {
-    if (!m_initiated || m_width != width || m_height != height)
+    bool reconstruct  = settings != nullptr ? *settings != m_settings : false;
+    reconstruct      |= !m_initiated || m_width != width || m_height != height;
+
+    if (reconstruct)
     {
-      Reconstruct(width, height, m_settings);
+      Reconstruct(width, height, settings != nullptr ? *settings : m_settings);
     }
   }
 
   // TextureManager
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TextureManager::TextureManager() { m_baseType = Texture::StaticClass(); }
 

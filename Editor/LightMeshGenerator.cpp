@@ -21,7 +21,7 @@ namespace ToolKit
   {
 
     // LightMeshGenerator
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     LightMeshGenerator::LightMeshGenerator(Light* light)
     {
@@ -59,7 +59,7 @@ namespace ToolKit
     }
 
     // SpotLightMeshGenerator
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     SpotLightMeshGenerator::SpotLightMeshGenerator(SpotLight* light) : LightMeshGenerator(light) {}
 
@@ -162,7 +162,7 @@ namespace ToolKit
     }
 
     // DirectionalLightMeshGenerator
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     DirectionalLightMeshGenerator::DirectionalLightMeshGenerator(DirectionalLight* light) : LightMeshGenerator(light) {}
 
@@ -185,7 +185,7 @@ namespace ToolKit
     }
 
     // PointLightMeshGenerator
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     PointLightMeshGenerator::PointLightMeshGenerator(PointLight* light) : LightMeshGenerator(light) {}
 

@@ -9,15 +9,17 @@
 
 #include "Resource.h"
 #include "ResourceManager.h"
+
 #include <map>
 
 namespace ToolKit
 {
 
+  /** Represent a bone's initial location in a skeleton.  */
   class TK_API StaticBone
   {
    public:
-    explicit StaticBone(const String& name);
+    StaticBone(const String& name);
     ~StaticBone();
 
    public:
@@ -25,9 +27,7 @@ namespace ToolKit
     Mat4 m_inverseWorldMatrix;
   };
 
-  /*
-   * This class is used to store dynamic bone information
-   */
+  /* This class is used to store dynamic bone information. */
   class TK_API DynamicBoneMap
   {
    public:
@@ -38,15 +38,16 @@ namespace ToolKit
       Node* node;
     };
 
-    // Call after skeleton fills m_bones list
-    void Init(const Skeleton* skeleton);
+    DynamicBoneMap();
     ~DynamicBoneMap();
-    std::map<String, DynamicBone> boneList;
-    // Find all child bones by recursively searching child bones
-    // Then call childProcessFunc (should be recursive to traverse all childs)
+
+    void Init(const Skeleton* skeleton);
+
     void ForEachRootBone(std::function<void(const DynamicBone*)> childProcessFunc) const;
-    void ForEachRootBone(std::function<void(DynamicBone*)> childProcessFunc);
     void AddDynamicBone(const String& boneName, DynamicBone& bone, DynamicBone* parent);
+
+   public:
+    std::map<String, DynamicBone> m_boneMap;
   };
 
   class TK_API Skeleton : public Resource

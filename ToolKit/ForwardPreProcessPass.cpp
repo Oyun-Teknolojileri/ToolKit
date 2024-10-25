@@ -10,15 +10,14 @@
 #include "ForwardPreProcessPass.h"
 
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "stdafx.h"
 
 namespace ToolKit
 {
 
-  ForwardPreProcess::ForwardPreProcess()
+  ForwardPreProcessPass::ForwardPreProcessPass() : Pass("ForwardPreProcessPass")
   {
-    m_framebuffer            = MakeNewPtr<Framebuffer>();
+    m_framebuffer            = MakeNewPtr<Framebuffer>("ForwardPreProcessFB");
 
     m_linearMaterial         = MakeNewPtr<Material>();
     ShaderPtr vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
@@ -27,13 +26,6 @@ namespace ToolKit
     m_linearMaterial->m_fragmentShader = fragmentShader;
     m_linearMaterial->Init();
 
-    m_linearAlphaMaskMaterial = MakeNewPtr<Material>();
-    vertexShader              = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcessVert.shader", true));
-    fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("forwardPreProcess_alphamask.shader", true));
-    m_linearAlphaMaskMaterial->m_vertexShader   = vertexShader;
-    m_linearAlphaMaskMaterial->m_fragmentShader = fragmentShader;
-    m_linearAlphaMaskMaterial->Init();
-
     TextureSettings oneChannelSet = {};
     oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
     oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
@@ -41,132 +33,82 @@ namespace ToolKit
     oneChannelSet.Format          = GraphicTypes::FormatRGBA;
     oneChannelSet.Type            = GraphicTypes::TypeFloat;
     oneChannelSet.GenerateMipMap  = false;
-    m_normalRt                    = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet);
+    m_normalRt                    = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet, "NormalRT");
 
     oneChannelSet.InternalFormat  = GraphicTypes::FormatRGBA32F;
-    m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet);
+    m_linearDepthRt               = MakeNewPtr<RenderTarget>(128, 128, oneChannelSet, "LinearDepthRT");
   }
 
-  ForwardPreProcess::~ForwardPreProcess() {}
-
-  void ForwardPreProcess::InitBuffers(int width, int height)
+  void ForwardPreProcessPass::InitBuffers(int width, int height, int sampleCount)
   {
-    PUSH_GPU_MARKER("ForwardPreProcess::InitBuffers");
-    PUSH_CPU_MARKER("ForwardPreProcess::InitBuffers");
+    const FramebufferSettings& fbs = m_framebuffer->GetSettings();
+    bool requiresReconstruct = fbs.width != width || fbs.height != height || fbs.multiSampleFrameBuffer != sampleCount;
 
-    m_framebuffer->Init({width, height, false, false});
-    m_framebuffer->ReconstructIfNeeded(width, height);
-    m_normalRt->ReconstructIfNeeded(width, height);
-    m_linearDepthRt->ReconstructIfNeeded(width, height);
-
-    using FAttachment = Framebuffer::Attachment;
-
-    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment0);
-    m_framebuffer->DetachColorAttachment(FAttachment::ColorAttachment1);
-
-    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment0, m_linearDepthRt);
-    m_framebuffer->SetColorAttachment(FAttachment::ColorAttachment1, m_normalRt);
-
-    if (m_params.gFrameBuffer)
+    if (requiresReconstruct)
     {
-      m_framebuffer->AttachDepthTexture(m_params.gFrameBuffer->GetDepthTexture());
-    }
-    else
-    {
-      assert(m_params.FrameBuffer->GetDepthTexture() != nullptr);
+      m_framebuffer->ReconstructIfNeeded({width, height, false, false, sampleCount});
+      m_normalRt->ReconstructIfNeeded(width, height);
+      m_linearDepthRt->ReconstructIfNeeded(width, height);
+
+      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_linearDepthRt);
+      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment1, m_normalRt);
+
       if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
       {
         m_framebuffer->AttachDepthTexture(depth);
       }
     }
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
-  void ForwardPreProcess::Render()
+  void ForwardPreProcessPass::Render()
   {
-    // currently transparent objects are not rendered to export screen space normals or linear depth
-    // we want SSAO and DOF to effect on opaque objects only
-    // renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
+    // Currently transparent objects are not rendered to export screen space normals or linear depth
+    // we want SSAO and DOF to effect on opaque objects only renderLinearDepthAndNormalFn(m_params.TranslucentJobs);
 
-    PUSH_GPU_MARKER("ForwardPreProcess::Render");
-    PUSH_CPU_MARKER("ForwardPreProcess::Render");
-
-    Renderer* renderer                      = GetRenderer();
-
-    const auto renderLinearDepthAndNormalFn = [&](RenderJobItr begin, RenderJobItr end)
-    {
-      for (RenderJobItr job = begin; job != end; job++)
-      {
-        renderer->Render(*job);
-      }
-    };
+    RenderJobItr begin = m_params.renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = m_params.renderData->GetForwardAlphaMaskedBegin();
+    m_linearMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
 
     GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
-
-    RenderJobItr begin                   = m_params.renderData->GetForwardOpaqueBegin();
-    RenderJobItr end                     = m_params.renderData->GetForwardAlphaMaskedBegin();
     m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
-    renderer->BindProgram(m_program);
-    renderLinearDepthAndNormalFn(begin, end);
-
-    begin     = m_params.renderData->GetForwardAlphaMaskedBegin();
-    end       = m_params.renderData->GetForwardTranslucentBegin();
-    m_program = gpuProgramManager->CreateProgram(m_linearAlphaMaskMaterial->m_vertexShader,
-                                                 m_linearAlphaMaskMaterial->m_fragmentShader);
-    renderer->BindProgram(m_program);
-    renderLinearDepthAndNormalFn(begin, end);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
-  }
-
-  void ForwardPreProcess::PreRender()
-  {
-    PUSH_GPU_MARKER("ForwardPreProcess::PreRender");
-    PUSH_CPU_MARKER("ForwardPreProcess::PreRender");
-
-    RenderPass::PreRender();
 
     Renderer* renderer = GetRenderer();
-    if (m_params.gFrameBuffer)
-    {
-      renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::None);
+    renderer->BindProgram(m_program);
 
-      // copy normal and linear depth from gbuffer to this
-      renderer->CopyTexture(m_params.gNormalRt, m_normalRt);
-      renderer->CopyTexture(m_params.gLinearRt, m_linearDepthRt);
-    }
-    else
+    for (RenderJobItr job = begin; job != end; job++)
     {
-      // If no gbuffer, clear the current buffers to render onto
-      GetRenderer()->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
+      renderer->Render(*job);
     }
 
-    renderer->SetCamera(m_params.Cam, true);
+    begin = m_params.renderData->GetForwardAlphaMaskedBegin();
+    end   = m_params.renderData->GetForwardTranslucentBegin();
+    m_linearMaterial->m_fragmentShader->SetDefine("DrawAlphaMasked", "1");
 
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    m_program = gpuProgramManager->CreateProgram(m_linearMaterial->m_vertexShader, m_linearMaterial->m_fragmentShader);
+    renderer->BindProgram(m_program);
+
+    for (RenderJobItr job = begin; job != end; job++)
+    {
+      renderer->Render(*job);
+    }
   }
 
-  void ForwardPreProcess::PostRender()
+  void ForwardPreProcessPass::PreRender()
   {
-    PUSH_GPU_MARKER("ForwardPreProcess::PostRender");
-    PUSH_CPU_MARKER("ForwardPreProcess::PostRender");
+    Pass::PreRender();
 
-    RenderPass::PostRender();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    Renderer* renderer = GetRenderer();
+    renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
+    renderer->SetCamera(m_params.Cam, true);
   }
 
-  void ForwardPreProcess::InitDefaultDepthTexture(int width, int height)
+  void ForwardPreProcessPass::InitDefaultDepthTexture(int width, int height)
   {
     if (m_depthTexture == nullptr)
     {
       m_depthTexture = MakeNewPtr<DepthTexture>();
       m_depthTexture->Init(width, height, false);
     }
-  } // namespace ToolKit
+  }
+
 } // namespace ToolKit

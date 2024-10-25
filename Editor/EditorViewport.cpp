@@ -270,11 +270,13 @@ namespace ToolKit
         if (m_wndContentAreaSize.x > 0 && m_wndContentAreaSize.y > 0)
         {
           uint texId = 0;
-          if (m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0) != nullptr)
+          if (m_framebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0) != nullptr)
           {
-            texId = m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId;
+            texId = m_framebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0)->m_textureId;
           }
 
+          // Imgui blends the alpha of the image ( in our case, render target for the scene ) with its window
+          // background, which causes glitches in the final render. This manual disable is needed.
           ImDrawList* drawList = ImGui::GetWindowDrawList();
           drawList->AddCallback([](const ImDrawList* parentList, const ImDrawCmd* cmd)
                                 { GetRenderSystem()->EnableBlending(false); },
@@ -559,14 +561,16 @@ namespace ToolKit
       static bool meshAddedToScene    = false;
       static EntityPtr dwMesh         = nullptr;
 
+      // Check if asset drop is activated.
+      const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
+      if (dragPayload && dragPayload->DataSize != sizeof(FileDragData))
+      {
+        return;
+      }
+
       // AssetBrowser drop handling.
       if (ImGui::BeginDragDropTarget())
       {
-        const ImGuiPayload* dragPayload = ImGui::GetDragDropPayload();
-        if (dragPayload->DataSize != sizeof(FileDragData))
-        {
-          return;
-        }
         const FileDragData& dragData = FolderView::GetFileDragData();
         DirectoryEntry& entry        = *dragData.Entries[0]; // get first entry
 

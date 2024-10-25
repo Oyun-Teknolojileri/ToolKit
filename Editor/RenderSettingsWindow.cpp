@@ -9,7 +9,6 @@
 
 #include "App.h"
 
-#include <BVH.h>
 #include <EngineSettings.h>
 
 #include <DebugNew.h>
@@ -152,58 +151,108 @@ namespace ToolKit
           g_app->ReInitViewports();
         }
 
-        const char* renderSpecNames[] = {"High", "Low"};
-        const int currentRenderSpec   = (int) engineSettings.Graphics.RenderSpec;
-        const int specCount           = 2;
-        if (ImGui::BeginCombo("Rendering Spec", renderSpecNames[currentRenderSpec]))
+        float renderScale = engineSettings.Graphics.renderResolutionScale;
+        if (ImGui::DragFloat("Resolution Multiplier", &renderScale, 0.05f, 0.25f, 1.0f))
         {
-          for (uint specIndex = 0; specIndex < specCount; specIndex++)
-          {
-            bool isSelected      = false;
-            const char* itemName = renderSpecNames[specIndex];
-            ImGui::Selectable(itemName, &isSelected);
-            if (isSelected)
-            {
-              engineSettings.Graphics.RenderSpec = (RenderingSpec) specIndex;
-            }
-          }
-          ImGui::EndCombo();
+          engineSettings.Graphics.renderResolutionScale = renderScale;
+          g_app->ReInitViewports();
         }
+
+        ImGui::SeparatorText("Multi Sample Anti Aliasing");
+
+        auto showMsaaComboFn = [&engineSettings](std::function<void(int)>&& itemChangedFn) -> void
+        {
+          const char* itemNames[] = {"0", "2", "4"};
+          const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+          int currentItem         = engineSettings.Graphics.msaa / 2;
+
+          if (ImGui::BeginCombo("Sample Count", itemNames[currentItem]))
+          {
+            for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                itemChangedFn(itemIndx);
+              }
+            }
+
+            ImGui::EndCombo();
+          }
+        };
+
+        showMsaaComboFn(
+            [&engineSettings](int newItem) -> void
+            {
+              engineSettings.Graphics.msaa = newItem * 2;
+              g_app->ReInitViewports();
+            });
 
         ImGui::SeparatorText("Shadows");
 
-        const char* itemNames[] = {"1", "2", "3", "4"};
-        const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
-        int currentItem         = engineSettings.Graphics.cascadeCount - 1;
-
-        if (ImGui::BeginCombo("Cascade Count", itemNames[currentItem]))
+        bool* evsm4 = &engineSettings.Graphics.useEVSM4;
+        if (ImGui::RadioButton("Use EVSM2", !*evsm4))
         {
-          for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
-          {
-            bool isSelected      = false;
-            const char* itemName = itemNames[itemIndx];
-            ImGui::Selectable(itemName, &isSelected);
-            if (isSelected)
-            {
-              engineSettings.Graphics.cascadeCount = itemIndx + 1;
-              GetRenderSystem()->InvalidateGPULightCache();
-            }
-          }
+          *evsm4 = false;
+        }
+        UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive component.");
 
-          ImGui::EndCombo();
+        ImGui::SameLine();
+
+        if (ImGui::RadioButton("Use EVSM4", *evsm4))
+        {
+          *evsm4 = true;
+        }
+        UI::AddTooltipToLastItem("Exponential variance shadow mapping with positive and negative component."
+                                 "\nRequires more shadow map memory, but yields softer shadows.");
+
+        ImGui::Checkbox("Use high precision shadow maps", &engineSettings.Graphics.use32BitShadowMap);
+        UI::AddTooltipToLastItem("Uses 32 bits floating point textures for shadow map generation.");
+
+        // Cascade count combo.
+        {
+          const char* itemNames[] = {"1", "2", "3", "4"};
+          const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+          int currentItem         = engineSettings.Graphics.cascadeCount - 1;
+
+          if (ImGui::BeginCombo("Cascade Count", itemNames[currentItem]))
+          {
+            for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                engineSettings.Graphics.cascadeCount = itemIndx + 1;
+                GetRenderSystem()->InvalidateGPULightCache();
+              }
+            }
+
+            ImGui::EndCombo();
+          }
         }
 
-        Vec4 data            = {engineSettings.Graphics.cascadeDistances[1],
+        Vec4 data            = {engineSettings.Graphics.cascadeDistances[0],
+                                engineSettings.Graphics.cascadeDistances[1],
                                 engineSettings.Graphics.cascadeDistances[2],
-                                engineSettings.Graphics.cascadeDistances[3],
-                                engineSettings.PostProcessing.ShadowDistance};
+                                engineSettings.Graphics.cascadeDistances[3]};
 
         int lastCascadeIndex = engineSettings.Graphics.cascadeCount - 1;
-        Swap(data[lastCascadeIndex], data[3]);
+        Vec2 contentSize     = ImGui::GetContentRegionAvail();
+        float width          = contentSize.x * 0.95f / 4.0f;
+        width                = glm::clamp(width, 10.0f, 100.0f);
 
-        Vec2 contentSize        = ImGui::GetContentRegionAvail();
-        float width             = contentSize.x * 0.95f / 4.0f;
-        width                   = glm::clamp(width, 10.0f, 100.0f);
+        bool manualSplit     = !engineSettings.Graphics.useParallelSplitPartitioning;
+        ImGui::Checkbox("Manual Split Cascades", &manualSplit);
+        engineSettings.Graphics.useParallelSplitPartitioning = !manualSplit;
+
+        if (!manualSplit)
+        {
+          ImGui::BeginDisabled();
+        }
 
         bool cascadeInvalidated = false;
         for (int i = 0; i < 4; i++)
@@ -223,6 +272,8 @@ namespace ToolKit
             cascadeInvalidated = true;
             data[i]            = val;
           }
+          String msg = std::to_string(i + 1) + ". cascade distance";
+          UI::AddTooltipToLastItem(msg.c_str());
 
           ImGui::PopItemWidth();
           ImGui::PopID();
@@ -238,35 +289,78 @@ namespace ToolKit
           }
         }
 
+        if (!manualSplit)
+        {
+          ImGui::EndDisabled();
+        }
+
         if (cascadeInvalidated)
         {
-          Swap(data[lastCascadeIndex], data[3]);
-
           GetRenderSystem()->InvalidateGPULightCache();
-          engineSettings.Graphics.cascadeDistances[1]  = data.x;
-          engineSettings.Graphics.cascadeDistances[2]  = data.y;
-          engineSettings.Graphics.cascadeDistances[3]  = data.z;
-          engineSettings.PostProcessing.ShadowDistance = data.w;
+          engineSettings.Graphics.cascadeDistances[0] = data.x;
+          engineSettings.Graphics.cascadeDistances[1] = data.y;
+          engineSettings.Graphics.cascadeDistances[2] = data.z;
+          engineSettings.Graphics.cascadeDistances[3] = data.w;
         }
 
-        ImGui::SeparatorText("BVH");
-        ImGui::DragInt("Node Max Entity", &engineSettings.PostProcessing.maxEntityPerBVHNode, 1, 1, 1000000);
-        ImGui::DragFloat("Node Min Size", &engineSettings.PostProcessing.minBVHNodeSize, 1.0f, 0.01f, 100000.0f);
-        if (ImGui::Button("ReBuild BVH"))
-        {
-          if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
-          {
-            if (BVHPtr bvh = GetSceneManager()->GetCurrentScene()->m_bvh)
-            {
-              bvh->ReBuild();
+        ImGui::Checkbox("Parallel Split Cascades", &engineSettings.Graphics.useParallelSplitPartitioning);
 
-              int total = 0, dist = 0;
-              float rat = 0.0f;
-              bvh->DistributionQuality(total, dist, rat);
-              TK_LOG("Total number of entities: %d, Entities in bvh: %d, Distribution: %f", total, dist, rat);
+        if (!engineSettings.Graphics.useParallelSplitPartitioning)
+        {
+          ImGui::BeginDisabled();
+        }
+
+        ImGui::DragFloat("Lambda", &engineSettings.Graphics.parallelSplitLambda, 0.01f, 0.0f, 1.0f, "%.2f");
+        UI::AddTooltipToLastItem("Linear blending ratio between linear split and parallel split distances.");
+
+        float shadowDistance = engineSettings.Graphics.GetShadowMaxDistance();
+        ImGui::DragFloat("Shadow Distance", &shadowDistance, 10.0f, 0.0f, 10000.0f, "%.2f");
+
+        engineSettings.Graphics.SetShadowMaxDistance(shadowDistance);
+
+        if (!engineSettings.Graphics.useParallelSplitPartitioning)
+        {
+          ImGui::EndDisabled();
+        }
+
+        ImGui::Checkbox("Stabilize Shadows", &engineSettings.Graphics.stableShadowMap);
+        UI::AddTooltipToLastItem("Prevents shimmering / swimming effects by wasting some shadow map resolution to "
+                                 "prevent sub-pixel movements.");
+
+        static bool highLightCascades = false;
+        if (ImGui::Checkbox("Highlight Cascades", &highLightCascades))
+        {
+          ShaderPtr shader = GetShaderManager()->Create<Shader>(ShaderPath("defaultFragment.shader", true));
+          shader->SetDefine("highlightCascades", highLightCascades ? "1" : "0");
+        }
+        UI::AddTooltipToLastItem("Highlights shadow cascades for debugging purpose.");
+
+        ImGui::SeparatorText("Global Texture Settings");
+
+        // Anisotropy combo.
+        {
+          const char* itemNames[] = {"0", "2", "4", "8", "16"};
+          const int itemCount     = sizeof(itemNames) / sizeof(itemNames[0]);
+          int currentItem         = engineSettings.Graphics.anisotropicTextureFiltering / 2;
+
+          if (ImGui::BeginCombo("Anisotropy", itemNames[currentItem]))
+          {
+            for (int itemIndx = 0; itemIndx < itemCount; itemIndx++)
+            {
+              bool isSelected      = false;
+              const char* itemName = itemNames[itemIndx];
+              ImGui::Selectable(itemName, &isSelected);
+              if (isSelected)
+              {
+                engineSettings.Graphics.anisotropicTextureFiltering = itemIndx * 2;
+              }
             }
+
+            ImGui::EndCombo();
           }
         }
+        UI::AddTooltipToLastItem("Apply anisotropic filtering if the value is greater than 0. \nOnly effects all "
+                                 "textures after editor restarted.");
       }
       ImGui::End();
     }

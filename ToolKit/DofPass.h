@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "PostProcessPass.h"
+#include "FullQuadPass.h"
 
 namespace ToolKit
 {
@@ -33,8 +33,6 @@ namespace ToolKit
   {
    public:
     DoFPass();
-    explicit DoFPass(const DoFPassParams& params);
-    ~DoFPass();
 
     void Render() override;
     void PreRender() override;

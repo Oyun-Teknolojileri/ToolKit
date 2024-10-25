@@ -727,7 +727,7 @@ namespace ToolKit
             unzGetCurrentFileInfo(m_zfile, &fileInfo, filename, fileInfo.size_filename + 1, NULL, 0, NULL, 0);
             filename[fileInfo.size_filename] = '\0';
 
-            std::pair<ZPOS64_T, uint32_t> element;
+            std::pair<ZPOS64_T, uint> element;
             element.first  = unzGetOffset64(m_zfile);
             element.second = fileInfo.uncompressed_size;
 

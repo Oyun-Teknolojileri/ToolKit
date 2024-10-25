@@ -14,7 +14,8 @@ namespace ToolKit
 {
 
   // Xml Processing.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   template <typename T>
   void ReadVec(XmlNode* node, T& val);
   template <typename T>
@@ -42,7 +43,7 @@ namespace ToolKit
   TK_API MaterialPtr ReadMaterial(XmlNode* parent);
 
   // File path operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   /**
    * Checks if a file exist in the host system.
@@ -117,7 +118,8 @@ namespace ToolKit
   TK_API String GetPluginExtention();
 
   // String operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API void Split(const String& s, const String& sep, StringArray& v);
 
   // Replace all occurrences of a string in another string.
@@ -150,7 +152,8 @@ namespace ToolKit
   TK_API bool Utf8CaseInsensitiveSearch(const String& text, const String& search);
 
   // Debug geometries.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API LineBatchPtr CreatePlaneDebugObject(PlaneEquation plane, float size);
   TK_API LineBatchPtr CreateLineDebugObject(const Vec3Array& corners);
   TK_API LineBatchPtr CreateBoundingBoxDebugObject(const BoundingBox& box,
@@ -158,13 +161,32 @@ namespace ToolKit
                                                    float size            = 2.0f,
                                                    const Mat4* transform = nullptr);
 
-  TK_API LineBatchPtr GetDebugFrustum(const CameraPtr camera);
+  TK_API LineBatchPtr CreateDebugFrustum(const CameraPtr camera,
+                                         const Vec3& color = Vec3(1.0f, 0.0f, 0.0f),
+                                         float size        = 2.0f);
 
   // Entity operations.
-  TK_API void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray);
+  //////////////////////////////////////////
 
+  TK_API IDArray ToEntityIdArray(const EntityPtrArray& ptrArray);
+  TK_API EntityRawPtrArray ToEntityRawPtrArray(const EntityPtrArray& ptrArray);
+  TK_API EntityPtrArray ToEntityPtrArray(const EntityRawPtrArray& rawPtrArray);
   TK_API bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt);
   TK_API void GetRootEntities(const EntityPtrArray& entities, EntityPtrArray& roots);
+
+  /** Converts an ObjectPTr to RawPtr */
+  template <typename T>
+  std::vector<T*> ToRawPtrArray(const std::vector<std::shared_ptr<T>>& objectArray)
+  {
+    std::vector<T*> rawPtrArray;
+    rawPtrArray.resize(objectArray.size());
+    for (size_t i = 0; i < objectArray.size(); i++)
+    {
+      rawPtrArray.push_back(objectArray[i].get());
+    }
+
+    return rawPtrArray;
+  }
 
   TK_API void GetParents(const EntityPtr ntt, EntityPtrArray& parents);
 
@@ -179,14 +201,15 @@ namespace ToolKit
   TK_API Node* DeepNodeCopy(Node* node);
 
   // Memory operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   // Useful to force plugin modules to allocate from main toolkit module.
   TK_API void* TKMalloc(size_t sz);
   //  Use in combination with TKMalloc to free from main toolkit module.
   TK_API void TKFree(void* m);
 
   // Container operations.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TK_API int IndexOf(EntityPtr ntt, const EntityPtrArray& entities);
   TK_API bool Exist(const IntArray& vec, int val);
@@ -194,17 +217,20 @@ namespace ToolKit
   template <typename T, typename Predicate>
   void move_values(std::vector<T>& from, std::vector<T>& to, Predicate p)
   {
-    auto it = std::remove_if(from.begin(),
+    to.reserve(from.size()); // Reserve space for potential moved elements.
+
+    auto it = std::partition(from.begin(),
                              from.end(),
-                             [&](const T& val)
+                             [&to, &p](T& val)
                              {
                                if (p(val))
                                {
-                                 to.push_back(std::move(val));
-                                 return true;
+                                 to.emplace_back(std::move(val));
+                                 return false; // Keep elements that satisfy the predicate.
                                }
-                               return false;
+                               return true; // Remove elements that don't satisfy the predicate.
                              });
+
     from.erase(it, from.end());
   }
 
@@ -283,23 +309,25 @@ namespace ToolKit
     return true; // All keys in map1 are found in map2
   }
 
+  /** Remove duplicate elements in a range from the vector. */
   template <typename T>
-  void RemoveDuplicates(std::vector<T>& vec)
+  void RemoveDuplicates(std::vector<T>& vec,
+                        typename std::vector<T>::iterator begin,
+                        typename std::vector<T>::iterator end)
   {
-    std::sort(vec.begin(), vec.end());
-    vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
-  }
+    // First, sort the range
+    std::sort(begin, end);
 
-  template <typename T>
-  void Swap(T& data1, T& data2)
-  {
-    T data = data1;
-    data1   = data2;
-    data2   = data;
+    // Use std::unique to move duplicates to the end
+    auto last = std::unique(begin, end);
+
+    // Erase the duplicates
+    vec.erase(last, end);
   }
 
   //  Time.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API float MillisecToSec(float ms);
 
   /**
@@ -308,7 +336,8 @@ namespace ToolKit
   TK_API float GetElapsedMilliSeconds();
 
   // Hash.
-  ///////////////////////////////////////////////////////
+  //////////////////////////////////////////
+
   TK_API uint64 MurmurHash(uint64 x);
 
   TK_API void Xoroshiro128PlusSeed(uint64 s[2], uint64 seed);

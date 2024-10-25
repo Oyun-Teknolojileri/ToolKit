@@ -28,7 +28,7 @@ namespace ToolKit
   {
 
     // ModManager
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     ModManager ModManager::m_instance;
 
@@ -154,7 +154,7 @@ namespace ToolKit
     }
 
     // ModManager
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     // Signal definitions.
     SignalId BaseMod::m_leftMouseBtnDownSgnl = BaseMod::GetNextSignalId();
@@ -210,7 +210,7 @@ namespace ToolKit
     }
 
     // States
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     const String StateType::Null                = "";
     const String StateType::StateBeginPick      = "StateBeginPick";
@@ -255,10 +255,6 @@ namespace ToolKit
         {
           ids.push_back(pd.entity->GetIdVal());
         }
-        else
-        {
-          ids.push_back(NULL_HANDLE);
-        }
       }
     }
 
@@ -279,7 +275,7 @@ namespace ToolKit
         }
       }
 
-      ToEntityIdArray(m_ignoreList, ignores);
+      m_ignoreList = ToEntityIdArray(ignores);
       m_ignoreList.push_back(g_app->m_grid->GetIdVal());
     }
 
@@ -407,10 +403,10 @@ namespace ToolKit
           frustum.planes[5] = PlaneFrom(planePnts.data());
 
           // Perform picking.
-          std::vector<EditorScene::PickData> ntties;
+          std::vector<EditorScene::PickData> entities;
           EditorScenePtr currScene = g_app->GetCurrentScene();
-          currScene->PickObject(frustum, ntties, m_ignoreList);
-          m_pickData.insert(m_pickData.end(), ntties.begin(), ntties.end());
+          currScene->PickObject(frustum, entities, m_ignoreList);
+          m_pickData.insert(m_pickData.end(), entities.begin(), entities.end());
 
           // Debug draw the picking frustum.
           if (g_app->m_showPickingDebug)
@@ -574,16 +570,19 @@ namespace ToolKit
           for (EntityPtr ntt : selectedRoots)
           {
             EntityPtrArray copies;
+
             // Prefab will already create its own child prefab scene entities,
-            //  So don't need to copy them too!
+            // So don't need to copy them too.
             if (ntt->IsA<Prefab>())
             {
-              copies.push_back(Cast<Entity>(ntt->Copy()));
+              EntityPtr cpyPrefab = Cast<Entity>(ntt->Copy());
+              copies.push_back(cpyPrefab);
             }
             else
             {
               DeepCopy(ntt, copies);
             }
+
             copies[0]->m_node->SetTransform(ntt->m_node->GetTransform(), TransformationSpace::TS_WORLD);
 
             for (EntityPtr cpy : copies)
@@ -592,7 +591,8 @@ namespace ToolKit
             }
 
             currScene->AddToSelection(copies.front()->GetIdVal(), true);
-            cpyCount           += static_cast<int>(copies.size());
+            cpyCount           += (int) copies.size();
+
             // Status info
             g_app->m_statusMsg  = std::to_string(cpyCount) + " entities are copied.";
           }
@@ -608,7 +608,7 @@ namespace ToolKit
     String StateDuplicate::Signaled(SignalId signal) { return StateType::Null; }
 
     // Mods
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     SelectMod::SelectMod() : BaseMod(ModId::Select) {}
 

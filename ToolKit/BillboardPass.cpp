@@ -9,23 +9,13 @@
 
 #include "Entity.h"
 #include "Material.h"
-#include "TKProfiler.h"
-
-
 
 namespace ToolKit
 {
-  BillboardPass::BillboardPass() {}
-
-  BillboardPass::BillboardPass(const BillboardPassParams& params) {}
-
-  BillboardPass::~BillboardPass() {}
+  BillboardPass::BillboardPass() : Pass("BillboardPass") {}
 
   void BillboardPass::Render()
   {
-    PUSH_GPU_MARKER("BillboardPass::Render");
-    PUSH_CPU_MARKER("BillboardPass::Render");
-
     Renderer* renderer = GetRenderer();
     Viewport* vp       = m_params.Viewport;
 
@@ -38,7 +28,9 @@ namespace ToolKit
     auto renderBillboardsFn              = [this, cam, renderer, gpuProgramManager](EntityPtrArray& billboards) -> void
     {
       m_renderData.jobs.clear();
-      RenderJobProcessor::CreateRenderJobs(billboards, m_renderData.jobs);
+
+      EntityRawPtrArray rawBillboards = ToEntityRawPtrArray(billboards);
+      RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, rawBillboards);
       RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
       renderer->RenderWithProgramFromMaterial(m_renderData.jobs);
@@ -49,16 +41,10 @@ namespace ToolKit
 
     renderer->EnableDepthTest(true);
     renderBillboardsFn(m_params.Billboards);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void BillboardPass::PreRender()
   {
-    PUSH_GPU_MARKER("BillboardPass::PreRender");
-    PUSH_CPU_MARKER("BillboardPass::PreRender");
-
     Pass::PreRender();
 
     // Process billboards.
@@ -72,16 +58,12 @@ namespace ToolKit
                 [this, vpScale, cam](EntityPtr bb) -> bool
                 {
                   // Update billboards.
-                  assert(bb->IsA<Billboard>());
-                  BillboardPtr cbb = std::static_pointer_cast<Billboard>(bb);
+                  BillboardPtr cbb = Cast<Billboard>(bb);
                   cbb->LookAt(cam, vpScale);
 
                   // Return separation condition.
                   return cbb->m_settings.bypassDepthTest;
                 });
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

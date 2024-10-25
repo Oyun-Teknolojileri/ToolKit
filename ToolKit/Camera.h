@@ -18,10 +18,14 @@ namespace ToolKit
    public:
     TKDeclareClass(Camera, Entity);
 
-    Camera();          //!< Default constructor. Sets a default projection matrix.
-    virtual ~Camera(); //!< Empty destructor.
+    /** Default constructor. Sets a default projection matrix. */
+    Camera();
 
-    void NativeConstruct() override; //!< Adds a direction component other then constructing Object.
+    /** Empty destructor. */
+    virtual ~Camera();
+
+    /** In addition to the Object creation, adds a direction component. */
+    void NativeConstruct() override;
 
     /**
      * Sets the perspective projection matrix for the camera.
@@ -52,17 +56,20 @@ namespace ToolKit
      */
     void SetLens(float left, float right, float bottom, float top, float near, float far);
 
-    /** Returns view matrix from camera position. Its inverse world transform matrix. */
-    inline Mat4 GetViewMatrix() const
+    /** Returns view matrix for the camera. It is the inverse of world transform matrix. */
+    Mat4 GetViewMatrix() const
     {
       Mat4 view = m_node->GetTransform();
       return glm::inverse(view);
     }
 
-    inline const Mat4& GetProjectionMatrix() const { return m_projection; }
+    /** Returns projection matrix. */
+    Mat4& GetProjectionMatrix() { return m_projection; }
 
-    inline Mat4 GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
+    /** Returns project * view * model matrix. */
+    Mat4 GetProjectViewMatrix() { return m_projection * GetViewMatrix(); }
 
+    /** Returns if the camera is orthographic or not. */
     bool IsOrtographic() const;
 
     /** Tight fit camera frustum to a bounding box with a margin */
@@ -76,26 +83,37 @@ namespace ToolKit
      */
     Vec3Array ExtractFrustumCorner();
 
-    inline float Fov() const { return m_fov; }
+    /** Returns vertical field of view. */
+    float Fov() const { return m_fov; }
 
-    inline float Aspect() const { return m_aspect; }
+    /** Returns the aspect ratio for the camera. */
+    float Aspect() const { return m_aspect; }
 
-    inline float Near() const { return m_near; }
+    /** Returns distance to near clip plane. This is not the focal length. Its the start distance to clip objects. */
+    float Near() const { return m_near; }
 
-    inline float Far() const { return m_far; }
+    /** Returns distance to far clip plane. */
+    float Far() const { return m_far; }
 
-    inline float Left() const { return m_left; }
+    /** Distance to left clip plane, only meaning full in orthographic projection. */
+    float Left() const { return m_left; }
 
-    inline float Right() const { return m_right; }
+    /** Distance to right clip plane, only meaning full in orthographic projection. */
+    float Right() const { return m_right; }
 
-    inline float Top() const { return m_top; }
+    /** Distance to top clip plane, only meaning full in orthographic projection. */
+    float Top() const { return m_top; }
 
-    inline float Bottom() const { return m_bottom; }
+    /** Distance to bottom clip plane, only meaning full in orthographic projection. */
+    float Bottom() const { return m_bottom; }
 
-    inline Vec3 Position() const { return m_node->GetTranslation(); }
+    /** Returns camera position in world space. */
+    Vec3 Position() const { return m_node->GetTranslation(); }
 
+    /** Returns camera direction in world space. */
     Vec3 Direction() const;
 
+    /** Returns distance to near plane from camera position. */
     float FocalLength() const;
 
    protected:
@@ -124,11 +142,12 @@ namespace ToolKit
     float m_aspect     = 1.0f;
     float m_near       = 0.01f;
     float m_far        = 1000.0f;
-    float m_left       = 10.0f;
+    float m_left       = -10.0f;
     float m_right      = 10.0f;
-    float m_bottom     = 10.0f;
+    float m_bottom     = -10.0f;
     float m_top        = 10.0f;
     bool m_ortographic = false;
+
     Mat4 m_projection;
   };
 

@@ -32,6 +32,10 @@ namespace ToolKit
     }
   }
 
+  void RenderPath::PreRender(Renderer* renderer) { renderer->StartTimerQuery(); }
+
+  void RenderPath::PostRender(Renderer* renderer) { renderer->EndTimerQuery(); }
+
   RenderSystem::RenderSystem() { m_renderer = new Renderer(); }
 
   RenderSystem::~RenderSystem() { SafeDel(m_renderer); }
@@ -40,11 +44,6 @@ namespace ToolKit
   {
     m_renderer->Init();
     AddRenderTask({[](Renderer* renderer) -> void { renderer->GenerateBRDFLutTexture(); }});
-  }
-
-  void RenderSystem::AddRenderTask(RenderPath* technique)
-  {
-    AddRenderTask({[technique](Renderer* renderer) -> void { technique->Render(renderer); }});
   }
 
   void RenderSystem::AddRenderTask(RenderTask task)
@@ -94,7 +93,6 @@ namespace ToolKit
 
       // Merge remaining.
       m_lowQueue.insert(m_lowQueue.begin(), tasks.begin(), tasks.end());
-      TK_LOG("Asnyc Render %d", m_lowQueue.size());
     }
   }
 
@@ -176,11 +174,31 @@ namespace ToolKit
   void RenderSystem::EndFrame()
   {
     m_frameCount++;
-    m_renderer->m_frameCount = m_frameCount;
+    m_renderer->m_frameCount  = m_frameCount;
 
+    static uint avgFrameStart = m_frameCount;
+    static float avgCpuTime   = 0.0f;
+    static float avgGpuTime   = 0.0f;
     if (TKStats* stats = GetTKStats())
     {
       m_renderer->GetElapsedTime(stats->m_elapsedCpuRenderTime, stats->m_elapsedGpuRenderTime);
+
+      avgCpuTime += stats->m_elapsedCpuRenderTime;
+      avgGpuTime += stats->m_elapsedGpuRenderTime;
+    }
+
+    // Average over 100 frames.
+    if (m_frameCount - avgFrameStart >= 100)
+    {
+      if (TKStats* stats = GetTKStats())
+      {
+        stats->m_elapsedCpuRenderTimeAvg = avgCpuTime / 100.0f;
+        stats->m_elapsedGpuRenderTimeAvg = avgGpuTime / 100.0f;
+      }
+
+      avgFrameStart = m_frameCount;
+      avgCpuTime    = 0.0f;
+      avgGpuTime    = 0.0f;
     }
   }
 
@@ -189,16 +207,13 @@ namespace ToolKit
     RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
     GLint encoding = 0;
-    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
-                                          GL_FRONT,
-                                          GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING,
-                                          &encoding);
+    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &encoding);
 
     if (encoding == GL_LINEAR)
     {
       m_backbufferFormatIsSRGB = false;
     }
-    else if (encoding == GL_SRGB)
+    else if (encoding == GL_SRGB || encoding == GL_SRGB8 || encoding == GL_SRGB8_ALPHA8)
     {
       m_backbufferFormatIsSRGB = true;
     }

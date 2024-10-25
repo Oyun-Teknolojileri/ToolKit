@@ -25,11 +25,8 @@ namespace ToolKit
 
     void NativeConstruct() override;
 
-    // Shadow
-    MaterialPtr GetShadowMaterial();
     virtual void UpdateShadowCamera();
     virtual float AffectDistance();
-    virtual void InitShadowMapDepthMaterial();
 
     /**
      * Returns  0 to 3 number that helps to sort lights by type. DirectionalLight: 0, PointLight: 1, SpotLight: 3.
@@ -59,26 +56,23 @@ namespace ToolKit
     TKDeclareParam(Vec3, Color);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(bool, CastShadow);
-    TKDeclareParam(float, ShadowRes);
+    TKDeclareParam(MultiChoiceVariant, ShadowRes);
     TKDeclareParam(int, PCFSamples);
     TKDeclareParam(float, PCFRadius);
     TKDeclareParam(float, ShadowBias);
     TKDeclareParam(float, BleedingReduction);
 
     Mat4 m_shadowMapCameraProjectionViewMatrix;
-    float m_shadowMapCameraFar      = 1.0f;
     CameraPtr m_shadowCamera        = nullptr;
-    int m_shadowAtlasLayer          = -1;
-    Vec2 m_shadowAtlasCoord         = Vec2(-1.0f);
     bool m_shadowResolutionUpdated  = false;
     MeshPtr m_volumeMesh            = nullptr;
 
-    bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated
-    int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderers light cache.
+    bool m_invalidatedForLightCache = false; //<! Set this true if light data on GPU should be updated.
+    int m_lightCacheIndex    = -1; //<! Used by renderer only! The index of this light in the renderer's light cache.
     uint16 m_drawCallVersion = 0;  //<! Used by renderer internally (Explained in LightCache.h)
 
-   protected:
-    MaterialPtr m_shadowMapMaterial = nullptr;
+    IntArray m_shadowAtlasLayers;  //!< Layer index in the shadow atlas for each cascade.
+    Vec2Array m_shadowAtlasCoords; //!< Coordinates for each cascade in the corresponding layer.
   };
 
   // DirectionalLight
@@ -103,20 +97,22 @@ namespace ToolKit
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
    private:
-    // Fits the entities into the shadow map camera frustum. As the scene gets
-    // bigger, the resolution gets lower.
-    void FitEntitiesBBoxIntoShadowFrustum(CameraPtr lightCamera, const RenderJobArray& jobs);
-
-    // Fits view frustum of the camera into shadow map camera frustum. As the
-    // view frustum gets bigger, the resolution gets lower.
+    /** Adjust the light frustum such that, it covers entire view camera frustum. */
     void FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
                                         CameraPtr viewCamera,
                                         float near,
-                                        float far);
+                                        float far,
+                                        bool stableFit);
 
    public:
-    std::vector<CameraPtr> m_cascadeShadowCameras;
-    std::vector<Mat4> m_shadowMapCascadeCameraProjectionViewMatrices;
+    /** Cascades are rendered with these cameras, due to stable fit, frustum can be larger than actual coverage. */
+    CameraPtrArray m_cascadeShadowCameras;
+
+    /** Scene is culled with these tightly fit cameras to create render jobs for shadow map generation. */
+    CameraPtrArray m_cascadeCullCameras;
+
+    /** Cascade camera projection matrices to fill the light buffer. */
+    Mat4Array m_shadowMapCascadeCameraProjectionViewMatrices;
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;
@@ -136,7 +132,6 @@ namespace ToolKit
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
-    void InitShadowMapDepthMaterial() override;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
@@ -168,7 +163,6 @@ namespace ToolKit
 
     void UpdateShadowCamera() override;
     float AffectDistance() override;
-    void InitShadowMapDepthMaterial() override;
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;

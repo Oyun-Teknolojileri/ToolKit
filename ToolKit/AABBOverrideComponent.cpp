@@ -8,14 +8,11 @@
 #include "AABBOverrideComponent.h"
 
 #include "Animation.h"
-#include "BVH.h"
 #include "Entity.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "ToolKit.h"
-
-
 
 namespace ToolKit
 {
@@ -39,13 +36,13 @@ namespace ToolKit
 
   BoundingBox AABBOverrideComponent::GetBoundingBox()
   {
-    BoundingBox aabb = {};
-    aabb.min         = GetPositionOffsetVal();
-    aabb.max         = GetPositionOffsetVal() + GetSizeVal();
+    BoundingBox aabb;
+    aabb.min = GetPositionOffsetVal();
+    aabb.max = GetPositionOffsetVal() + GetSizeVal();
     return aabb;
   }
 
-  void AABBOverrideComponent::SetBoundingBox(BoundingBox aabb)
+  void AABBOverrideComponent::SetBoundingBox(const BoundingBox& aabb)
   {
     SetPositionOffsetVal(aabb.min);
     SetSizeVal(aabb.max - aabb.min);
@@ -79,14 +76,6 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
-  }
-
-  void AABBOverrideComponent::InvalidateSpatialCaches()
-  {
-    if (EntityPtr ntt = m_entity.lock())
-    {
-      ntt->InvalidateSpatialCaches();
-    }
   }
 
 } //  namespace ToolKit

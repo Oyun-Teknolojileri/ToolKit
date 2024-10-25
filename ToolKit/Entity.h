@@ -11,6 +11,7 @@
  * @file Entity.h Header for Entity,
  */
 
+#include "AABBTree.h"
 #include "Animation.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
@@ -21,7 +22,9 @@
 
 namespace ToolKit
 {
-  class BVHNode;
+
+  // Entity
+  //////////////////////////////////////////
 
   static VariantCategory EntityCategory {"Meta", 100};
 
@@ -43,7 +46,7 @@ namespace ToolKit
     EntityPtr Parent() const;
     virtual bool IsDrawable() const;
     virtual void SetPose(const AnimationPtr& anim, float time);
-    virtual BoundingBox GetBoundingBox(bool inWorld = false);
+    virtual const BoundingBox& GetBoundingBox(bool inWorld = false);
     ObjectPtr Copy() const override;
     virtual void RemoveResources();
 
@@ -171,8 +174,11 @@ namespace ToolKit
      */
     Entity* GetPrefabRoot() const;
 
-    /** BVH & Bounding boxes are invalidated. */
+    /** Bounding boxes, AABB tree are invalidated. */
     virtual void InvalidateSpatialCaches();
+
+    /** Updates spatial caches related to entity. AABB tree is updated upon access. */
+    virtual void UpdateSpatialCaches();
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;
@@ -184,7 +190,6 @@ namespace ToolKit
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     virtual void UpdateLocalBoundingBox();
-    void UpdateBoundingBoxCaches();
 
    public:
     TKDeclareParam(String, Name);
@@ -208,21 +213,21 @@ namespace ToolKit
      */
     Entity* _prefabRootEntity;
 
-    BVHWeakPtr m_bvh;                 //!< BVH the entity belongs to.
-    std::vector<BVHNode*> m_bvhNodes; //!< BVHNodes that the entity is assigned.
+    /** Index into the bvh tree that points to the node for this entity. */
+    AABBNodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
 
-    /** Internally used to mark the entity as being processed by bvh traverse algorithms. */
-    bool m_isInBVHProcess  = false;
+    /** Entity causes AABBTree to be updated when added removed to the scene. */
+    bool m_partOfAABBTree             = true;
 
-    /** Used in bvh stating that the entity is removed from scene and should not be considered in queries. */
-    bool m_markedForDelete = false;
+    /** The Scene that entity belongs to. */
+    SceneWeakPtr m_scene;
+
+    /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
+    bool m_spatialCachesInvalidated = true;
 
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
-
-    /** If true, bounding box caches are updated upon access. */
-    bool m_boundingBoxCacheInvalidated = true;
 
    private:
     /**
@@ -232,13 +237,38 @@ namespace ToolKit
     ComponentPtrArray m_components;
   };
 
+  // Entity Container functions.
+  //////////////////////////////////////////
+
+  /** Move entities of type T to filtered array. */
+  template <typename T>
+  void MoveByType(EntityRawPtrArray& entities, std::vector<T*>& filtered)
+  {
+    auto it = std::partition(entities.begin(),
+                             entities.end(),
+                             [&filtered](Entity* ntt)
+                             {
+                               if (static_cast<Entity*>(ntt)->IsA<T>())
+                               {
+                                 filtered.emplace_back(static_cast<T*>(ntt));
+                                 return false; // Keep elements of type T.
+                               }
+                               return true; // Remove elements thats not of type T.
+                             });
+
+    entities.erase(it, entities.end());
+  }
+
+  // EntityNode
+  //////////////////////////////////////////
+
   class TK_API EntityNode : public Entity
   {
    public:
     TKDeclareClass(EntityNode, Entity);
 
     EntityNode();
-    explicit EntityNode(const String& name);
+    EntityNode(const String& name);
     virtual ~EntityNode();
 
     void RemoveResources() override;
@@ -246,6 +276,9 @@ namespace ToolKit
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
   };
+
+  // EntityFactory
+  //////////////////////////////////////////
 
   /**
    * DEPRECATED use ObjectFactory

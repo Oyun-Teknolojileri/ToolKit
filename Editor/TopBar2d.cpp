@@ -112,7 +112,7 @@ namespace ToolKit
       ImGui::EndChildFrame();
     }
 
-    void Overlay2DTopBar::Show2DViewZoomOptions(uint32_t& nextItemIndex)
+    void Overlay2DTopBar::Show2DViewZoomOptions(uint& nextItemIndex)
     {
       EditorViewport2d* editorViewport = reinterpret_cast<EditorViewport2d*>(m_owner);
       ImGui::TableSetColumnIndex(nextItemIndex++);
@@ -122,10 +122,10 @@ namespace ToolKit
       }
       UI::HelpMarker(TKLoc + m_owner->m_name, "Reset Zoom");
       ImGui::TableSetColumnIndex(nextItemIndex++);
-      ImGui::Text("%u%%", uint32_t(editorViewport->m_zoomPercentage));
+      ImGui::Text("%u%%", uint(editorViewport->m_zoomPercentage));
     }
 
-    void Overlay2DTopBar::ShowGridOptions(uint32_t& nextItemIndex)
+    void Overlay2DTopBar::ShowGridOptions(uint& nextItemIndex)
     {
       auto ShowGridOptionsFn = [this]() -> void
       {

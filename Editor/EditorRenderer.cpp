@@ -13,17 +13,17 @@
 #include "EditorViewport2d.h"
 #include "Gizmo.h"
 #include "LightMeshGenerator.h"
-#include "Util.h"
 
-#include <BVH.h>
 #include <Camera.h>
 #include <DirectionComponent.h>
 #include <EnvironmentComponent.h>
 #include <GradientSky.h>
 #include <Material.h>
 #include <MaterialComponent.h>
-#include <TKProfiler.h>
+#include <MathUtil.h>
+#include <Prefab.h>
 #include <UIManager.h>
+#include <Util.h>
 
 #include <DebugNew.h>
 
@@ -38,41 +38,24 @@ namespace ToolKit
 
     EditorRenderer::~EditorRenderer()
     {
-      m_billboardPass         = nullptr;
-      m_lightSystem           = nullptr;
-      m_sceneRenderPath       = nullptr;
-      m_mobileSceneRenderPath = nullptr;
-      m_uiPass                = nullptr;
-      m_editorPass            = nullptr;
-      m_gizmoPass             = nullptr;
-      m_outlinePass           = nullptr;
-      m_singleMatRenderer     = nullptr;
-      m_gammaTonemapFxaaPass  = nullptr;
+      m_billboardPass        = nullptr;
+      m_lightSystem          = nullptr;
+      m_sceneRenderPath      = nullptr;
+      m_uiPass               = nullptr;
+      m_editorPass           = nullptr;
+      m_gizmoPass            = nullptr;
+      m_outlinePass          = nullptr;
+      m_gammaTonemapFxaaPass = nullptr;
     }
 
     void EditorRenderer::Render(Renderer* renderer)
     {
-      PUSH_CPU_MARKER("EditorRenderer::PreRender");
-
       PreRender();
-
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("EditorRenderer::Render");
-
       SetLitMode(renderer, m_params.LitMode);
 
       m_passArray.clear();
 
-      SceneRenderPathPtr sceneRenderer = nullptr;
-      if (m_params.UseMobileRenderPath)
-      {
-        sceneRenderer = m_mobileSceneRenderPath;
-      }
-      else
-      {
-        sceneRenderer = m_sceneRenderPath;
-      }
-
+      SceneRenderPathPtr sceneRenderer = m_sceneRenderPath;
       if (GetRenderSystem()->IsSkipFrame())
       {
         sceneRenderer->Render(renderer);
@@ -86,16 +69,11 @@ namespace ToolKit
 
       switch (m_params.LitMode)
       {
-      case EditorLitMode::LightComplexity:
-      case EditorLitMode::Unlit:
-        m_passArray.push_back(m_singleMatRenderer);
-        break;
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
         sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
-        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
-            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        if (m_gammaTonemapFxaaPass->IsEnabled())
         {
           m_passArray.push_back(m_gammaTonemapFxaaPass);
         }
@@ -106,9 +84,6 @@ namespace ToolKit
         sceneRenderer->Render(renderer);
         break;
       }
-
-      POP_CPU_MARKER();
-      PUSH_CPU_MARKER("EditorRender Editor & PostProcess Render");
 
       if (m_params.LitMode != EditorLitMode::Game)
       {
@@ -124,14 +99,15 @@ namespace ToolKit
 
         // Draw editor objects.
         m_passArray.push_back(m_editorPass);
+
         // Clears depth buffer to draw remaining entities always on top.
         m_passArray.push_back(m_gizmoPass);
-        // Scene meshs can't block editor billboards. Desired for this case.
+
+        // Scene meshes can't block editor billboards. Desired for this case.
         m_passArray.push_back(m_billboardPass);
 
         // Post process.
-        if (m_gammaTonemapFxaaPass->m_params.enableFxaa || m_gammaTonemapFxaaPass->m_params.enableGammaCorrection ||
-            m_gammaTonemapFxaaPass->m_params.enableTonemapping)
+        if (m_gammaTonemapFxaaPass->IsEnabled())
         {
           m_passArray.push_back(m_gammaTonemapFxaaPass);
         }
@@ -139,11 +115,7 @@ namespace ToolKit
         RenderPath::Render(renderer);
       }
 
-      POP_CPU_MARKER();
-
-      PUSH_CPU_MARKER("EditorRender::PostRender");
       PostRender();
-      POP_CPU_MARKER();
     }
 
     void EditorRenderer::PreRender()
@@ -157,42 +129,25 @@ namespace ToolKit
       m_lightSystem->m_parentNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightSystem->m_parentNode);
 
-      EditorScenePtr scene = app->GetCurrentScene();
+      EditorScenePtr scene            = app->GetCurrentScene();
 
-      LightPtrArray lights;
-      bool useSceneLights = true;
-      if (m_params.LitMode == EditorLitMode::EditorLit)
-      {
-        lights         = m_lightSystem->m_lights;
-        useSceneLights = false;
-      }
-      else
-      {
-        lights = scene->GetLights();
-      }
-
-      EditorViewport* viewport = static_cast<EditorViewport*>(m_params.Viewport);
+      EditorViewport* viewport        = static_cast<EditorViewport*>(m_params.Viewport);
 
       // Scene renderer will render the given scene independent of editor.
       // Editor objects will be drawn on top of scene.
-      if (m_params.UseMobileRenderPath)
+
+      // Scene pass.
+      m_sceneRenderPath->m_params.Gfx = gfx;
+      m_sceneRenderPath->m_params.Cam = m_camera;
+
+      m_sceneRenderPath->m_params.overrideLights.clear();
+      if (m_params.LitMode == EditorLitMode::EditorLit)
       {
-        // Mobile scene pass
-        m_mobileSceneRenderPath->m_params.Gfx             = gfx;
-        m_mobileSceneRenderPath->m_params.Cam             = m_camera;
-        m_mobileSceneRenderPath->m_params.Lights          = lights;
-        m_mobileSceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
-        m_mobileSceneRenderPath->m_params.Scene           = scene;
+        m_sceneRenderPath->m_params.overrideLights = m_lightSystem->m_lights;
       }
-      else
-      {
-        // Scene pass.
-        m_sceneRenderPath->m_params.Gfx             = gfx;
-        m_sceneRenderPath->m_params.Cam             = m_camera;
-        m_sceneRenderPath->m_params.Lights          = lights;
-        m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
-        m_sceneRenderPath->m_params.Scene           = scene;
-      }
+
+      m_sceneRenderPath->m_params.MainFramebuffer = viewport->m_framebuffer;
+      m_sceneRenderPath->m_params.Scene           = scene;
 
       if (app->m_showSceneBoundary)
       {
@@ -201,7 +156,7 @@ namespace ToolKit
 
       if (app->m_showBVHNodes)
       {
-        scene->m_bvh->GetDebugBVHBoxes(app->m_perFrameDebugObjects);
+        scene->m_aabbTree.GetDebugBoundingBoxes(app->m_perFrameDebugObjects);
       }
 
       if (app->m_showPickingDebug)
@@ -246,7 +201,8 @@ namespace ToolKit
             if (light->GetCastShadowVal())
             {
               app->m_perFrameDebugObjects.push_back(light->GetDebugShadowFrustum());
-              app->m_perFrameDebugObjects.push_back(GetDebugFrustum(app->GetViewport(g_3dViewport)->GetCamera()));
+              app->m_perFrameDebugObjects.push_back(
+                  CreateDebugFrustum(app->GetViewport(g_3dViewport)->GetCamera(), Vec3(0.6f, 0.2f, 0.8f), 1.5f));
             }
           }
         }
@@ -270,34 +226,36 @@ namespace ToolKit
       grid->UpdateShaderParams();
       editorEntities.push_back(grid);
 
-      for (LightPtr& light : scene->GetLights())
+      for (Light* light : scene->GetLights())
       {
         if (light->GetLightType() == Light::LightType::Directional)
         {
-          if (Cast<EditorDirectionalLight>(light)->GizmoActive())
+          if (light->As<EditorDirectionalLight>()->GizmoActive())
           {
-            editorEntities.push_back(light);
+            editorEntities.push_back(light->Self<Entity>());
           }
         }
         else if (light->GetLightType() == Light::LightType::Spot)
         {
-          if (Cast<EditorSpotLight>(light)->GizmoActive())
+          if (light->As<EditorSpotLight>()->GizmoActive())
           {
-            editorEntities.push_back(light);
+            editorEntities.push_back(light->Self<Entity>());
           }
         }
-        else // if (light->GetLightType() == Light::LightType::Point)
+        else
         {
-          if (Cast<EditorPointLight>(light)->GizmoActive())
+          assert(light->GetLightType() == Light::LightType::Point);
+          if (light->As<EditorPointLight>()->GizmoActive())
           {
-            editorEntities.push_back(light);
+            editorEntities.push_back(light->Self<Entity>());
           }
         }
       }
 
       // Editor pass.
       m_renderData.jobs.clear();
-      RenderJobProcessor::CreateRenderJobs(editorEntities, m_renderData.jobs);
+      EntityRawPtrArray rawNtties = ToEntityRawPtrArray(editorEntities);
+      RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, rawNtties);
       RenderJobProcessor::SeperateRenderData(m_renderData, true);
 
       m_editorPass->m_params.renderData     = &m_renderData;
@@ -306,7 +264,7 @@ namespace ToolKit
       m_editorPass->m_params.clearBuffer    = GraphicBitFields::None;
 
       // Skip frame pass.
-      m_skipFramePass->m_params.FrameBuffer = viewport->m_framebuffer;
+      m_skipFramePass->m_params.frameBuffer = viewport->m_framebuffer;
       m_skipFramePass->m_material           = m_blackMaterial;
 
       // UI pass.
@@ -316,39 +274,30 @@ namespace ToolKit
 
       for (const UILayerPtr& layer : layers)
       {
-        const EntityPtrArray& uiNtties = layer->m_scene->GetEntities();
-        RenderJobProcessor::CreateRenderJobs(uiNtties, m_uiRenderData.jobs);
+        EntityRawPtrArray rawNtties = ToEntityRawPtrArray(layer->m_scene->GetEntities());
+        RenderJobProcessor::CreateRenderJobs(m_uiRenderData.jobs, rawNtties);
       }
 
       RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);
 
-      m_uiPass->m_params.renderData                           = &m_uiRenderData;
-      m_uiPass->m_params.Cam                                  = GetUIManager()->GetUICamera();
-      m_uiPass->m_params.FrameBuffer                          = viewport->m_framebuffer;
-      m_uiPass->m_params.clearBuffer                          = GraphicBitFields::DepthBits;
+      m_uiPass->m_params.renderData                          = &m_uiRenderData;
+      m_uiPass->m_params.Cam                                 = GetUIManager()->GetUICamera();
+      m_uiPass->m_params.FrameBuffer                         = viewport->m_framebuffer;
+      m_uiPass->m_params.clearBuffer                         = GraphicBitFields::DepthBits;
 
       // Post process pass
-
-      m_gammaTonemapFxaaPass->m_params.frameBuffer            = viewport->m_framebuffer;
-      m_gammaTonemapFxaaPass->m_params.enableGammaCorrection  = GetRenderSystem()->IsGammaCorrectionNeeded();
-      m_gammaTonemapFxaaPass->m_params.enableFxaa             = gfx.FXAAEnabled;
-      m_gammaTonemapFxaaPass->m_params.enableTonemapping      = gfx.TonemappingEnabled;
-      m_gammaTonemapFxaaPass->m_params.gamma                  = gfx.Gamma;
-      m_gammaTonemapFxaaPass->m_params.screenSize             = viewport->m_size;
-      m_gammaTonemapFxaaPass->m_params.tonemapMethod          = gfx.TonemapperMode;
-
-      // Light Complexity pass
-      m_singleMatRenderer->m_params.ForwardParams.renderData  = &m_renderData;
-      m_singleMatRenderer->m_params.ForwardParams.Cam         = m_camera;
-      m_singleMatRenderer->m_params.ForwardParams.Lights      = lights;
-      m_singleMatRenderer->m_params.ForwardParams.clearBuffer = GraphicBitFields::AllBits;
-
-      m_singleMatRenderer->m_params.ForwardParams.FrameBuffer = viewport->m_framebuffer;
+      m_gammaTonemapFxaaPass->m_params.frameBuffer           = viewport->m_framebuffer;
+      m_gammaTonemapFxaaPass->m_params.enableGammaCorrection = GetRenderSystem()->IsGammaCorrectionNeeded();
+      m_gammaTonemapFxaaPass->m_params.enableFxaa            = gfx.FXAAEnabled;
+      m_gammaTonemapFxaaPass->m_params.enableTonemapping     = gfx.TonemappingEnabled;
+      m_gammaTonemapFxaaPass->m_params.gamma                 = gfx.Gamma;
+      m_gammaTonemapFxaaPass->m_params.screenSize            = viewport->m_size;
+      m_gammaTonemapFxaaPass->m_params.tonemapMethod         = gfx.TonemapperMode;
 
       // Gizmo Pass.
-      m_gizmoPass->m_params.Viewport                          = viewport;
+      m_gizmoPass->m_params.Viewport                         = viewport;
 
-      EditorBillboardPtr anchorGizmo                          = nullptr;
+      EditorBillboardPtr anchorGizmo                         = nullptr;
       if (viewport->IsA<EditorViewport2d>())
       {
         anchorGizmo = app->m_anchor;
@@ -370,16 +319,6 @@ namespace ToolKit
       case EditorLitMode::LightingOnly:
         renderer->m_renderOnlyLighting = true;
         break;
-      case EditorLitMode::Unlit:
-        m_singleMatRenderer->m_params.OverrideFragmentShader =
-            GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
-        renderer->m_renderOnlyLighting = false;
-        break;
-      case EditorLitMode::LightComplexity:
-        m_singleMatRenderer->m_params.OverrideFragmentShader =
-            GetShaderManager()->Create<Shader>(ShaderPath("lightComplexity.shader", true));
-        renderer->m_renderOnlyLighting = false;
-        break;
       }
     }
 
@@ -393,16 +332,14 @@ namespace ToolKit
       m_unlitOverride->Init();
       m_blackMaterial->Init();
 
-      m_billboardPass         = MakeNewPtr<BillboardPass>();
-      m_sceneRenderPath       = MakeNewPtr<SceneRenderPath>();
-      m_mobileSceneRenderPath = MakeNewPtr<MobileSceneRenderPath>();
-      m_uiPass                = MakeNewPtr<ForwardRenderPass>();
-      m_editorPass            = MakeNewPtr<ForwardRenderPass>();
-      m_gizmoPass             = MakeNewPtr<GizmoPass>();
-      m_outlinePass           = MakeNewPtr<OutlinePass>();
-      m_singleMatRenderer     = MakeNewPtr<SingleMatForwardRenderPass>();
-      m_skipFramePass         = MakeNewPtr<FullQuadPass>();
-      m_gammaTonemapFxaaPass  = MakeNewPtr<GammaTonemapFxaaPass>();
+      m_billboardPass        = MakeNewPtr<BillboardPass>();
+      m_sceneRenderPath      = MakeNewPtr<ForwardSceneRenderPath>();
+      m_uiPass               = MakeNewPtr<ForwardRenderPass>();
+      m_editorPass           = MakeNewPtr<ForwardRenderPass>();
+      m_gizmoPass            = MakeNewPtr<GizmoPass>();
+      m_outlinePass          = MakeNewPtr<OutlinePass>();
+      m_skipFramePass        = MakeNewPtr<FullQuadPass>();
+      m_gammaTonemapFxaaPass = MakeNewPtr<GammaTonemapFxaaPass>();
     }
 
     void EditorRenderer::OutlineSelecteds(Renderer* renderer)
@@ -423,9 +360,21 @@ namespace ToolKit
           return;
         }
 
+        EntityPtrArray highlightList = selection;
+
+        // Extend the render jobs for prefabs.
+        for (EntityPtr ntt : selection)
+        {
+          if (ntt->IsA<Prefab>())
+          {
+            auto addToSelectionFn = [&highlightList](Node* node) { highlightList.push_back(node->OwnerEntity()); };
+            TraverseChildNodes(ntt->m_node, addToSelectionFn);
+          }
+        }
+
         RenderJobArray renderJobs;
         RenderJobArray billboardJobs;
-        for (EntityPtr entity : selection)
+        for (EntityPtr entity : highlightList)
         {
           // Disable light gizmos
           if (Light* light = entity->As<Light>())
@@ -440,14 +389,15 @@ namespace ToolKit
           {
             static_cast<Billboard*>(billboard.get())->LookAt(viewportCamera, viewport->GetBillboardScale());
 
-            RenderJobProcessor::CreateRenderJobs({billboard}, billboardJobs);
+            RenderJobProcessor::CreateRenderJobs(billboardJobs, billboard);
           }
         }
 
-        RenderJobProcessor::CreateRenderJobs(selection, renderJobs, true);
+        EntityRawPtrArray rawNtties = ToEntityRawPtrArray(highlightList);
+        RenderJobProcessor::CreateRenderJobs(renderJobs, rawNtties, true);
         renderJobs.insert(renderJobs.end(), billboardJobs.begin(), billboardJobs.end());
 
-        RenderJobProcessor::CullRenderJobs(renderJobs, viewportCamera, m_unCulledRenderJobs);
+        FrustumCull(renderJobs, viewportCamera, m_unCulledRenderJobs);
 
         // Set parameters of pass
         m_outlinePass->m_params.Camera       = viewportCamera;
@@ -460,7 +410,7 @@ namespace ToolKit
         RenderPath::Render(renderer);
 
         // Enable light gizmos back
-        for (EntityPtr entity : selection)
+        for (EntityPtr entity : highlightList)
         {
           if (Light* light = entity->As<Light>())
           {
@@ -476,6 +426,7 @@ namespace ToolKit
 
       selecteds.clear();
       selecteds.push_back(primary);
+
       RenderFn(selecteds, g_selectHighLightPrimaryColor);
     }
 

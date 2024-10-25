@@ -12,6 +12,7 @@
  * functionalities of the ToolKit framework.
  */
 
+#include "Logger.h"
 #include "Object.h"
 #include "TKPlatform.h"
 #include "Types.h"

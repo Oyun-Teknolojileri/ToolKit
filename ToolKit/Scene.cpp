@@ -8,7 +8,6 @@
 #include "Scene.h"
 
 #include "AABBOverrideComponent.h"
-#include "BVH.h"
 #include "Component.h"
 #include "EngineSettings.h"
 #include "EnvironmentComponent.h"
@@ -24,18 +23,16 @@ namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
 
-  Scene::Scene()
-  {
-    m_name = "New Scene";
-    m_bvh  = MakeNewPtr<BVH>(this);
-  }
+  Scene::Scene() { m_name = "New Scene"; }
 
-  Scene::Scene(const String& file) : Scene() { SetFile(file); }
+  Scene::~Scene() { Destroy(false); }
 
-  Scene::~Scene()
+  void Scene::NativeConstruct() { Super::NativeConstruct(); }
+
+  void Scene::NativeConstruct(const String& file)
   {
-    Destroy(false);
-    m_bvh = nullptr;
+    NativeConstruct();
+    SetFile(file);
   }
 
   void Scene::Load()
@@ -62,6 +59,18 @@ namespace ToolKit
       fullPath = ScenePath(m_name + SCENE);
     }
 
+    String path;
+    DecomposePath(fullPath, &path, nullptr, nullptr);
+
+    std::error_code err;
+    std::filesystem::create_directories(path, err);
+
+    if (err)
+    {
+      TK_ERR("Save scene failed: %s", err.message().c_str());
+      return;
+    }
+
     std::ofstream file;
     file.open(fullPath.c_str(), std::ios::out);
     if (file.is_open())
@@ -75,6 +84,10 @@ namespace ToolKit
       file << xml;
       file.close();
       doc.clear();
+    }
+    else
+    {
+      TK_ERR("Save scene failed. File %s can't be opened.", fullPath.c_str());
     }
   }
 
@@ -131,15 +144,25 @@ namespace ToolKit
 
   void Scene::Update(float deltaTime)
   {
-    for (LightPtr& light : m_lightCache)
+    m_environmentVolumeCache.clear();
+
+    for (const EntityPtr& ntt : m_entities)
     {
-      // if (light->GetCastShadowVal())
+      // Update volume caches.
+      if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
       {
-        light->UpdateShadowCamera();
+        if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
+        {
+          envComp->Init(true);
+          m_environmentVolumeCache.push_back(envComp);
+        }
       }
     }
 
-    m_bvh->Update();
+    for (Light* light : m_lightCache)
+    {
+      light->UpdateShadowCamera();
+    }
   }
 
   void Scene::Merge(ScenePtr other)
@@ -155,14 +178,14 @@ namespace ToolKit
     GetSceneManager()->Remove(other->GetFile());
   }
 
-  Scene::PickData Scene::PickObject(Ray ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
+  Scene::PickData Scene::PickObject(const Ray& ray, const IDArray& ignoreList, const EntityPtrArray& extraList)
   {
     PickData pd;
     pd.pickPos                  = ray.position + ray.direction * 5.0f;
 
-    float closestPickedDistance = FLT_MAX;
+    float closestPickedDistance = TK_FLT_MAX;
 
-    auto pickFn = [&ignoreList, &ray, &pd, &closestPickedDistance](const EntityPtrArray& entities) -> void
+    auto pickFn                 = [&](const EntityPtrArray& entities) -> void
     {
       for (EntityPtr ntt : entities)
       {
@@ -191,9 +214,13 @@ namespace ToolKit
 
     pickFn(extraList);
 
-    if (pd.entity == nullptr)
+    float dist          = TK_FLT_MAX;
+    EntityPtr pickedNtt = m_aabbTree.RayQuery(ray, true, &dist, ignoreList);
+
+    if (dist < closestPickedDistance)
     {
-      m_bvh->PickObject(ray, pd, ignoreList, closestPickedDistance);
+      pd.entity  = pickedNtt;
+      pd.pickPos = PointOnRay(ray, dist);
     }
 
     return pd;
@@ -202,13 +229,15 @@ namespace ToolKit
   void Scene::PickObject(const Frustum& frustum,
                          PickDataArray& pickedObjects,
                          const IDArray& ignoreList,
-                         const EntityPtrArray& extraList,
-                         bool pickPartiallyInside)
+                         const EntityPtrArray& extraList)
   {
-    auto pickFn = [&frustum, &pickedObjects, &ignoreList, &pickPartiallyInside](const EntityPtrArray& entities) -> void
+    // Create pick data for the  entities.
+    auto pickFn = [&](const EntityPtrArray& entities, bool skipTest) -> void
     {
       for (EntityPtr ntt : entities)
       {
+        assert(ntt != nullptr);
+
         if (!ntt->IsDrawable())
         {
           continue;
@@ -219,72 +248,102 @@ namespace ToolKit
           continue;
         }
 
-        BoundingBox bb      = ntt->GetBoundingBox(true);
-        IntersectResult res = FrustumBoxIntersection(frustum, bb);
+        IntersectResult res    = IntersectResult::Inside;
+        const BoundingBox& box = ntt->GetBoundingBox(true);
+
+        if (!skipTest)
+        {
+          // If frustum test is applied via aabb tree this check can be skipped.
+          res = FrustumBoxIntersection(frustum, box);
+        }
+
         if (res != IntersectResult::Outside)
         {
           PickData pd;
-          pd.pickPos = (bb.max + bb.min) * 0.5f;
+          pd.pickPos = (box.max + box.min) * 0.5f;
           pd.entity  = ntt;
 
-          if (res == IntersectResult::Inside)
-          {
-            pickedObjects.push_back(pd);
-          }
-          else if (pickPartiallyInside)
-          {
-            pickedObjects.push_back(pd);
-          }
+          pickedObjects.push_back(pd);
         }
       }
     };
 
-    pickFn(extraList);
+    pickFn(extraList, false); // Test extra list with frustum.
 
-    m_bvh->PickObject(frustum, pickedObjects, ignoreList, pickPartiallyInside);
+    EntityRawPtrArray entitiesInTheFrustum = m_aabbTree.VolumeQuery(frustum);
+    pickFn(ToEntityPtrArray(entitiesInTheFrustum), true); // Skip the frustum test.
   }
 
-  EntityPtr Scene::GetEntity(ULongID id) const
+  EntityPtr Scene::GetEntity(ULongID id, int* index) const
   {
-    for (EntityPtr ntt : m_entities)
+    for (int i = 0; i < (int) m_entities.size(); i++)
     {
+      EntityPtr ntt = m_entities[i];
       if (ntt->GetIdVal() == id)
       {
+        if (index != nullptr)
+        {
+          *index = i;
+        }
+
         return ntt;
       }
+    }
+
+    if (index != nullptr)
+    {
+      *index = -1;
     }
 
     return nullptr;
   }
 
-  void Scene::AddEntity(EntityPtr entity)
+  void Scene::AddEntity(EntityPtr entity, int index)
   {
-    if (entity)
+    if (entity != nullptr)
     {
       bool isUnique = GetEntity(entity->GetIdVal()) == nullptr;
       assert(isUnique);
+
       if (isUnique)
       {
+        if (m_loaded)
+        {
+          // Don't link prefabs if the scene is in loading phase.
+          // Id conflicts may occur. Linking for prefabs separately handed on load.
+          if (Prefab* prefab = entity->As<Prefab>())
+          {
+            prefab->Link();
+          }
+        }
+
         UpdateEntityCaches(entity, true);
-        m_entities.push_back(entity);
-        entity->m_bvh = m_bvh;
-        m_bvh->AddEntity(entity);
+
+        if (index < 0 || index >= (int) m_entities.size())
+        {
+          m_entities.push_back(entity);
+        }
+        else
+        {
+          m_entities.insert(m_entities.begin() + index, entity);
+        }
+
+        entity->m_scene = Self<Scene>();
+
+        if (entity->m_partOfAABBTree)
+        {
+          m_aabbTree.CreateNode(entity, entity->GetBoundingBox(true));
+        }
       }
     }
   }
 
-  EntityPtrArray& Scene::AccessEntityArray() { return m_entities; }
-
-  void Scene::RemoveChildren(EntityPtr removed)
+  void Scene::_RemoveChildren(EntityPtr removed)
   {
     NodeRawPtrArray& children = removed->m_node->m_children;
 
-    // recursive remove children
-    // (RemoveEntity function will call all children recursively).
-    while (!children.empty())
+    for (Node* child : children)
     {
-      Node* child = children.back();
-      children.pop_back();
       if (EntityPtr childNtt = child->OwnerEntity())
       {
         RemoveEntity(childNtt->GetIdVal());
@@ -294,51 +353,61 @@ namespace ToolKit
 
   EntityPtr Scene::RemoveEntity(ULongID id, bool deep)
   {
-    EntityPtr removed = nullptr;
-    for (size_t i = 0; i < m_entities.size(); i++)
+    if (m_entities.empty())
     {
-      if (m_entities[i]->GetIdVal() == id)
-      {
-        removed                    = m_entities[i];
-        removed->m_markedForDelete = true;
+      return nullptr;
+    }
 
-        UpdateEntityCaches(removed, false);
-        m_entities.erase(m_entities.begin() + i);
-        m_bvh->RemoveEntity(removed);
-        removed->m_bvh.reset();
+    int indx          = -1;
+    EntityPtr removed = GetEntity(id, &indx);
+    if (removed == nullptr)
+    {
+      return nullptr;
+    }
 
-        // Keep hierarchy if its prefab.
-        if (removed->GetPrefabRoot() == nullptr)
-        {
-          removed->m_node->OrphanSelf();
-        }
+    if (Prefab* prefab = removed->As<Prefab>())
+    {
+      prefab->Unlink(); // This operation may alter the removed index.
+      indx              = -1;
+      EntityPtr removed = GetEntity(id, &indx);
+    }
 
-        if (deep)
-        {
-          RemoveChildren(removed);
-        }
-        else
-        {
-          removed->m_node->OrphanAllChildren(true);
-        }
+    UpdateEntityCaches(removed, false);
+    m_entities.erase(m_entities.begin() + indx);
 
-        break;
-      }
+    if (deep)
+    {
+      _RemoveChildren(removed);
+    }
+    else
+    {
+      removed->m_node->OrphanAllChildren(true);
+    }
+
+    if (removed->m_aabbTreeNodeProxy != AABBTree::nullNode)
+    {
+      m_aabbTree.RemoveNode(removed->m_aabbTreeNodeProxy);
+      removed->m_scene.reset();
     }
 
     return removed;
   }
 
-  void Scene::RemoveEntity(const EntityPtrArray& entities)
+  void Scene::RemoveEntity(const EntityPtrArray& entities, bool deep)
   {
-    erase_if(m_entities, [entities](EntityPtr ntt) -> bool { return FindIndex(entities, ntt) != -1; });
+    for (size_t i = 0; i < entities.size(); i++)
+    {
+      RemoveEntity(entities[i]->GetIdVal(), deep);
+    }
   }
 
   void Scene::RemoveAllEntities() { m_entities.clear(); }
 
   const EntityPtrArray& Scene::GetEntities() const { return m_entities; }
 
-  LightPtrArray& Scene::GetLights() const { return m_lightCache; }
+  const LightRawPtrArray& Scene::GetLights() const { return m_lightCache; }
+
+  const LightRawPtrArray& Scene::GetDirectionalLights() const { return m_directionalLightCache; }
 
   SkyBasePtr& Scene::GetSky() { return m_skyCache; }
 
@@ -411,7 +480,6 @@ namespace ToolKit
     PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
     prefab->Init(this);
-    prefab->Link();
     AddEntity(prefab);
   }
 
@@ -436,7 +504,6 @@ namespace ToolKit
     for (int i = maxCnt; i >= 0; i--)
     {
       EntityPtr ntt = m_entities[i];
-      ntt->m_bvh.reset();
 
       if (removeResources)
       {
@@ -445,12 +512,13 @@ namespace ToolKit
     }
 
     m_entities.clear();
+    m_aabbTree.Reset();
 
     m_loaded    = false;
     m_initiated = false;
   }
 
-  void Scene::SavePrefab(EntityPtr entity)
+  void Scene::SavePrefab(EntityPtr entity, String name, String path)
   {
     // Assign a default node.
     Node* prevNode             = entity->m_node;
@@ -461,8 +529,10 @@ namespace ToolKit
     ScenePtr prefab            = MakeNewPtr<Scene>();
     prefab->AddEntity(entity);
     GetChildren(entity, prefab->m_entities);
-    String name = entity->GetNameVal() + SCENE;
-    prefab->SetFile(PrefabPath(name));
+    String prefabName = name.empty() ? entity->GetNameVal() + SCENE : name + SCENE;
+    String prefabPath = path.empty() ? prefabName : ConcatPaths({path, prefabName});
+    String fullPath   = PrefabPath(prefabPath);
+    prefab->SetFile(fullPath);
     prefab->m_name = name;
     prefab->Save(false);
     prefab->m_entities.clear();
@@ -473,11 +543,13 @@ namespace ToolKit
     entity->m_node = prevNode;
   }
 
-  void Scene::ClearEntities() { m_entities.clear(); }
+  void Scene::ClearEntities()
+  {
+    m_aabbTree.Reset();
+    m_entities.clear();
+  }
 
-  void Scene::RebuildBVH() { m_bvh->ReBuild(); }
-
-  const BoundingBox& Scene::GetSceneBoundary() { return m_bvh->GetBVHBoundary(); }
+  const BoundingBox& Scene::GetSceneBoundary() { return m_aabbTree.GetRootBoundingBox(); }
 
   void Scene::CopyTo(Resource* other)
   {
@@ -492,11 +564,6 @@ namespace ToolKit
     for (EntityPtr ntt : roots)
     {
       DeepCopy(ntt, cpy->m_entities);
-    }
-
-    for (EntityPtr ntt : cpy->m_entities)
-    {
-      ntt->m_bvh = m_bvh;
     }
   }
 
@@ -514,15 +581,23 @@ namespace ToolKit
         m_skyCache = nullptr;
       }
     }
-    else if (const LightPtr& light = SafeCast<Light>(ntt))
+    else if (Light* light = ntt->As<Light>())
     {
       if (add)
       {
         m_lightCache.push_back(light);
+        if (light->GetLightType() == Light::LightType::Directional)
+        {
+          m_directionalLightCache.push_back(light);
+        }
       }
       else
       {
         remove(m_lightCache, light);
+        if (light->GetLightType() == Light::LightType::Directional)
+        {
+          remove(m_directionalLightCache, light);
+        }
       }
     }
 
@@ -675,8 +750,9 @@ namespace ToolKit
 
       ntt->DeSerialize(info, node);
 
-      if (ntt->IsA<Prefab>())
+      if (Prefab* prefab = ntt->As<Prefab>())
       {
+        prefab->Init(this);
         prefabList.push_back(ntt);
       }
 
@@ -716,8 +792,7 @@ namespace ToolKit
 
     for (EntityPtr ntt : prefabList)
     {
-      PrefabPtr prefab = std::static_pointer_cast<Prefab>(ntt);
-      prefab->Init(this);
+      PrefabPtr prefab = Cast<Prefab>(ntt);
       prefab->Link();
     }
   }
@@ -759,9 +834,8 @@ namespace ToolKit
   {
     m_currentScene                     = scene;
 
-    // apply scene post processing effects
+    // Apply scene post processing effects.
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
-    m_currentScene->m_bvh->ReBuild(); // Build BVH with new parameters
   }
 
 } // namespace ToolKit

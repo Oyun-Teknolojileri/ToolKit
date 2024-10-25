@@ -32,25 +32,43 @@ namespace ToolKit
 
     void SetStencilOperation(StencilOperation op);
 
-    void SetFramebuffer(FramebufferPtr fb,
-                        GraphicBitFields attachmentsToClear,
-                        const Vec4& clearColor         = Vec4(0.0f),
-                        GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
-
     void StartTimerQuery();
     void EndTimerQuery();
 
     /** Returns elapsed time between start - end time query in milliseconds.*/
     void GetElapsedTime(float& cpu, float& gpu);
 
-    FramebufferPtr GetFrameBuffer();
     void ClearColorBuffer(const Vec4& color);
     void ClearBuffer(GraphicBitFields fields, const Vec4& value = Vec4(0.0f));
     void ColorMask(bool r, bool g, bool b, bool a);
+
+    // FrameBuffer Operations
+    //////////////////////////////////////////
+
+    FramebufferPtr GetFrameBuffer();
+
+    void SetFramebuffer(FramebufferPtr fb,
+                        GraphicBitFields attachmentsToClear,
+                        const Vec4& clearColor         = Vec4(0.0f),
+                        GraphicFramebufferTypes fbType = GraphicFramebufferTypes::Framebuffer);
+
+    void InvalidateFramebufferDepth(FramebufferPtr frameBuffer);
+    void InvalidateFramebufferStencil(FramebufferPtr frameBuffer);
+    void InvalidateFramebufferDepthStencil(FramebufferPtr frameBuffer);
+
+    /**
+     * Sets the src and dest frame buffers and copies the given fields.
+     * After the operation sets the previous frame buffer back.
+     */
     void CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields);
-    void InvalidateFramebufferDepth(FramebufferPtr fb);
-    void InvalidateFramebufferStencil(FramebufferPtr fb);
-    void InvalidateFramebufferDepthStencil(FramebufferPtr fb);
+
+    /**
+     * Copies src to dst texture using a copy frame buffer.
+     * After the operation sets the previous frame buffer back.
+     */
+    void CopyTexture(TexturePtr src, TexturePtr dst);
+
+    //////////////////////////////////////////
 
     void SetViewport(Viewport* viewport);
     void SetViewportSize(uint width, uint height);
@@ -63,41 +81,34 @@ namespace ToolKit
     void SetTexture(ubyte slotIndx, uint textureId);
 
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure = 1.0f);
-
     CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps);
-
     CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size);
 
-    void CopyTexture(TexturePtr source, TexturePtr dest);
-
     /**
-     * Sets the underlying graphics api state directly which causes by passing
-     * material system. Don't use it unless its necessary for special cases.
-     * @param enable sets the blending on / off for the graphics api.
+     * Sets the blend state directly which causes by passing material system.
+     * @param enableOverride when set true, disables the material system setting blend state per material.
+     * @param func is the BlendFunction to use.
      */
+    void OverrideBlendState(bool enableOverride, BlendFunction func);
+
     void EnableBlending(bool enable);
-
     void EnableDepthWrite(bool enable);
-
     void EnableDepthTest(bool enable);
-
     void SetDepthTestFunc(CompareFunctions func);
 
     // Giving nullptr as argument means no shadows
     void SetShadowAtlas(TexturePtr shadowAtlas);
 
     void Render(const struct RenderJob& job);
-
     void Render(const RenderJobArray& jobs);
 
     void RenderWithProgramFromMaterial(const RenderJobArray& jobs);
     void RenderWithProgramFromMaterial(const RenderJob& job);
 
-    void Apply7x1GaussianBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
-
-    void ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount);
-
-    void GenerateBRDFLutTexture();
+    /** Apply one tap of gauss blur via setting a temporary frame buffer. Does not reset frame buffer back. */
+    void Apply7x1GaussianBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount);
+    /** Apply one tap of average blur via setting a temporary frame buffer. Does not reset frame buffer back. */
+    void ApplyAverageBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount);
 
     /**
      * Sets the camera to be used for rendering. Also calculates camera related parameters, such as view, transform,
@@ -108,12 +119,15 @@ namespace ToolKit
     void SetCamera(CameraPtr camera, bool setLens);
 
     int GetMaxArrayTextureLayers();
-
     void BindProgramOfMaterial(Material* material);
-
     void BindProgram(const GpuProgramPtr& program);
-
     void ResetUsedTextureSlots();
+
+    /** Initialize brdf lut textures. */
+    void GenerateBRDFLutTexture();
+
+    /** Ambient occlusion texture to be applied. If ao is not enabled, set this explicitly to null. */
+    void SetAmbientOcclusionTexture(TexturePtr aoTexture);
 
    private:
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
@@ -133,14 +147,7 @@ namespace ToolKit
     // The set contains gpuPrograms that has up to date per frame uniforms.
     std::unordered_set<uint> m_gpuProgramHasFrameUpdates;
 
-    bool m_renderOnlyLighting                 = false;
-
-    /**
-     * Some passes may draw culled objects from view frustum.
-     * To prevent debug message, set this to true.
-     */
-    bool m_ignoreRenderingCulledObjectWarning = false;
-
+    bool m_renderOnlyLighting = false;
     LightCache<RHIConstants::LightCacheSize> m_lightCache;
 
    private:
@@ -165,6 +172,7 @@ namespace ToolKit
     FramebufferPtr m_framebuffer = nullptr;
     TexturePtr m_shadowAtlas     = nullptr;
     RenderTargetPtr m_brdfLut    = nullptr;
+    TexturePtr m_aoTexture       = nullptr;
 
     int m_textureSlots[RHIConstants::TextureSlotCount];
 
@@ -194,5 +202,6 @@ namespace ToolKit
 
     uint m_gpuTimerQuery                           = 0;
     float m_cpuTime                                = 0.0f;
+    bool m_blendStateOverrideEnable                = false;
   };
 } // namespace ToolKit

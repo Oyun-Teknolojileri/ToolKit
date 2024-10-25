@@ -13,27 +13,24 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "TKOpenGL.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "ToolKit.h"
 
 #include <random>
 
-
-
 namespace ToolKit
 {
 
   // SSAOPass
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   StringArray SSAOPass::m_ssaoSamplesStrCache;
 
-  SSAOPass::SSAOPass()
+  SSAOPass::SSAOPass() : Pass("SSAOPass")
   {
-    m_ssaoFramebuffer = MakeNewPtr<Framebuffer>();
-    m_ssaoTexture     = MakeNewPtr<RenderTarget>();
-    m_tempBlurRt      = MakeNewPtr<RenderTarget>();
+    m_ssaoFramebuffer = MakeNewPtr<Framebuffer>("SSAOPassFB");
+    m_ssaoTexture     = MakeNewPtr<RenderTarget>("SSAORT");
+    m_tempBlurRt      = MakeNewPtr<RenderTarget>("SSAOBlurrRT");
 
     TextureSettings noiseSet;
     noiseSet.InternalFormat = GraphicTypes::FormatRG32F;
@@ -64,9 +61,6 @@ namespace ToolKit
 
   void SSAOPass::Render()
   {
-    PUSH_GPU_MARKER("SSAOPass::Render");
-    PUSH_CPU_MARKER("SSAOPass::Render");
-
     Renderer* renderer = GetRenderer();
 
     // Generate SSAO texture
@@ -81,16 +75,10 @@ namespace ToolKit
 
     // Vertical blur
     renderer->Apply7x1GaussianBlur(m_tempBlurRt, m_ssaoTexture, Y_AXIS, 1.0f / m_ssaoTexture->m_height);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void SSAOPass::PreRender()
   {
-    PUSH_GPU_MARKER("SSAOPass::PreRender");
-    PUSH_CPU_MARKER("SSAOPass::PreRender");
-
     Pass::PreRender();
 
     int width           = m_params.GNormalBuffer->m_width;
@@ -103,15 +91,15 @@ namespace ToolKit
 
     // No need destroy and re init framebuffer when size is changed, because
     // the only render target is already being resized.
-    m_ssaoFramebuffer->Init({width, height, false, false});
+    m_ssaoFramebuffer->ReconstructIfNeeded({width, height, false, false});
 
-    TextureSettings oneChannelSet = {};
-    oneChannelSet.WarpS           = GraphicTypes::UVClampToEdge;
-    oneChannelSet.WarpT           = GraphicTypes::UVClampToEdge;
-    oneChannelSet.InternalFormat  = GraphicTypes::FormatR32F;
-    oneChannelSet.Format          = GraphicTypes::FormatRed;
-    oneChannelSet.Type            = GraphicTypes::TypeFloat;
-    oneChannelSet.GenerateMipMap  = false;
+    TextureSettings oneChannelSet;
+    oneChannelSet.WarpS          = GraphicTypes::UVClampToEdge;
+    oneChannelSet.WarpT          = GraphicTypes::UVClampToEdge;
+    oneChannelSet.InternalFormat = GraphicTypes::FormatR32F;
+    oneChannelSet.Format         = GraphicTypes::FormatRed;
+    oneChannelSet.Type           = GraphicTypes::TypeFloat;
+    oneChannelSet.GenerateMipMap = false;
 
     // Init ssao texture
     m_ssaoTexture->Settings(oneChannelSet);
@@ -123,8 +111,8 @@ namespace ToolKit
     m_tempBlurRt->Settings(oneChannelSet);
     m_tempBlurRt->ReconstructIfNeeded((uint) width, (uint) height);
 
-    m_quadPass->m_params.FrameBuffer      = m_ssaoFramebuffer;
-    m_quadPass->m_params.ClearFrameBuffer = false;
+    m_quadPass->m_params.frameBuffer      = m_ssaoFramebuffer;
+    m_quadPass->m_params.clearFrameBuffer = GraphicBitFields::None;
 
     m_quadPass->SetFragmentShader(m_ssaoShader, GetRenderer());
 
@@ -146,28 +134,16 @@ namespace ToolKit
     m_quadPass->UpdateUniform(ShaderUniform("viewMatrix", m_params.Cam->GetViewMatrix()));
     m_quadPass->UpdateUniform(ShaderUniform("radius", m_params.Radius));
     m_quadPass->UpdateUniform(ShaderUniform("bias", m_params.Bias));
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void SSAOPass::PostRender()
   {
-    PUSH_GPU_MARKER("SSAOPass::PostRender");
-    PUSH_CPU_MARKER("SSAOPass::PostRender");
-
     m_currentKernelSize = m_params.KernelSize;
-
     Pass::PostRender();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void SSAOPass::GenerateSSAONoise()
   {
-    CPU_FUNC_RANGE();
-
     if (m_prevSpread != m_params.spread)
     {
       GenerateRandomSamplesInHemisphere(m_maximumKernelSize, m_params.spread, m_ssaoKernel);

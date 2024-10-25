@@ -14,8 +14,6 @@
 #include "Scene.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -94,10 +92,10 @@ namespace ToolKit
     if (e->m_type == Event::EventType::Mouse || e->m_type == Event::EventType::Touch)
 
     {
-      BoundingBox box = surface->GetBoundingBox(true);
-      Ray ray         = vp->RayFromMousePosition();
+      const BoundingBox& box = surface->GetBoundingBox(true);
+      Ray ray                = vp->RayFromMousePosition();
 
-      float t         = 0.0f;
+      float t                = 0.0f;
       if (RayBoxIntersection(ray, box, t))
       {
         return true;

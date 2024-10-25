@@ -18,10 +18,10 @@ namespace ToolKit
 
     PreviewViewport::PreviewViewport()
     {
-      m_previewRenderer                            = MakeNewPtr<SceneRenderPath>();
-      m_previewRenderer->m_params.Cam              = GetCamera();
-      m_previewRenderer->m_params.ClearFramebuffer = true;
-      m_previewRenderer->m_params.MainFramebuffer  = m_framebuffer;
+      m_previewRenderer                                 = MakeNewPtr<ForwardSceneRenderPath>();
+      m_previewRenderer->m_params.applyGammaTonemapFxaa = true;
+      m_previewRenderer->m_params.Cam                   = GetCamera();
+      m_previewRenderer->m_params.MainFramebuffer       = m_framebuffer;
     }
 
     PreviewViewport::~PreviewViewport() { m_previewRenderer = nullptr; }
@@ -32,13 +32,16 @@ namespace ToolKit
       DrawCommands();
 
       m_previewRenderer->m_params.MainFramebuffer = m_framebuffer;
-      GetRenderSystem()->AddRenderTask({[this](Renderer* r) -> void { m_previewRenderer->Render(r); }});
+      GetRenderSystem()->AddRenderTask({[this](Renderer* renderer) -> void { m_previewRenderer->Render(renderer); }});
 
       // Render color attachment as rounded image
       const FramebufferSettings& fbSettings = m_framebuffer->GetSettings();
       Vec2 imageSize                        = Vec2(fbSettings.width, fbSettings.height);
-      Vec2 currentCursorPos =
-          Vec2(ImGui::GetWindowContentRegionMin()) + Vec2(ImGui::GetCursorPos()) + Vec2(ImGui::GetWindowPos());
+
+      Vec2 wndPos                           = ImGui::GetWindowPos();
+      Vec2 wndLowerLeft                     = ImGui::GetWindowContentRegionMin();
+      Vec2 cursorPos                        = ImGui::GetCursorPos();
+      Vec2 currentCursorPos                 = wndLowerLeft + cursorPos + wndPos;
 
       if (m_isTempView)
       {
@@ -47,14 +50,13 @@ namespace ToolKit
 
       ImGui::Dummy(imageSize);
 
-      ImGui::GetWindowDrawList()->AddImageRounded(
-          Convert2ImGuiTexture(m_framebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0)),
-          currentCursorPos,
-          currentCursorPos + imageSize,
-          Vec2(0.0f, 0.0f),
-          Vec2(1.0f, -1.0f),
-          ImGui::GetColorU32(Vec4(1, 1, 1, 1)),
-          5.0f);
+      ImGui::GetWindowDrawList()->AddImageRounded(Convert2ImGuiTexture(m_renderTarget),
+                                                  currentCursorPos,
+                                                  currentCursorPos + imageSize,
+                                                  Vec2(0.0f, 0.0f),
+                                                  Vec2(1.0f, -1.0f),
+                                                  ImGui::GetColorU32(Vec4(1, 1, 1, 1)),
+                                                  5.0f);
     }
 
     ScenePtr PreviewViewport::GetScene() { return m_previewRenderer->m_params.Scene; }
@@ -67,9 +69,11 @@ namespace ToolKit
 
     void PreviewViewport::ResetCamera()
     {
+      ScenePtr scene = m_previewRenderer->m_params.Scene;
+      scene->Update(0.0f);
+
       CameraPtr cam = GetCamera();
-      cam->m_node->SetTranslation(Vec3(3.0f, 6.55f, 4.0f) * 0.6f);
-      cam->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f, 1.1f, 0.0f));
+      cam->FocusToBoundingBox(scene->GetSceneBoundary(), 1.1f);
     }
 
     void PreviewViewport::SetViewportSize(uint width, uint height)

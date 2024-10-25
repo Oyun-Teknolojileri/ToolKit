@@ -21,7 +21,6 @@ namespace ToolKit
       TKDeclareClass(EditorScene, Scene);
 
       EditorScene();
-      explicit EditorScene(const String& file);
       virtual ~EditorScene();
 
       void Load() override;
@@ -36,10 +35,8 @@ namespace ToolKit
       void ClearSelection();
       bool IsCurrentSelection(ULongID id) const;
 
-      // Makes the entity current selection. When ifExist true, only works if
-      // the entity exist in the selection.
-      // Otherwise adds entity to selection list and selects it.
-      void MakeCurrentSelection(ULongID id, bool ifExist);
+      // Makes the entity current selection.
+      void MakeCurrentSelection(ULongID id);
 
       uint GetSelectedEntityCount() const;
       EntityPtr GetCurrentSelection() const;
@@ -48,30 +45,30 @@ namespace ToolKit
       void Save(bool onlyIfDirty) override;
 
       // Entity operations.
-      void AddEntity(EntityPtr entity) override;
-      void RemoveEntity(const EntityPtrArray& entities) override;
+      void AddEntity(EntityPtr entity, int index = -1) override;
+      void RemoveEntity(const EntityPtrArray& entities, bool deep = true) override;
 
       /**
        * remove entity from the scene
        * @param  the id of the entity you want to remove
-       * @param  do you want to remove with childs ?
-       *         be aware that removed childs transforms preserved
+       * @param  do you want to remove with children ?
+       *         be aware that removed children transforms preserved
        * @returns the entity that you removed, nullptr if entity is not in scene
        */
       EntityPtr RemoveEntity(ULongID id, bool deep = true) override;
+
       void Destroy(bool removeResources) override;
       void GetSelectedEntities(EntityPtrArray& entities) const;
       void GetSelectedEntities(IDArray& entities) const;
       void SelectByTag(const String& tag);
 
       // Pick operations
-      PickData PickObject(Ray ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {}) override;
+      PickData PickObject(const Ray& ray, const IDArray& ignoreList = {}, const EntityPtrArray& extraList = {}) override;
 
       void PickObject(const Frustum& frustum,
                       PickDataArray& pickedObjects,
-                      const IDArray& ignoreList = {},
-                      const EntityPtrArray& extraList = {},
-                      bool pickPartiallyInside        = true) override;
+                      const IDArray& ignoreList       = {},
+                      const EntityPtrArray& extraList = {}) override;
 
       // Gizmo operations
       void AddBillboard(EntityPtr entity);
@@ -89,6 +86,9 @@ namespace ToolKit
        * proper picking.
        */
       void UpdateBillboardsForPicking();
+
+      /** Internally used to sanitize selection before adding it. */
+      void AddToSelectionSane(ULongID id);
 
      public:
       // Indicates if this is created via new scene.

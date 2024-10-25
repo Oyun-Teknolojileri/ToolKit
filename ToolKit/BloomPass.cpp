@@ -8,38 +8,22 @@
 #include "BloomPass.h"
 
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "ToolKit.h"
-
-
 
 namespace ToolKit
 {
 
-  BloomPass::BloomPass()
+  BloomPass::BloomPass() : Pass("BloomPass")
   {
     m_downsampleShader = GetShaderManager()->Create<Shader>(ShaderPath("bloomDownsample.shader", true));
     m_upsampleShader   = GetShaderManager()->Create<Shader>(ShaderPath("bloomUpsample.shader", true));
     m_pass             = MakeNewPtr<FullQuadPass>();
   }
 
-  BloomPass::BloomPass(const BloomPassParams& params) : BloomPass() { m_params = params; }
-
-  BloomPass::~BloomPass()
-  {
-    m_pass             = nullptr;
-    m_downsampleShader = nullptr;
-    m_upsampleShader   = nullptr;
-    m_tempTextures.clear();
-  }
-
   void BloomPass::Render()
   {
-    PUSH_GPU_MARKER("BloomPass::Render");
-    PUSH_CPU_MARKER("BloomPass::Render");
-
-    RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    RenderTargetPtr mainRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
 
     if (mainRt == nullptr || m_invalidRenderParams)
     {
@@ -59,12 +43,12 @@ namespace ToolKit
       m_pass->UpdateUniform(ShaderUniform("srcResolution", mainRes));
       m_pass->UpdateUniform(ShaderUniform("threshold", m_params.minThreshold));
 
-      TexturePtr prevRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+      TexturePtr prevRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
 
       renderer->SetTexture(0, prevRt->m_textureId);
-      m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[0];
-      m_pass->m_params.BlendFunc        = BlendFunction::NONE;
-      m_pass->m_params.ClearFrameBuffer = true;
+      m_pass->m_params.frameBuffer      = m_tempFrameBuffers[0];
+      m_pass->m_params.blendFunc        = BlendFunction::NONE;
+      m_pass->m_params.clearFrameBuffer = GraphicBitFields::AllBits;
 
       RenderSubPass(m_pass);
     }
@@ -86,7 +70,7 @@ namespace ToolKit
 
         // Find previous framebuffer & RT
         FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
-        TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+        TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
 
         // Set pass' shader and parameters
 
@@ -98,9 +82,9 @@ namespace ToolKit
         renderer->SetTexture(0, prevRt->m_textureId);
 
         // Set pass parameters
-        m_pass->m_params.ClearFrameBuffer = true;
-        m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i + 1];
-        m_pass->m_params.BlendFunc        = BlendFunction::NONE;
+        m_pass->m_params.clearFrameBuffer = GraphicBitFields::AllBits;
+        m_pass->m_params.frameBuffer      = m_tempFrameBuffers[i + 1];
+        m_pass->m_params.blendFunc        = BlendFunction::NONE;
 
         RenderSubPass(m_pass);
       }
@@ -118,12 +102,12 @@ namespace ToolKit
       {
 
         FramebufferPtr prevFramebuffer = m_tempFrameBuffers[i];
-        TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+        TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
         renderer->SetTexture(0, prevRt->m_textureId);
 
-        m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
-        m_pass->m_params.ClearFrameBuffer = false;
-        m_pass->m_params.FrameBuffer      = m_tempFrameBuffers[i - 1];
+        m_pass->m_params.blendFunc        = BlendFunction::ONE_TO_ONE;
+        m_pass->m_params.clearFrameBuffer = GraphicBitFields::None;
+        m_pass->m_params.frameBuffer      = m_tempFrameBuffers[i - 1];
 
         RenderSubPass(m_pass);
       }
@@ -134,30 +118,24 @@ namespace ToolKit
       m_pass->SetFragmentShader(m_upsampleShader, renderer);
 
       FramebufferPtr prevFramebuffer = m_tempFrameBuffers[0];
-      TexturePtr prevRt              = prevFramebuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+      TexturePtr prevRt              = prevFramebuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
       renderer->SetTexture(0, prevRt->m_textureId);
 
-      m_pass->m_params.BlendFunc        = BlendFunction::ONE_TO_ONE;
-      m_pass->m_params.ClearFrameBuffer = false;
-      m_pass->m_params.FrameBuffer      = m_params.FrameBuffer;
+      m_pass->m_params.blendFunc        = BlendFunction::ONE_TO_ONE;
+      m_pass->m_params.clearFrameBuffer = GraphicBitFields::None;
+      m_pass->m_params.frameBuffer      = m_params.FrameBuffer;
 
       m_pass->UpdateUniform(ShaderUniform("intensity", m_params.intensity));
 
       RenderSubPass(m_pass);
     }
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void BloomPass::PreRender()
   {
-    PUSH_GPU_MARKER("BloomPass::PreRender");
-    PUSH_CPU_MARKER("BloomPass::PreRender");
-
     Pass::PreRender();
 
-    RenderTargetPtr mainRt = m_params.FrameBuffer->GetAttachment(Framebuffer::Attachment::ColorAttachment0);
+    RenderTargetPtr mainRt = m_params.FrameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
     if (!mainRt)
     {
       return;
@@ -207,37 +185,27 @@ namespace ToolKit
         rt                 = MakeNewPtr<RenderTarget>(curRes.x, curRes.y, set);
         rt->Init();
 
-        FramebufferPtr& fb = m_tempFrameBuffers[i];
-        if (fb == nullptr)
+        FramebufferPtr& frameBuffer = m_tempFrameBuffers[i];
+        if (frameBuffer == nullptr)
         {
           FramebufferSettings fbSettings;
           fbSettings.depthStencil    = false;
           fbSettings.useDefaultDepth = false;
           fbSettings.width           = curRes.x;
           fbSettings.height          = curRes.y;
-          fb                         = MakeNewPtr<Framebuffer>();
-          fb->Init(fbSettings);
+
+          frameBuffer                = MakeNewPtr<Framebuffer>(fbSettings, "BloomDownSampleFB");
+          frameBuffer->Init();
         }
-        fb->ReconstructIfNeeded(curRes.x, curRes.y);
-        fb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+
+        frameBuffer->ReconstructIfNeeded(curRes.x, curRes.y);
+        frameBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
       }
 
       m_currentIterationCount = iterationCount;
     }
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
-  void BloomPass::PostRender()
-  {
-    PUSH_GPU_MARKER("BloomPass::PostRender");
-    PUSH_CPU_MARKER("BloomPass::PostRender");
-
-    Pass::PostRender();
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
-  }
+  void BloomPass::PostRender() { Pass::PostRender(); }
 
 } // namespace ToolKit

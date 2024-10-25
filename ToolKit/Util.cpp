@@ -241,20 +241,26 @@ namespace ToolKit
   {
     String normal = NormalizePath(fullPath);
 
+    // Parse path.
     size_t ind1   = normal.find_last_of(GetPathSeparator());
-    if (path != nullptr)
+    if (ind1 != String::npos) // If a path is not present, it only contains name.
     {
-      *path = normal.substr(0, ind1);
+      if (path != nullptr)
+      {
+        *path = normal.substr(0, ind1);
+      }
     }
 
+    // Parse name.
     size_t ind2 = normal.find_last_of('.');
+    if (name != nullptr)
+    {
+      *name = normal.substr(ind1 + 1, ind2 - ind1 - 1);
+    }
+
+    // Parse extension.
     if (ind2 != String::npos)
     {
-      if (name != nullptr)
-      {
-        *name = normal.substr(ind1 + 1, ind2 - ind1 - 1);
-      }
-
       if (ext != nullptr)
       {
         *ext = normal.substr(ind2);
@@ -264,11 +270,14 @@ namespace ToolKit
 
   void NormalizePathInplace(String& path)
   {
-#if _WIN32
-    UnixifyPath(path);
-#else
-    DosifyPath(path);
-#endif
+    if constexpr (TK_PLATFORM == PLATFORM::TKWindows)
+    {
+      DosifyPath(path);
+    }
+    else
+    {
+      UnixifyPath(path);
+    }
   }
 
   String NormalizePath(String path)
@@ -536,7 +545,11 @@ namespace ToolKit
 #endif
   }
 
-  String GetPathSeparatorAsStr() { return String() + GetPathSeparator(); }
+  String GetPathSeparatorAsStr()
+  {
+    static String sep = String() + GetPathSeparator();
+    return sep;
+  }
 
   bool SupportedImageFormat(const String& ext)
   {
@@ -793,7 +806,7 @@ namespace ToolKit
     return lineForm;
   }
 
-  TK_API LineBatchPtr GetDebugFrustum(const CameraPtr camera)
+  LineBatchPtr CreateDebugFrustum(const CameraPtr camera, const Vec3& color, float size)
   {
     Vec3Array corners = camera->ExtractFrustumCorner();
     Vec3Array vertices;
@@ -825,18 +838,47 @@ namespace ToolKit
     vertices[23]    = corners[3];
 
     LineBatchPtr lb = MakeNewPtr<LineBatch>();
-    lb->Generate(vertices, Vec3(0.6f, 0.2f, 0.8f), DrawType::Line, 0.5f);
+    lb->Generate(vertices, color, DrawType::Line, size);
 
     return lb;
   }
 
-  void ToEntityIdArray(IDArray& idArray, const EntityPtrArray& ptrArray)
+  IDArray ToEntityIdArray(const EntityPtrArray& ptrArray)
   {
-    idArray.reserve(ptrArray.size());
-    for (EntityPtr ntt : ptrArray)
+    IDArray idArray;
+    idArray.resize(ptrArray.size());
+
+    for (uint i = 0; i < ptrArray.size(); i++)
     {
-      idArray.push_back(ntt->GetIdVal());
+      idArray[i] = ptrArray[i]->GetIdVal();
     }
+
+    return idArray;
+  }
+
+  EntityRawPtrArray ToEntityRawPtrArray(const EntityPtrArray& ptrArray)
+  {
+    EntityRawPtrArray rawPtrArray;
+    rawPtrArray.resize(ptrArray.size());
+
+    for (size_t i = 0; i < ptrArray.size(); i++)
+    {
+      rawPtrArray[i] = ptrArray[i].get();
+    }
+
+    return rawPtrArray;
+  }
+
+  EntityPtrArray ToEntityPtrArray(const EntityRawPtrArray& rawPtrArray)
+  {
+    EntityPtrArray ptrArray;
+    ptrArray.reserve(rawPtrArray.size());
+    for (Entity* ntt : rawPtrArray)
+    {
+      ptrArray.push_back(ntt->Self<Entity>());
+    }
+
+    return ptrArray;
   }
 
   bool IsInArray(const EntityRawPtrArray& nttArray, Entity* ntt)
@@ -917,7 +959,7 @@ namespace ToolKit
 
   EntityPtr DeepCopy(EntityPtr root, EntityPtrArray& copies)
   {
-    EntityPtr cpy = std::static_pointer_cast<Entity>(root->Copy());
+    EntityPtr cpy = Cast<Entity>(root->Copy());
     copies.push_back(cpy);
 
     for (Node* node : root->m_node->m_children)

@@ -7,37 +7,47 @@
 
 #include "GammaTonemapFxaaPass.h"
 
-#include "TKProfiler.h"
+#include "Material.h"
 
 namespace ToolKit
 {
-  GammaTonemapFxaaPass::GammaTonemapFxaaPass() : PostProcessPass()
-  {
-    m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("gammaTonemapFxaa.shader", true));
-  }
 
-  GammaTonemapFxaaPass::GammaTonemapFxaaPass(const GammaTonemapFxaaPassParams& params) : GammaTonemapFxaaPass()
+  GammaTonemapFxaaPass::GammaTonemapFxaaPass() : Pass("GammaTonemapFxaaPass")
   {
-    m_params = params;
+    m_quadPass          = MakeNewPtr<FullQuadPass>();
+    m_processTexture    = MakeNewPtr<RenderTarget>();
+    m_postProcessShader = GetShaderManager()->Create<Shader>(ShaderPath("gammaTonemapFxaa.shader", true));
   }
 
   void GammaTonemapFxaaPass::PreRender()
   {
-    PUSH_GPU_MARKER("FXAAPass::PreRender");
-    PUSH_CPU_MARKER("FXAAPass::PreRender");
+    Pass::PreRender();
 
-    PostProcessPass::m_params.FrameBuffer = m_params.frameBuffer;
-    PostProcessPass::PreRender();
+    RenderTargetPtr srcTexture = m_params.frameBuffer->GetColorAttachment(Framebuffer::Attachment::ColorAttachment0);
+    m_processTexture->ReconstructIfNeeded(srcTexture->m_width, srcTexture->m_height, &srcTexture->Settings());
 
-    m_postProcessPass->UpdateUniform(ShaderUniform("enableFxaa", (int) m_params.enableFxaa));
-    m_postProcessPass->UpdateUniform(ShaderUniform("enableGammaCorrection", (int) m_params.enableGammaCorrection));
-    m_postProcessPass->UpdateUniform(ShaderUniform("enableTonemapping", (int) m_params.enableTonemapping));
+    Renderer* renderer = GetRenderer();
+    renderer->CopyTexture(srcTexture, m_processTexture);
 
-    m_postProcessPass->UpdateUniform(ShaderUniform("screenSize", m_params.screenSize));
-    m_postProcessPass->UpdateUniform(ShaderUniform("useAcesTonemapper", (uint) m_params.tonemapMethod));
-    m_postProcessPass->UpdateUniform(ShaderUniform("gamma", m_params.gamma));
+    m_quadPass->m_material->m_diffuseTexture = m_processTexture;
+    m_quadPass->m_material->m_fragmentShader = m_postProcessShader;
+    m_quadPass->m_params.frameBuffer         = m_params.frameBuffer;
+    m_quadPass->m_params.clearFrameBuffer    = GraphicBitFields::AllBits;
 
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    m_quadPass->UpdateUniform(ShaderUniform("enableFxaa", (int) m_params.enableFxaa));
+    m_quadPass->UpdateUniform(ShaderUniform("enableGammaCorrection", (int) m_params.enableGammaCorrection));
+    m_quadPass->UpdateUniform(ShaderUniform("enableTonemapping", (int) m_params.enableTonemapping));
+
+    m_quadPass->UpdateUniform(ShaderUniform("screenSize", m_params.screenSize));
+    m_quadPass->UpdateUniform(ShaderUniform("useAcesTonemapper", (uint) m_params.tonemapMethod));
+    m_quadPass->UpdateUniform(ShaderUniform("gamma", m_params.gamma));
   }
+
+  void GammaTonemapFxaaPass::Render() { RenderSubPass(m_quadPass); }
+
+  bool GammaTonemapFxaaPass::IsEnabled()
+  {
+    return m_params.enableFxaa || m_params.enableGammaCorrection || m_params.enableTonemapping;
+  }
+
 } // namespace ToolKit

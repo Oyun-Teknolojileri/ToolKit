@@ -65,9 +65,6 @@ namespace ToolKit
     writeAttrFn("FocusScale", to_string(FocusScale));
     writeAttrFn("DofQuality", to_string((int) DofQuality));
     writeAttrFn("FXAAEnabled", to_string(FXAAEnabled));
-    writeAttrFn("ShadowDistance", to_string(ShadowDistance));
-    writeAttrFn("MaxEntityPerBVHNode", to_string(maxEntityPerBVHNode));
-    writeAttrFn("MinBVHNodeSize", to_string(minBVHNodeSize));
   }
 
   void EngineSettings::PostProcessingSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -97,19 +94,15 @@ namespace ToolKit
       ReadAttr(node, "FXAAEnabled", FXAAEnabled);
       ReadAttr(node, "TonemapperMode", *(int*) &TonemapperMode);
       ReadAttr(node, "DofQuality", *(int*) &DofQuality);
-      ReadAttr(node, "ShadowDistance", ShadowDistance);
-      ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
-      ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);
     }
   }
 
   void EngineSettings::GraphicSettings::Serialize(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* settings = CreateXmlNode(doc, "Graphics", parent);
-    WriteAttr(settings, doc, "MSAA", std::to_string(MSAA));
+    WriteAttr(settings, doc, "MSAA", std::to_string(msaa));
     WriteAttr(settings, doc, "FPS", std::to_string(FPS));
     WriteAttr(settings, doc, "HDRPipeline", std::to_string(HDRPipeline));
-    WriteAttr(settings, doc, "RenderSpec", std::to_string((int) RenderSpec));
     WriteAttr(settings, doc, "RenderResolutionScale", std::to_string(renderResolutionScale));
     WriteAttr(settings, doc, "EnableGpuTimer", std::to_string(enableGpuTimer));
 
@@ -118,6 +111,17 @@ namespace ToolKit
     WriteAttr(settings, doc, "CascacdeDist1", std::to_string(cascadeDistances[1]));
     WriteAttr(settings, doc, "CascacdeDist2", std::to_string(cascadeDistances[2]));
     WriteAttr(settings, doc, "CascacdeDist3", std::to_string(cascadeDistances[3]));
+
+    WriteAttr(settings, doc, "UseEvsm4", std::to_string(useEVSM4));
+    WriteAttr(settings, doc, "UsePSSM", std::to_string(useParallelSplitPartitioning));
+    WriteAttr(settings, doc, "PSSMLambda", std::to_string(parallelSplitLambda));
+    WriteAttr(settings, doc, "StableShadow", std::to_string(stableShadowMap));
+    WriteAttr(settings, doc, "Use32BitSM", std::to_string(use32BitShadowMap));
+
+    WriteAttr(settings, doc, "AnisotropicTextureFiltering", std::to_string(anisotropicTextureFiltering));
+
+    WriteAttr(settings, doc, "MaxEntityPerBVHNode", std::to_string(maxEntityPerBVHNode));
+    WriteAttr(settings, doc, "MinBVHNodeSize", std::to_string(minBVHNodeSize));
   }
 
   void EngineSettings::GraphicSettings::DeSerialize(XmlDocument* doc, XmlNode* parent)
@@ -129,11 +133,10 @@ namespace ToolKit
 
     if (XmlNode* node = parent->first_node("Graphics"))
     {
-      ReadAttr(node, "MSAA", MSAA);
+      ReadAttr(node, "MSAA", msaa);
       ReadAttr(node, "FPS", FPS);
       ReadAttr(node, "HDRPipeline", HDRPipeline);
       ReadAttr(node, "RenderResolutionScale", renderResolutionScale);
-      ReadAttr(node, "RenderSpec", *(int*) &RenderSpec);
       ReadAttr(node, "EnableGpuTimer", enableGpuTimer);
 
       ReadAttr(node, "CascadeCount", cascadeCount);
@@ -141,6 +144,17 @@ namespace ToolKit
       ReadAttr(node, "CascacdeDist1", cascadeDistances[1]);
       ReadAttr(node, "CascacdeDist2", cascadeDistances[2]);
       ReadAttr(node, "CascacdeDist3", cascadeDistances[3]);
+
+      ReadAttr(node, "UseEvsm4", useEVSM4);
+      ReadAttr(node, "UsePSSM", useParallelSplitPartitioning);
+      ReadAttr(node, "PSSMLambda", parallelSplitLambda);
+      ReadAttr(node, "StableShadow", stableShadowMap);
+      ReadAttr(node, "Use32BitSM", use32BitShadowMap);
+
+      ReadAttr(node, "AnisotropicTextureFiltering", anisotropicTextureFiltering);
+
+      ReadAttr(node, "MaxEntityPerBVHNode", maxEntityPerBVHNode);
+      ReadAttr(node, "MinBVHNodeSize", minBVHNodeSize);
     }
   }
 
@@ -174,6 +188,13 @@ namespace ToolKit
       }
     }
 
+    // TODO: This data does not need to be read, write always. It can be disabled enabled based on a config.
+    XmlNode* profileTimerNode = CreateXmlNode(doc, "ProfileTimer", settingsNode);
+    for (const auto& timer : TKStatTimerMap)
+    {
+      WriteAttr(profileTimerNode, doc, timer.first, std::to_string(timer.second.enabled));
+    }
+
     return settingsNode;
   }
 
@@ -184,6 +205,16 @@ namespace ToolKit
 
     Window.DeSerialize(doc, settingsNode);
     Graphics.DeSerialize(doc, settingsNode);
+
+    if (XmlNode* timerNode = settingsNode->first_node("ProfileTimer"))
+    {
+      XmlAttribute* timer = timerNode->first_attribute();
+      while (timer)
+      {
+        TKStatTimerMap[timer->name()].enabled = (bool) std::atoi(timer->value());
+        timer                                 = timer->next_attribute();
+      }
+    }
 
     if (XmlNode* pluginNode = settingsNode->first_node("Plugins"))
     {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2019-2024 OtSofware
  * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
  * For more information, including options for a more permissive commercial license,
@@ -7,13 +7,13 @@
 
 #pragma once
 
-#include "AdditiveLightingPass.h"
 #include "BloomPass.h"
 #include "CubemapPass.h"
+#include "DofPass.h"
 #include "EngineSettings.h"
 #include "ForwardPass.h"
 #include "ForwardPreProcessPass.h"
-#include "GBufferPass.h"
+#include "GammaTonemapFxaaPass.h"
 #include "Pass.h"
 #include "RenderSystem.h"
 #include "ShadowPass.h"
@@ -21,32 +21,34 @@
 
 namespace ToolKit
 {
+
   struct SceneRenderPathParams
   {
-    LightPtrArray Lights;
+    LightPtrArray overrideLights;
     ScenePtr Scene                 = nullptr;
     CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
-    bool ClearFramebuffer          = true;
+    bool applyGammaTonemapFxaa     = false;
     EngineSettings::PostProcessingSettings Gfx;
   };
 
   /**
-   * Main scene renderer.
+   * Forward scene render path. All objects are drawn in forward manner. Bandwidth optimized.
    */
-  class TK_API SceneRenderPath : public RenderPath
+  class TK_API ForwardSceneRenderPath : public RenderPath
   {
    public:
-    SceneRenderPath();
-    explicit SceneRenderPath(const SceneRenderPathParams& params);
-    virtual ~SceneRenderPath();
+    ForwardSceneRenderPath();
+    explicit ForwardSceneRenderPath(const SceneRenderPathParams& params);
+    virtual ~ForwardSceneRenderPath();
 
-    virtual void Render(Renderer* renderer) override;
-    virtual void PreRender(Renderer* renderer);
-    virtual void PostRender(Renderer* renderer);
+    void Render(Renderer* renderer) override;
+    void PreRender(Renderer* renderer) override;
+    void PostRender(Renderer* renderer) override;
 
-   private:
-    virtual void SetPassParams();
+   protected:
+    void SetPassParams();
+    bool RequiresForwardPreProcessPass();
 
    public:
     SceneRenderPathParams m_params;
@@ -55,12 +57,11 @@ namespace ToolKit
     ShadowPassPtr m_shadowPass                       = nullptr;
     ForwardRenderPassPtr m_forwardRenderPass         = nullptr;
     ForwardPreProcessPassPtr m_forwardPreProcessPass = nullptr;
-    LightingPassPtr m_lightingPass                   = nullptr;
     CubeMapPassPtr m_skyPass                         = nullptr;
-    GBufferPassPtr m_gBufferPass                     = nullptr;
     SSAOPassPtr m_ssaoPass                           = nullptr;
     BloomPassPtr m_bloomPass                         = nullptr;
     DoFPassPtr m_dofPass                             = nullptr;
+    GammaTonemapFxaaPassPtr m_gammaTonemapFxaaPass   = nullptr;
 
    protected:
     bool m_drawSky   = false;
@@ -70,5 +71,6 @@ namespace ToolKit
     RenderData m_renderData;
   };
 
-  typedef std::shared_ptr<SceneRenderPath> SceneRenderPathPtr;
+  typedef std::shared_ptr<ForwardSceneRenderPath> SceneRenderPathPtr;
+
 } // namespace ToolKit

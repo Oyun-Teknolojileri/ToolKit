@@ -12,6 +12,8 @@
  * relatled structures.
  */
 
+#include "TKPlatform.h"
+
 // GLM
 #ifndef TK_GLM
   #define GLM_FORCE_QUAT_DATA_XYZW
@@ -34,8 +36,11 @@
 #include <deque>
 #include <filesystem>
 #include <functional>
+#include <future>
 #include <limits>
 #include <memory>
+#include <queue>
+#include <random>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -43,20 +48,6 @@
 #include <utility>
 #include <variant>
 #include <vector>
-
-#ifdef _WIN32 // Windows.
-  #define TK_STDCAL __stdcall
-  #ifdef TK_DLL_EXPORT // Dynamic binding.
-    #define TK_API __declspec(dllexport)
-  #elif defined(TK_DLL_IMPORT)
-    #define TK_API __declspec(dllimport)
-  #else // Static binding.
-    #define TK_API
-  #endif
-#elif defined(__clang__)
-  #define TK_API __attribute__((visibility("default")))
-  #define TK_STDCAL
-#endif
 
 #define SafeDel(ptr)                                                                                                   \
   {                                                                                                                    \
@@ -98,10 +89,13 @@ namespace ToolKit
   typedef char byte;
   typedef unsigned char ubyte;
   typedef std::vector<byte> ByteArray;
-  typedef unsigned short uint16;
-  typedef uint32_t uint;
   typedef uint8_t uint8;
+  typedef uint16_t uint16;
+  typedef uint32_t uint;
   typedef uint64_t uint64;
+  typedef int32_t int32;
+  typedef int64_t int64;
+  typedef float Real; // Floating point type with adjustable precision. Can be set as double or float.
   typedef uint64_t ULongID;
   typedef std::vector<ULongID> IDArray;
   typedef const int16_t SignalId;
@@ -119,6 +113,7 @@ namespace ToolKit
   typedef glm::uvec4 UVec4;
   typedef glm::uvec2 UVec2;
   typedef glm::mat4 Mat4;
+  typedef std::vector<Mat4> Mat4Array;
   typedef glm::mat3 Mat3;
   typedef glm::quat Quaternion;
   typedef std::vector<int> IntArray;
@@ -149,6 +144,7 @@ namespace ToolKit
   typedef std::shared_ptr<class GpuProgram> GpuProgramPtr;
   typedef std::shared_ptr<class SkinMesh> SkinMeshPtr;
   typedef std::shared_ptr<class Scene> ScenePtr;
+  typedef std::weak_ptr<class Scene> SceneWeakPtr;
   typedef std::vector<MeshPtr> MeshPtrArray;
   typedef std::vector<class Mesh*> MeshRawPtrArray;
   typedef std::shared_ptr<class AnimRecord> AnimRecordPtr;
@@ -189,8 +185,6 @@ namespace ToolKit
   typedef std::shared_ptr<class Surface> SurfacePtr;
   typedef std::shared_ptr<class Dpad> DpadPtr;
   typedef std::shared_ptr<class GammaTonemapFxaaPass> GammaTonemapFxaaPassPtr;
-  typedef std::shared_ptr<class BVH> BVHPtr;
-  typedef std::weak_ptr<class BVH> BVHWeakPtr;
 
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
@@ -354,6 +348,8 @@ namespace ToolKit
     FormatRGBA32F              = 0x8814,
     FormatR16SNorm             = 0x8F98,
     FormatSRGB8_A8             = 0x8C43,
+    FormatDepth24              = 0x81A6,
+    FormatDepth24Stencil8      = 0x88F0,
     ColorAttachment0           = 0x8CE0,
     DepthAttachment            = 0x8D00,
     TypeFloat                  = 0x1406,
@@ -361,6 +357,16 @@ namespace ToolKit
     Target2D                   = 0x0DE1,
     TargetCubeMap              = 0x8513,
     Target2DArray              = 0x8C1A
+  };
+
+  enum class GpuResourceType
+  {
+    Texture      = 0x1702, // GL_TEXTURE
+    Buffer       = 0x82E0, // GL_BUFFER
+    Shader       = 0x82E1, // GL_SHADER
+    Program      = 0x82E2, // GL_PROGRAM
+    FrameBuffer  = 0x8D40, // GL_FRAMEBUFFER
+    RenderBuffer = 0x8D41  // GL_RENDERBUFFER
   };
 
   inline int BytesOfFormat(GraphicTypes type)
@@ -402,10 +408,11 @@ namespace ToolKit
 
   static const String TKResourcePak    = "MinResources.pak";
 
-  static const char* TKVersionStr      = "v0.4.7";
+  static const char* TKVersionStr      = "v0.4.8";
   static const String TKV044           = "v0.4.4";
   static const String TKV045           = "v0.4.5";
   static const String TKV046           = "v0.4.6";
   static const String TKV047           = "v0.4.7";
+  static const String TKV048           = "v0.4.8";
 
 } // namespace ToolKit

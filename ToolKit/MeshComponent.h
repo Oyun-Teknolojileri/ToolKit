@@ -46,7 +46,7 @@ namespace ToolKit
      * Gets the bounding box of the contained Mesh.
      * @return BoundingBox of the contained Mesh.
      */
-    BoundingBox GetBoundingBox();
+    const BoundingBox& GetBoundingBox();
 
     /**
      * Initiates the MeshComponent and underlying Mesh and Material resources.

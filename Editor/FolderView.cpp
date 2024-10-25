@@ -123,7 +123,13 @@ namespace ToolKit
 
         if (g_copyingFiles)
         {
-          std::filesystem::copy(src, dst);
+          std::error_code err;
+          std::filesystem::copy(src, dst, err);
+          if (err)
+          {
+            TK_ERR("Copy failed: %s", err.message().c_str());
+            g_app->m_statusMsg = "Operation failed.";
+          }
         }
         else if (g_cuttingFiles)
         {
@@ -197,14 +203,11 @@ namespace ToolKit
         view.Iterate();
         view.Refresh();
         parent->AddEntry(view);
-        return parent->Exist(path);
+        selected = parent->Exist(path);
       }
-      else
-      {
-        FolderView& view    = parent->GetView(selected);
-        view.m_visible      = true;
-        view.m_activateNext = true;
-      }
+
+      parent->SetActiveView(selected);
+
       return selected;
     }
 
@@ -233,7 +236,7 @@ namespace ToolKit
       }
     }
 
-    void FolderView::DeterminateAndSetBackgroundColor(bool isSelected, int i)
+    void FolderView::DetermineAndSetBackgroundColor(bool isSelected, int i)
     {
       ImVec4 hoverColor     = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
       ImVec4 buttonColor    = ImGui::GetStyleColorVec4(ImGuiCol_Button);
@@ -269,17 +272,25 @@ namespace ToolKit
 
     void FolderView::Show()
     {
-      bool* visCheck = nullptr;
-      if (!m_currRoot)
+      ImGuiTabItemFlags flags = m_active ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
+      if (ImGui::BeginTabItem(m_folder.c_str(), nullptr, flags))
       {
-        visCheck = &m_visible;
-      }
+        if (!m_active) // If this view is not active and imgui try to show it,
+        {
+          if (m_visible) // Either this window lost its activity via tree view
+          {
+            m_visible = false;
+            ImGui::EndTabItem();
+            return;
+          }
+          else // Or Activated via clicking on tab
+          {
+            m_parent->SetActiveView(this);
+          }
+        }
 
-      ImGuiTabItemFlags flags = m_activateNext ? ImGuiTabItemFlags_SetSelected : 0;
-      m_activateNext          = false;
-      if (ImGui::BeginTabItem(m_folder.c_str(), visCheck, flags))
-      {
-        m_parent->SetActiveView(this);
+        m_visible = true;
+
         DrawSearchBar();
 
         if (m_dirty)
@@ -308,7 +319,7 @@ namespace ToolKit
 
         bool anyButtonClicked = false;
         // Draw folder items.
-        for (int i = 0; i < static_cast<int>(m_entries.size()); i++)
+        for (int i = 0; i < (int) m_entries.size(); i++)
         {
           // Prepare Item Icon.
           ImGuiStyle& style      = ImGui::GetStyle();
@@ -368,9 +379,8 @@ namespace ToolKit
           DirectoryEntry* entryPtr = m_entries.data() + i;
 
           bool isSelected          = contains(g_selectedFiles, entryPtr);
-          // this function will push color. we are popping it down below this if
-          // block
-          DeterminateAndSetBackgroundColor(isSelected, i);
+          // this function will push color. we are popping it down below this if block.
+          DetermineAndSetBackgroundColor(isSelected, i);
 
           // Draw Item Icon.
           if (ImGui::ImageButton(ConvertUIntImGuiTexture(iconId), m_iconSize, ImVec2(0.0f, 0.0f), texCoords))
@@ -381,7 +391,7 @@ namespace ToolKit
             // handle multi selection and input
             if (!shiftDown && !ctrlDown)
             {
-              // this means not multiselecting so select only this
+              // this means not multi selecting so select only this.
               g_selectedFiles.clear();
               g_selectedFiles.push_back(entryPtr);
             }
@@ -407,10 +417,10 @@ namespace ToolKit
             {
               if (rm->m_baseType == Material::StaticClass())
               {
-                MaterialPtr mat                   = rm->Create<Material>(dirEnt.GetFullPath());
-                MaterialWindowPtr materialWnd = MakeNewPtr<MaterialWindow>();
-                materialWnd->SetMaterial(mat);
-                materialWnd->AddToUI();
+                MaterialPtr mat                  = rm->Create<Material>(dirEnt.GetFullPath());
+                MaterialWindowPtr materialWindow = MakeNewPtr<MaterialWindow>();
+                materialWindow->SetMaterial(mat);
+                materialWindow->AddToUI();
               }
               else if (rm->m_baseType == Mesh::StaticClass())
               {
@@ -526,6 +536,22 @@ namespace ToolKit
     }
 
     const String& FolderView::GetPath() const { return m_path; }
+
+    String FolderView::GetRoot() const
+    {
+      String root;
+      String searchStr   = "Resources" + GetPathSeparatorAsStr();
+      size_t resourceLoc = m_path.find(searchStr);
+      if (resourceLoc != String::npos)
+      {
+        resourceLoc += searchStr.length();
+        root         = m_path.substr(0, resourceLoc);
+        resourceLoc  = m_path.find(GetPathSeparator(), resourceLoc);
+        root         = m_path.substr(0, resourceLoc);
+      }
+
+      return root;
+    }
 
     void FolderView::Iterate()
     {
@@ -679,9 +705,12 @@ namespace ToolKit
         FolderViewRawPtrArray list = {};
         for (FolderWindow* folder : g_app->GetAssetBrowsers())
         {
-          if (folder->GetActiveView(true)->GetPath() == thisView->GetPath())
+          if (FolderView* activeView = folder->GetActiveView())
           {
-            list.push_back(folder->GetActiveView(true));
+            if (activeView->GetPath() == thisView->GetPath())
+            {
+              list.push_back(activeView);
+            }
           }
         }
 
@@ -694,7 +723,8 @@ namespace ToolKit
         std::filesystem::remove_all(path, ec);
         if (ec)
         {
-          g_app->m_statusMsg = ec.message();
+          TK_ERR("Delete failed: %s", ec.message().c_str());
+          g_app->m_statusMsg = "Operation failed.";
         }
 
         for (FolderView* view : getSameViewsFn(thisView))
@@ -974,7 +1004,7 @@ namespace ToolKit
 
         if (ImGui::BeginMenu("Create"))
         {
-          auto inputWindowFn = [&views, &thisView](bool isPbr)
+          auto inputWindowFn = [&views, &thisView]()
           {
             StringInputWindowPtr inputWnd = MakeNewPtr<StringInputWindow>("Material Name##NwMat", true);
             inputWnd->m_inputVal          = "New Material";
@@ -982,7 +1012,7 @@ namespace ToolKit
             inputWnd->m_hint              = "New material name";
             inputWnd->AddToUI();
 
-            inputWnd->m_taskFn = [views, isPbr](const String& val)
+            inputWnd->m_taskFn = [views](const String& val)
             {
               String file = ConcatPaths({views[0]->m_path, val + MATERIAL});
               if (CheckFile(file))
@@ -992,7 +1022,7 @@ namespace ToolKit
               else
               {
                 MaterialManager* man = GetMaterialManager();
-                MaterialPtr mat      = isPbr ? man->GetCopyOfDefaultMaterial() : man->GetCopyOfPhongMaterial();
+                MaterialPtr mat      = man->GetCopyOfDefaultMaterial();
                 mat->m_name          = val;
                 mat->SetFile(file);
                 for (FolderView* view : views)
@@ -1007,13 +1037,9 @@ namespace ToolKit
             ImGui::CloseCurrentPopup();
           };
 
-          if (ImGui::MenuItem("PBR"))
+          if (ImGui::MenuItem("PBR Material"))
           {
-            inputWindowFn(true);
-          }
-          if (ImGui::MenuItem("Phong"))
-          {
-            inputWindowFn(false);
+            inputWindowFn();
           }
           ImGui::EndMenu();
         }
@@ -1029,12 +1055,14 @@ namespace ToolKit
         {
           continue;
         }
+
         String newPath = ConcatPaths({dst, entry.m_fileName + entry.m_ext});
-        std::error_code ec;
-        std::filesystem::rename(entry.GetFullPath(), newPath, ec);
-        if (ec)
+        std::error_code errCode;
+        std::filesystem::rename(entry.GetFullPath(), newPath, errCode);
+        if (errCode)
         {
-          g_app->m_statusMsg = ec.message();
+          TK_ERR("Rename failed: %s", errCode.message().c_str());
+          g_app->m_statusMsg = "Operation failed.";
         }
         else
         {
@@ -1054,6 +1082,7 @@ namespace ToolKit
           m_dirty = true;
         }
       }
+
       g_dragBeginView = nullptr;
       g_carryingFiles = false;
       g_selectedFiles.clear();
@@ -1070,5 +1099,6 @@ namespace ToolKit
         ImGui::EndDragDropTarget();
       }
     }
+
   } // namespace Editor
 } // namespace ToolKit

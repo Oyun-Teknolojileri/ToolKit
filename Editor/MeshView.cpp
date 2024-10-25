@@ -19,6 +19,7 @@ namespace ToolKit
 {
   namespace Editor
   {
+
     MeshView::MeshView() : View("Mesh View")
     {
       m_viewID   = 3;
@@ -26,19 +27,22 @@ namespace ToolKit
       m_viewport = MakeNewPtr<PreviewViewport>();
       m_viewport->Init({300.0f, 300.0f});
 
-      ScenePtr scene  = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
-      m_previewEntity = scene->GetFirstByTag("target");
+      ScenePtr scene = GetSceneManager()->Create<Scene>(ScenePath("mesh-view.scene", true));
+      scene->Init();
+
+      m_previewEntity                   = scene->GetFirstByTag("target");
+      m_previewEntity->m_partOfAABBTree = true;
+
+      // Make sure preview entity is part of aabb.
+      scene->RemoveEntity(m_previewEntity->GetIdVal());
+      scene->AddEntity(m_previewEntity);
 
       m_viewport->SetScene(scene);
     }
 
     MeshView::~MeshView() { m_viewport = nullptr; }
 
-    void MeshView::ResetCamera()
-    {
-      m_viewport->GetCamera()->m_node->SetTranslation(Vec3(0, 2.0, 5));
-      m_viewport->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0));
-    }
+    void MeshView::ResetCamera() { m_viewport->ResetCamera(); }
 
     void MeshView::Show()
     {
@@ -113,21 +117,15 @@ namespace ToolKit
 
       if (m_mesh->IsSkinned())
       {
-        SkinMeshPtr skinMesh          = std::static_pointer_cast<SkinMesh>(m_mesh);
+        SkinMeshPtr skinMesh          = Cast<SkinMesh>(m_mesh);
         SkeletonComponentPtr skelComp = m_previewEntity->GetComponent<SkeletonComponent>();
         skelComp->SetSkeletonResourceVal(skinMesh->m_skeleton);
         skelComp->Init();
       }
 
-      BoundingBox aabb;
-      EntityPtrArray entities = m_viewport->GetScene()->GetEntities();
-      for (EntityPtr ntt : entities)
-      {
-        aabb.UpdateBoundary(ntt->GetBoundingBox(true).min);
-        aabb.UpdateBoundary(ntt->GetBoundingBox(true).max);
-      }
+      m_previewEntity->InvalidateSpatialCaches();
 
-      m_viewport->GetCamera()->FocusToBoundingBox(aabb, 1.0f);
+      ResetCamera();
     }
 
   } // namespace Editor

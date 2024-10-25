@@ -20,7 +20,7 @@ namespace ToolKit
   {
 
     // Action
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     Action::Action() {}
 
@@ -34,7 +34,7 @@ namespace ToolKit
     }
 
     // DeleteAction
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     DeleteAction::DeleteAction(EntityPtr ntt)
     {
@@ -66,13 +66,7 @@ namespace ToolKit
     {
       assert(m_ntt != nullptr);
 
-      m_ntt->m_markedForDelete = false;
-
       EditorScenePtr currScene = g_app->GetCurrentScene();
-      if (m_ntt->IsA<Prefab>())
-      {
-        static_cast<Prefab*>(m_ntt.get())->Link();
-      }
       currScene->AddEntity(m_ntt);
 
       if (m_parentId != NULL_HANDLE)
@@ -100,22 +94,19 @@ namespace ToolKit
       }
 
       g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
-      if (Prefab* prefab = m_ntt->As<Prefab>())
-      {
-        prefab->Unlink();
-      }
 
       m_actionComitted = true;
       HandleCompSpecificOps(m_ntt, m_actionComitted);
     }
 
     // CreateAction
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     CreateAction::CreateAction(EntityPtr ntt)
     {
       m_ntt                    = ntt;
       m_actionComitted         = true;
+
       EditorScenePtr currScene = g_app->GetCurrentScene();
       currScene->GetSelectedEntities(m_selecteds);
       currScene->AddEntity(ntt);
@@ -132,14 +123,19 @@ namespace ToolKit
     void CreateAction::Undo()
     {
       SwapSelection();
-      g_app->GetCurrentScene()->RemoveEntity(m_ntt->GetIdVal());
+
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->RemoveEntity(m_ntt->GetIdVal());
+
       m_actionComitted = false;
     }
 
     void CreateAction::Redo()
     {
+      EditorScenePtr currScene = g_app->GetCurrentScene();
+      currScene->AddEntity(m_ntt);
+
       SwapSelection();
-      g_app->GetCurrentScene()->AddEntity(m_ntt);
       m_actionComitted = true;
     }
 
@@ -164,7 +160,7 @@ namespace ToolKit
     }
 
     // DeleteComponentAction
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     void DeleteComponentAction::Undo()
     {
@@ -186,7 +182,7 @@ namespace ToolKit
     }
 
     // ActionManager
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     ActionManager ActionManager::m_instance;
 

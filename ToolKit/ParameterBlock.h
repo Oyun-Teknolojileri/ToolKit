@@ -119,10 +119,10 @@ namespace ToolKit
     {
       uint Index = 0;
 
-      void operator=(CurrentValue val)
+      void operator=(uint newIndex)
       {
         uint old = Index;
-        Index    = val.Index;
+        Index    = newIndex;
         if (Callback != nullptr)
         {
           Value oldVal = old;

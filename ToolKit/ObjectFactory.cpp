@@ -17,6 +17,7 @@
 #include "Drawable.h"
 #include "Entity.h"
 #include "EnvironmentComponent.h"
+#include "Framebuffer.h"
 #include "GradientSky.h"
 #include "Light.h"
 #include "Material.h"
@@ -33,8 +34,6 @@
 #include "SsaoPass.h"
 #include "Surface.h"
 #include "Texture.h"
-
-
 
 namespace ToolKit
 {
@@ -119,7 +118,6 @@ namespace ToolKit
     Register<Drawable>();
     Register<Entity>();
     Register<EntityNode>();
-    // Register<Light>();
     Register<DirectionalLight>();
     Register<PointLight>();
     Register<SpotLight>();
@@ -151,6 +149,7 @@ namespace ToolKit
     Register<DepthTexture>();
     Register<Hdri>();
     Register<RenderTarget>();
+    Register<Framebuffer>();
   }
 
 } // namespace ToolKit

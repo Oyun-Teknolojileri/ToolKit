@@ -16,13 +16,13 @@ namespace ToolKit
   {
 
     // MaterialView
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     class MaterialView : public View
     {
      public:
       MaterialView();
-      ~MaterialView();
+      virtual ~MaterialView();
 
       void Show() override;
       void SetMaterials(const MaterialPtrArray& mat);
@@ -47,7 +47,7 @@ namespace ToolKit
     typedef std::shared_ptr<MaterialView> MaterialViewPtr;
 
     // MaterialWindow
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     class MaterialWindow : public Window
     {
@@ -55,7 +55,7 @@ namespace ToolKit
       TKDeclareClass(MaterialWindow, Window);
 
       MaterialWindow();
-      ~MaterialWindow();
+      virtual ~MaterialWindow();
 
       void SetMaterial(MaterialPtr mat);
       void Show() override;

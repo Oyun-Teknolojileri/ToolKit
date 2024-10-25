@@ -15,16 +15,14 @@
 namespace ToolKit
 {
 
-  class TK_API ForwardPreProcess : public RenderPass
+  class TK_API ForwardPreProcessPass : public Pass
   {
    public:
-    ForwardPreProcess();
-    ~ForwardPreProcess();
+    ForwardPreProcessPass();
 
-    void InitBuffers(int width, int height);
+    void InitBuffers(int width, int height, int sampleCount);
     void Render() override;
     void PreRender() override;
-    void PostRender() override;
 
    private:
     void InitDefaultDepthTexture(int width, int height);
@@ -32,7 +30,6 @@ namespace ToolKit
    public:
     ForwardRenderPassParams m_params;
     MaterialPtr m_linearMaterial    = nullptr;
-    MaterialPtr m_linearAlphaMaskMaterial    = nullptr;
     FramebufferPtr m_framebuffer    = nullptr;
 
     DepthTexturePtr m_depthTexture  = nullptr; // This is used in case there is no gbuffer
@@ -40,6 +37,6 @@ namespace ToolKit
     RenderTargetPtr m_linearDepthRt = nullptr;
   };
 
-  typedef std::shared_ptr<ForwardPreProcess> ForwardPreProcessPassPtr;
+  typedef std::shared_ptr<ForwardPreProcessPass> ForwardPreProcessPassPtr;
 
 } // namespace ToolKit

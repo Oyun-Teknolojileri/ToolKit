@@ -13,7 +13,7 @@ namespace ToolKit
 {
 
   // Matrix Operations
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   TK_API void DecomposeMatrix(const Mat4& transform, Vec3* translation, Quaternion* orientation, Vec3* scale);
 
@@ -44,14 +44,7 @@ namespace ToolKit
   TK_API void NormalizeFrustum(Frustum& frustum);
 
   // Intersections
-  //////////////////////////////////////////////////////////////////////////
-
-  enum class IntersectResult
-  {
-    Outside,
-    Inside,
-    Intersect
-  };
+  //////////////////////////////////////////
 
   TK_API float SquareDistancePointToAABB(const Vec3& p, const BoundingBox& b);
 
@@ -64,9 +57,7 @@ namespace ToolKit
                                        const Vec3& spherePos2,
                                        float sphereRadius2);
 
-  TK_API bool BoxInsideBox(const BoundingBox& inside, const BoundingBox& outside);
-
-  TK_API bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
+  TK_API IntersectResult BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
 
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);
 
@@ -88,9 +79,11 @@ namespace ToolKit
                                   float& t,
                                   const SkeletonComponentPtr skelComp = nullptr);
 
-  // @return TK_UINT_MAX = no intersection, otherwise submesh index
-  // If there is no tracing possible object, t set as 0.0
-  // Tracing possible object: Vertex positions should be in memory
+  /**
+   * For both skinned and mesh objects, finds the ray mesh intersection.
+   * If there are sub meshes, in case of a hit returns the sub mesh index and intersection distance t.
+   * If there is no intersection, returns TK_UINT_MAX and sets t to TK_FLT_MAX.
+   */
   TK_API uint FindMeshIntersection(const EntityPtr ntt, const Ray& ray, float& t);
 
   TK_API IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box);
@@ -146,9 +139,6 @@ namespace ToolKit
    * @param entities All entities.
    * @param camera Camera that is being used for generating frustum.
    */
-  TK_API void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera);
-  TK_API void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera);
-  TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices);
   TK_API void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs);
 
   // Conversions and Interpolation
@@ -170,7 +160,7 @@ namespace ToolKit
   TK_API Vec3 Orthogonal(const Vec3& v);
 
   // Comparison
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   /** Tests if all components of given vectors are equal or not. */
   template <typename T>
@@ -180,7 +170,7 @@ namespace ToolKit
   }
 
   // Random Generators
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   /**
    * Generate random points on a hemisphere with proximity to normal.

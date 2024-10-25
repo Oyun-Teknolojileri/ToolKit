@@ -156,12 +156,22 @@ namespace ToolKit
       return;
     }
 
+    // Compute bounding box center and radius
     Vec3 geoCenter = (bb.max + bb.min) * 0.5f;
-    float r        = glm::distance(geoCenter, bb.max) * margin;
-    float d        = r / glm::tan(m_fov / 2.0f);
-    Vec3 eye       = geoCenter + glm::normalize(Vec3(1.0f)) * d;
-    m_node->SetTranslation(eye, TransformationSpace::TS_WORLD);
-    GetComponent<DirectionComponent>()->LookAt(geoCenter);
+    float r        = glm::max(glm::distance(geoCenter, bb.max), 1.5f);
+    float d   = r / glm::tan(m_fov / 2.0f); // Based on fov, how far away put the camera such that it covers entire box.
+
+    // Calculate the initial eye position
+    Vec3 eye  = geoCenter + Vec3(d * margin);
+    eye      -= Vec3(Vec2(d * 0.5f), 0.0f);
+
+    // Set the initial translation and orientation
+    m_node->SetTranslation(eye);
+
+    if (DirectionComponent* dcom = GetComponentFast<DirectionComponent>())
+    {
+      dcom->LookAt(geoCenter);
+    }
   }
 
   Vec3Array Camera::ExtractFrustumCorner()

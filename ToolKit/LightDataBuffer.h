@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
+ */
+
 #pragma once
 
 #include "RHIConstants.h"
@@ -5,35 +12,45 @@
 
 namespace ToolKit
 {
+
+  /**
+   * A gpu memory aligned buffer representing a single light.
+   *
+   * The buffer in the gpu is using layout std140.
+   * To see the correct paddings, use render doc and select show paddings for the corresponding buffer.
+   */
   struct PerLightData
   {
-    int type;
-    Vec3 pad1;
+    /* Light properties */
     Vec3 pos;
-    float pad2;
+    int type; // 16 byte aligned with vec3.
+
     Vec3 dir;
-    float pad3;
+    float intensity; // 16 byte aligned with vec3.
+
     Vec3 color;
-    float intensity;
-    float radius;
+    float radius; // 16 byte aligned with vec3.
+
     float outAngle;
     float innAngle;
-    float pad5;
-
-    Mat4 projectionViewMatrices[RHIConstants::MaxCascadeCount];
     float shadowMapCameraFar;
-    int numOfCascades;
+    int numOfCascades; // 16 byte aligned with 4 x 4 bytes.
+
+    /* Cascade */
+    Mat4 projectionViewMatrices[RHIConstants::MaxCascadeCount]; // Vec4 per row. 16 byte aligned.
+
+    float BleedingReduction;
+    float shadowBias;
     int castShadow;
+    int shadowAtlasLayer;
+
     int PCFSamples;
     float PCFRadius;
-    float BleedingReduction;
-    int softShadows;
-    float shadowAtlasLayer;
-    float shadowAtlasResRatio;
-    float pad7;
+    float shadowAtlasResRatio; //!< Shadow map resolution / Shadow atlas resolution. Used to find UV coordinates.
+    float pad0;                // 16 byte aligned with 4 x 4 bytes. Padding is needed to 16 byte alignment.
+
     Vec2 shadowAtlasCoord;
-    float shadowBias;
-    Vec3 pad8;
+    Vec2 pad1;
   };
 
   struct LightData

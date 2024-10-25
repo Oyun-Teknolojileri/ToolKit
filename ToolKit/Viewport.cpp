@@ -17,8 +17,6 @@
 #include "Util.h"
 #include "Viewport.h"
 
-
-
 namespace ToolKit
 {
 
@@ -30,7 +28,7 @@ namespace ToolKit
       {
         if (EntityPtr camNtt = currScene->GetEntity(m_attachedCamera))
         {
-          if (CameraPtr cam = std::static_pointer_cast<Camera>(camNtt))
+          if (CameraPtr cam = Cast<Camera>(camNtt))
           {
             assert(cam->IsA<Camera>());
             return cam;
@@ -117,21 +115,21 @@ namespace ToolKit
 
   void Viewport::ResetViewportImage(const TextureSettings& settings)
   {
+    EngineSettings& engineSettings = GetEngineSettings();
     if (m_framebuffer == nullptr)
     {
-      m_framebuffer = MakeNewPtr<Framebuffer>();
+      m_framebuffer = MakeNewPtr<Framebuffer>("ViewportFB");
     }
 
-    m_framebuffer->UnInit();
-    m_framebuffer->Init({(int) m_wndContentAreaSize.x, (int) m_wndContentAreaSize.y, false, true});
+    float resScale = engineSettings.Graphics.renderResolutionScale;
+    int width      = (int) glm::round(m_wndContentAreaSize.x * resScale);
+    int height     = (int) glm::round(m_wndContentAreaSize.y * resScale);
 
-    m_renderTarget = MakeNewPtr<RenderTarget>((int) m_wndContentAreaSize.x, (int) m_wndContentAreaSize.y, settings);
+    m_framebuffer->ReconstructIfNeeded({width, height, false, true, engineSettings.Graphics.msaa});
+
+    m_renderTarget = MakeNewPtr<RenderTarget>(width, height, settings);
     m_renderTarget->Init();
-
-    if (m_renderTarget->m_initiated)
-    {
-      m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);
-    }
+    m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_renderTarget);
   }
 
   Ray Viewport::RayFromMousePosition()

@@ -14,10 +14,7 @@
 #include "Node.h"
 #include "Pass.h"
 #include "Skeleton.h"
-#include "TKProfiler.h"
 #include "Threads.h"
-
-#include <random>
 
 namespace ToolKit
 {
@@ -276,17 +273,25 @@ namespace ToolKit
     return dist < (sphereRadius + sphereRadius2);
   }
 
-  bool BoxInsideBox(const BoundingBox& inside, const BoundingBox& outside)
+  IntersectResult BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
   {
-    return inside.min.x >= outside.min.x && inside.min.y >= outside.min.y && inside.min.z >= outside.min.z &&
-           inside.max.x <= outside.max.x && inside.max.y <= outside.max.y && inside.max.z <= outside.max.z;
-  }
+    // Check if box1 is completely outside box2.
+    if (box1.max.x < box2.min.x || box1.min.x > box2.max.x || box1.max.y < box2.min.y || box1.min.y > box2.max.y ||
+        box1.max.z < box2.min.z || box1.min.z > box2.max.z)
+    {
+      return IntersectResult::Outside;
+    }
 
-  bool BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
-  {
-    return (box1.min.x <= box2.max.x && box1.max.x >= box2.min.x) &&
-           (box1.min.y <= box2.max.y && box1.max.y >= box2.min.y) &&
-           (box1.min.z <= box2.max.z && box1.max.z >= box2.min.z);
+    // Check if box1 fully contains box2.
+    if (box1.min.x <= box2.min.x && box1.max.x >= box2.max.x && box1.min.y <= box2.min.y && box1.max.y >= box2.max.y &&
+        box1.min.z <= box2.min.z && box1.max.z >= box2.max.z)
+    {
+      return IntersectResult::Inside;
+    }
+
+    // If we've reached here, the boxes must be intersecting.
+    // (including the case where box1 is fully inside box2)
+    return IntersectResult::Intersect;
   }
 
   bool BoxPointIntersection(const BoundingBox& box, const Vec3& point)
@@ -334,19 +339,14 @@ namespace ToolKit
     rayInObjectSpace.position  = its * Vec4(ray.position, 1.0f);
     rayInObjectSpace.direction = its * Vec4(ray.direction, 0.0f);
 
-    float bbDist               = 0.0f;
-
+    float bbDist;
     if (RayBoxIntersection(rayInObjectSpace, entity->GetBoundingBox(), bbDist))
     {
       dist             = TK_FLT_MAX;
       uint submeshIndx = FindMeshIntersection(entity, ray, dist);
 
       // There was no tracing possible object, so hit should be true
-      if (dist == 0.0f && submeshIndx == TK_UINT_MAX)
-      {
-        hit = true;
-      }
-      else if (dist != TK_FLT_MAX && submeshIndx != TK_UINT_MAX)
+      if (submeshIndx != TK_UINT_MAX)
       {
         hit = true;
       }
@@ -399,33 +399,37 @@ namespace ToolKit
   Vec3 CPUSkinning(const SkinVertex* vertex, const Skeleton* skel, DynamicBoneMapPtr dynamicBoneMap, bool isAnimated)
   {
 
-    Vec3 transformedPos = {};
+    Vec3 transformedPos;
     for (uint boneIndx = 0; boneIndx < 4; boneIndx++)
     {
       uint currentBone  = (uint) vertex->bones[boneIndx];
       StaticBone* sBone = skel->m_bones[currentBone];
+
       if (isAnimated)
       {
         // Get animated pose
-        ToolKit::Mat4 boneTransform =
-            dynamicBoneMap->boneList.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
+        Mat4 boneTransform =
+            dynamicBoneMap->m_boneMap.find(sBone->m_name)->second.node->GetTransform(TransformationSpace::TS_WORLD);
+
         transformedPos +=
             Vec3((boneTransform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
       }
       else
       {
         // Get bind pose
-        Mat4 transform = skel->m_Tpose.boneList.find(sBone->m_name)->second.node->GetTransform();
+        Mat4 transform = skel->m_Tpose.m_boneMap.find(sBone->m_name)->second.node->GetTransform();
+
         transformedPos +=
             Vec3((transform * sBone->m_inverseWorldMatrix * Vec4(vertex->pos, 1.0f) * vertex->weights[boneIndx]));
       }
     }
+
     return transformedPos;
   }
 
   bool RayMeshIntersection(const Mesh* const mesh, const Ray& ray, float& t, const SkeletonComponentPtr skelComp)
   {
-    float closestPickedDistance = FLT_MAX;
+    float closestPickedDistance = TK_FLT_MAX;
     bool hit                    = false;
     bool isAnimated             = true;
 
@@ -476,7 +480,7 @@ namespace ToolKit
                     if (skelComp != nullptr && mesh->IsSkinned())
                     {
                       SkinMesh* skinMesh = (SkinMesh*) mesh;
-                      for (uint32_t vertexIndx = 0; vertexIndx < 3; vertexIndx++)
+                      for (uint vertexIndx = 0; vertexIndx < 3; vertexIndx++)
                       {
                         positions[vertexIndx] = CPUSkinning((SkinVertex*) face.vertices[vertexIndx],
                                                             skinMesh->m_skeleton.get(),
@@ -484,7 +488,7 @@ namespace ToolKit
                                                             isAnimated);
                       }
                     }
-                    float dist = FLT_MAX;
+                    float dist = TK_FLT_MAX;
                     if (RayTriangleIntersection(ray, positions[0], positions[1], positions[2], dist))
                     {
                       std::lock_guard<std::mutex> guard(updateHit);
@@ -502,13 +506,13 @@ namespace ToolKit
 
   uint FindMeshIntersection(const EntityPtr ntt, const Ray& rayInWorldSpace, float& t)
   {
-    SkeletonComponentPtr skel = ntt->GetComponent<SkeletonComponent>();
-
     MeshRawPtrArray meshes;
     if (MeshComponentPtr meshComp = ntt->GetComponent<MeshComponent>())
     {
       meshComp->GetMeshVal()->GetAllMeshes(meshes);
     }
+
+    SkeletonComponentPtr skel = ntt->GetComponent<SkeletonComponent>();
 
     struct MeshTrace
     {
@@ -521,13 +525,13 @@ namespace ToolKit
     {
       // There is a special case for SkinMeshes, because
       // m_clientSideVertices.size() here always accesses to Mesh's vertex
-      // array (Vertex*) but it should've access to SkinMesh's vertex
+      // array (Vertex*) but it should access to SkinMesh's vertex
       // array (SkinVertex*). That's why SkinMeshes checked with a cast
       const Mesh* const mesh = meshes[i];
-      if (mesh->IsSkinned())
+      if (mesh->IsSkinned() && skel != nullptr)
       {
         SkinMesh* skinMesh = (SkinMesh*) mesh;
-        if (skinMesh->m_clientSideVertices.size() && skel != nullptr)
+        if (skinMesh->m_clientSideVertices.size())
         {
           meshTraces.push_back({TK_FLT_MAX, i});
         }
@@ -538,9 +542,9 @@ namespace ToolKit
       }
     }
 
-    if (meshTraces.size() == 0)
+    if (meshTraces.empty())
     {
-      t = 0.0f;
+      t = TK_FLT_MAX;
       return TK_UINT_MAX;
     }
 
@@ -554,14 +558,14 @@ namespace ToolKit
                   meshTraces.end(),
                   [rayInObjectSpace, skel, &meshes](MeshTrace& trace)
                   {
-                    float t = TK_FLT_MAX;
-
-                    if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, t, skel))
+                    float meshDist = TK_FLT_MAX;
+                    if (RayMeshIntersection(meshes[trace.indx], rayInObjectSpace, meshDist, skel))
                     {
-                      trace.dist = t;
+                      trace.dist = meshDist;
                     }
                   });
 
+    // Pick the submesh intersection.
     t                = TK_FLT_MAX;
     uint closestIndx = TK_UINT_MAX;
     for (const MeshTrace& trace : meshTraces)
@@ -572,58 +576,65 @@ namespace ToolKit
         closestIndx = trace.indx;
       }
     }
+
     return closestIndx;
   }
 
-  // Inequalities are reverted to work with frustum normals pointing inwards.
-  // Large objects picked falsely.
-  // https://gist.github.com/Kinwailo/d9a07f98d8511206182e50acda4fbc9b
   IntersectResult FrustumBoxIntersection(const Frustum& frustum, const BoundingBox& box)
   {
-    IntersectResult ret = IntersectResult::Inside;
-    Vec3 vmin, vmax;
+    // Start assuming the box is inside
+    IntersectResult result = IntersectResult::Inside;
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; i++)
     {
-      // X axis
-      if (frustum.planes[i].normal.x < 0)
+      const PlaneEquation& plane = frustum.planes[i];
+
+      // Compute the positive vertex
+      Vec3 p                     = box.min;
+      if (plane.normal.x >= 0)
       {
-        vmin.x = box.min.x;
-        vmax.x = box.max.x;
+        p.x = box.max.x;
       }
-      else
+
+      if (plane.normal.y >= 0)
       {
-        vmin.x = box.max.x;
-        vmax.x = box.min.x;
+        p.y = box.max.y;
       }
-      // Y axis
-      if (frustum.planes[i].normal.y < 0)
+
+      if (plane.normal.z >= 0)
       {
-        vmin.y = box.min.y;
-        vmax.y = box.max.y;
+        p.z = box.max.z;
       }
-      else
+
+      // Compute the negative vertex
+      Vec3 n = box.max;
+      if (plane.normal.x >= 0)
       {
-        vmin.y = box.max.y;
-        vmax.y = box.min.y;
+        n.x = box.min.x;
       }
-      // Z axis
-      if (frustum.planes[i].normal.z < 0)
+
+      if (plane.normal.y >= 0)
       {
-        vmin.z = box.min.z;
-        vmax.z = box.max.z;
+        n.y = box.min.y;
       }
-      else
+
+      if (plane.normal.z >= 0)
       {
-        vmin.z = box.max.z;
-        vmax.z = box.min.z;
+        n.z = box.min.z;
       }
-      if (glm::dot(frustum.planes[i].normal, vmin) + frustum.planes[i].d < 0)
+
+      if (glm::dot(plane.normal, p) + plane.d < 0)
+      {
         return IntersectResult::Outside;
-      if (glm::dot(frustum.planes[i].normal, vmax) + frustum.planes[i].d <= 0)
-        ret = IntersectResult::Intersect;
+      }
+
+      if (glm::dot(plane.normal, n) + plane.d < 0)
+      {
+        result = IntersectResult::Intersect;
+      }
     }
-    return ret;
+
+    return result;
   }
 
   // frustum should be normalized
@@ -739,62 +750,11 @@ namespace ToolKit
     return res == IntersectResult::Outside;
   }
 
-  void FrustumCull(EntityRawPtrArray& entities, const CameraPtr& camera)
-  {
-    // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
-
-    auto delFn      = [frustum](Entity* ntt) -> bool { return FrustumTest(frustum, ntt->GetBoundingBox(true)); };
-    erase_if(entities, delFn);
-  }
-
-  void FrustumCull(RenderJobArray& jobs, const CameraPtr& camera)
-  {
-    CPU_FUNC_RANGE();
-
-    // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
-
-    for (int i = 0; i < (int) jobs.size(); i++)
-    {
-      RenderJob& job    = jobs[i];
-      job.frustumCulled = FrustumTest(frustum, job.BoundingBox);
-    }
-  }
-
-  void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, UIntArray& resultIndices)
-  {
-    CPU_FUNC_RANGE();
-
-    // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
-
-    resultIndices.clear();
-    resultIndices.reserve(jobs.size());
-
-    for (int i = 0; i < (int) jobs.size(); i++)
-    {
-      if (!FrustumTest(frustum, jobs[i].BoundingBox))
-      {
-        resultIndices.push_back(i);
-      }
-    }
-  }
-
   void FrustumCull(const RenderJobArray& jobs, const CameraPtr& camera, RenderJobArray& unCulledJobs)
   {
-    CPU_FUNC_RANGE();
-
     // Frustum cull
-    Mat4 pr         = camera->GetProjectionMatrix();
-    Mat4 v          = camera->GetViewMatrix();
-    Frustum frustum = ExtractFrustum(pr * v, false);
+    Mat4 projectView = camera->GetProjectViewMatrix();
+    Frustum frustum  = ExtractFrustum(projectView, false);
 
     unCulledJobs.clear();
     unCulledJobs.reserve(jobs.size());
@@ -915,7 +875,7 @@ namespace ToolKit
   }
 
   // Converted from OgreVector3.h perpendicular()
-  TK_API Vec3 Orthogonal(const Vec3& v)
+  Vec3 Orthogonal(const Vec3& v)
   {
     static const float fSquareZero = static_cast<float>(1e-06 * 1e-06);
     Vec3 perp                      = glm::cross(v, X_AXIS);

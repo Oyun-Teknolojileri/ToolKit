@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AABBTree.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AnimationControllerComponent.cpp" />
     <ClCompile Include="Audio.cpp">
@@ -19,7 +20,6 @@
     <ClCompile Include="BillboardPass.cpp" />
     <ClCompile Include="BinPack2D.cpp" />
     <ClCompile Include="BloomPass.cpp" />
-    <ClCompile Include="BVH.cpp" />
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -36,12 +36,9 @@
     <ClCompile Include="ForwardPass.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FullQuadPass.cpp" />
-    <ClCompile Include="FxaaPass.cpp" />
     <ClCompile Include="GameRenderer.cpp" />
     <ClCompile Include="GameViewport.cpp" />
-    <ClCompile Include="GammaPass.cpp" />
     <ClCompile Include="GammaTonemapFxaaPass.cpp" />
-    <ClCompile Include="GBufferPass.cpp" />
     <ClCompile Include="GlErrorReporter.cpp" />
     <ClCompile Include="GpuProgram.cpp" />
     <ClCompile Include="GradientSky.cpp" />
@@ -53,18 +50,16 @@
     <ClCompile Include="MathUtil.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
-    <ClCompile Include="MobileSceneRenderPath.cpp" />
+    <ClCompile Include="ForwardSceneRenderPath.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="OutlinePass.cpp" />
     <ClCompile Include="ParameterBlock.cpp" />
     <ClCompile Include="Pass.cpp" />
-    <ClCompile Include="AdditiveLightingPass.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp">
       <IncludeInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IncludeInUnityFile>
     </ClCompile>
-    <ClCompile Include="PostProcessPass.cpp" />
     <ClCompile Include="Prefab.cpp" />
     <ClCompile Include="Primative.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -75,7 +70,6 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="RHI.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SceneRenderPath.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderUniform.cpp" />
     <ClCompile Include="ShadowPass.cpp" />
@@ -98,20 +92,20 @@
     <ClCompile Include="TKOpenGL.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>
     </ClCompile>
-    <ClCompile Include="ToneMapPass.cpp" />
+    <ClCompile Include="TKStats.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="Viewport.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABBTree.h" />
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AnimationControllerComponent.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="BillboardPass.h" />
     <ClInclude Include="BinPack2D.h" />
     <ClInclude Include="BloomPass.h" />
-    <ClInclude Include="BVH.h" />
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Class.h" />
     <ClInclude Include="Component.h" />
@@ -131,12 +125,9 @@
     <ClInclude Include="ForwardPass.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FullQuadPass.h" />
-    <ClInclude Include="FxaaPass.h" />
     <ClInclude Include="GameRenderer.h" />
     <ClInclude Include="GameViewport.h" />
-    <ClInclude Include="GammaPass.h" />
     <ClInclude Include="GammaTonemapFxaaPass.h" />
-    <ClInclude Include="GBufferPass.h" />
     <ClInclude Include="GlErrorReporter.h" />
     <ClInclude Include="GpuProgram.h" />
     <ClInclude Include="GradientSky.h" />
@@ -144,15 +135,13 @@
     <ClInclude Include="LightDataBuffer.h" />
     <ClInclude Include="MaterialComponent.h" />
     <ClInclude Include="MeshComponent.h" />
-    <ClInclude Include="MobileSceneRenderPath.h" />
+    <ClInclude Include="ForwardSceneRenderPath.h" />
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
-    <ClInclude Include="PostProcessPass.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RHI.h" />
     <ClInclude Include="RHIConstants.h" />
-    <ClInclude Include="SceneRenderPath.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Material.h" />
@@ -189,16 +178,68 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="TKImage.h" />
     <ClInclude Include="TKPlatform.h" />
-    <ClInclude Include="TKProfiler.h" />
     <ClInclude Include="TKStats.h" />
-    <ClInclude Include="ToneMapPass.h" />
-    <ClInclude Include="AdditiveLightingPass.h" />
     <ClInclude Include="ToolKit.h" />
     <ClInclude Include="TKOpenGL.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="UIManager.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Viewport.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Engine\Shaders\AO.shader" />
+    <None Include="..\Resources\Engine\Shaders\avgBlurFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\avgBlurVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\bloomDownsample.shader" />
+    <None Include="..\Resources\Engine\Shaders\bloomUpsample.shader" />
+    <None Include="..\Resources\Engine\Shaders\BRDFLutFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\camera.shader" />
+    <None Include="..\Resources\Engine\Shaders\copyTextureFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\copyTextureVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\defaultFragment.shader" />
+    <None Include="..\Resources\Engine\Shaders\defaultVertex.shader" />
+    <None Include="..\Resources\Engine\Shaders\depthOfFieldFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\dilateFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\equirectToCubeFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\equirectToCubeVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\forwardPreProcess.shader" />
+    <None Include="..\Resources\Engine\Shaders\forwardPreProcessVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\fullQuadVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\fxaaFunctions.shader" />
+    <None Include="..\Resources\Engine\Shaders\gammaFunctions.shader" />
+    <None Include="..\Resources\Engine\Shaders\gammaTonemapFxaa.shader" />
+    <None Include="..\Resources\Engine\Shaders\gausBlur7x1Frag.shader" />
+    <None Include="..\Resources\Engine\Shaders\gausBlur7x1Vert.shader" />
+    <None Include="..\Resources\Engine\Shaders\gradientSkyboxFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\gridFragment.shader" />
+    <None Include="..\Resources\Engine\Shaders\gridVertex.shader" />
+    <None Include="..\Resources\Engine\Shaders\ibl.shader" />
+    <None Include="..\Resources\Engine\Shaders\irradianceGenerateFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\irradianceGenerateVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\lightComplexity.shader" />
+    <None Include="..\Resources\Engine\Shaders\lighting.shader" />
+    <None Include="..\Resources\Engine\Shaders\normalFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthViewFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthViewVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\pbr.shader" />
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthViewFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\positionVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\preFilterEnvMapFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\shadow.shader" />
+    <None Include="..\Resources\Engine\Shaders\skinning.shader" />
+    <None Include="..\Resources\Engine\Shaders\skyboxFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\skyboxVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\solidColorFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\ssaoCalcFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\texCoordFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\textureUtil.shader" />
+    <None Include="..\Resources\Engine\Shaders\tonemapFunctions.shader" />
+    <None Include="..\Resources\Engine\Shaders\unlitFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\VSM.shader" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -234,13 +275,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\poolSTL\include</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\poolSTL\include</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>

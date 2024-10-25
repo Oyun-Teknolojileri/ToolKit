@@ -35,19 +35,17 @@ namespace ToolKit
     void Init(bool flushClientSideArray);
     BoundingBox GetBoundingBox();
 
-    // AABB should be in entity space (not world space)
-    void SetBoundingBox(BoundingBox aabb);
+    /** Sets the bounding box override for the owner entity. Box should be in entity's local space (not world space) */
+    void SetBoundingBox(const BoundingBox& aabb);
 
    protected:
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
-    private:
-    void InvalidateSpatialCaches();
-
    private:
     TKDeclareParam(Vec3, PositionOffset);
     TKDeclareParam(Vec3, Size);
   };
+
 } //  namespace ToolKit

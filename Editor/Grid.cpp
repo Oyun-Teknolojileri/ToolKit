@@ -23,7 +23,7 @@ namespace ToolKit
   {
 
     // GridFragmentShader
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     TKDefineClass(GridFragmentShader, Shader);
 
@@ -32,12 +32,14 @@ namespace ToolKit
     GridFragmentShader::~GridFragmentShader() {}
 
     // Grid
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     TKDefineClass(Grid, Entity);
 
     Grid::Grid()
     {
+      m_partOfAABBTree           = false;
+
       Vec3 m_horizontalAxisColor = g_gridAxisRed;
       Vec3 m_verticalAxisColor   = g_gridAxisBlue;
 

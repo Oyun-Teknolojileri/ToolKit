@@ -9,71 +9,42 @@
 
 #include "Material.h"
 #include "Mesh.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  CubeMapPass::CubeMapPass() { m_cube = MakeNewPtr<Cube>(); }
-
-  CubeMapPass::CubeMapPass(const CubeMapPassParams& params) : CubeMapPass() { m_params = params; }
-
-  CubeMapPass::~CubeMapPass() { m_cube = nullptr; }
+  CubeMapPass::CubeMapPass() : Pass("CubeMapPass") { m_cube = MakeNewPtr<Cube>(); }
 
   void CubeMapPass::Render()
   {
-    PUSH_GPU_MARKER("CubeMapPass::Render");
-    PUSH_CPU_MARKER("CubeMapPass::Render");
-
-    m_cube->m_node->SetTransform(m_params.Transform);
-
     Renderer* renderer = GetRenderer();
-
-    if (m_params.ClearFramebuffer)
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::AllBits);
-    }
-    else
-    {
-      renderer->SetFramebuffer(m_params.FrameBuffer, GraphicBitFields::None);
-    }
+    renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_cube}, jobs);
-    renderer->RenderWithProgramFromMaterial(jobs);
+    RenderJobProcessor::CreateRenderJobs(jobs, m_cube);
 
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    renderer->RenderWithProgramFromMaterial(jobs);
   }
 
   void CubeMapPass::PreRender()
   {
-    PUSH_GPU_MARKER("CubeMapPass::PreRender");
-    PUSH_CPU_MARKER("CubeMapPass::PreRender");
-
     Pass::PreRender();
+
+    m_cube->m_node->SetTransform(m_params.Transform);
+
     MaterialComponentPtr matCom = m_cube->GetMaterialComponent();
     matCom->SetFirstMaterial(m_params.Material);
 
     Renderer* renderer = GetRenderer();
     renderer->SetDepthTestFunc(m_params.DepthFn);
     renderer->SetCamera(m_params.Cam, false);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void CubeMapPass::PostRender()
   {
-    PUSH_GPU_MARKER("CubeMapPass::PostRender");
-    PUSH_CPU_MARKER("CubeMapPass::PostRender");
-
     Pass::PostRender();
     GetRenderer()->SetDepthTestFunc(CompareFunctions::FuncLess);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
 } // namespace ToolKit

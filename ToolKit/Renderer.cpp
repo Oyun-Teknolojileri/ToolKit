@@ -28,7 +28,6 @@
 #include "Surface.h"
 #include "TKAssert.h"
 #include "TKOpenGL.h"
-#include "TKProfiler.h"
 #include "TKStats.h"
 #include "Texture.h"
 #include "ToolKit.h"
@@ -42,7 +41,7 @@ namespace ToolKit
   void Renderer::Init()
   {
     m_uiCamera                      = MakeNewPtr<Camera>();
-    m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>();
+    m_oneColorAttachmentFramebuffer = MakeNewPtr<Framebuffer>("RendererOneColorFB");
     m_dummyDrawCube                 = MakeNewPtr<Cube>();
 
     m_gpuProgramManager             = GetGpuProgramManager();
@@ -118,8 +117,6 @@ namespace ToolKit
 
   void Renderer::Render(const RenderJob& job)
   {
-    assert(m_ignoreRenderingCulledObjectWarning || !job.frustumCulled && "Rendering culled object.");
-
     // Make ibl assignments.
     m_renderState.IBLInUse = false;
     if (job.EnvironmentVolume)
@@ -232,7 +229,7 @@ namespace ToolKit
       glDrawArrays((GLenum) renderState->drawType, 0, mesh->m_vertexCount);
     }
 
-    AddDrawCall();
+    Stats::AddDrawCall();
   }
 
   void Renderer::RenderWithProgramFromMaterial(const RenderJobArray& jobs)
@@ -262,8 +259,6 @@ namespace ToolKit
 
   void Renderer::SetRenderState(const RenderState* const state, bool cullFlip)
   {
-    CPU_FUNC_RANGE();
-
     CullingType targetMode = state->cullMode;
     if (cullFlip)
     {
@@ -310,29 +305,33 @@ namespace ToolKit
 
     if (m_renderState.blendFunction != state->blendFunction)
     {
-      switch (state->blendFunction)
+      // Only update blend state, if blend state is not overridden.
+      if (!m_blendStateOverrideEnable)
       {
-      case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
-      {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      }
-      break;
-      case BlendFunction::ONE_TO_ONE:
-      {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
-        glBlendEquation(GL_FUNC_ADD);
-      }
-      break;
-      default:
-      {
-        glDisable(GL_BLEND);
-      }
-      break;
-      }
+        switch (state->blendFunction)
+        {
+        case BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA:
+        {
+          glEnable(GL_BLEND);
+          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        break;
+        case BlendFunction::ONE_TO_ONE:
+        {
+          glEnable(GL_BLEND);
+          glBlendFunc(GL_ONE, GL_ONE);
+          glBlendEquation(GL_FUNC_ADD);
+        }
+        break;
+        default:
+        {
+          glDisable(GL_BLEND);
+        }
+        break;
+        }
 
-      m_renderState.blendFunction = state->blendFunction;
+        m_renderState.blendFunction = state->blendFunction;
+      }
     }
 
     m_renderState.alphaMaskTreshold = state->alphaMaskTreshold;
@@ -389,8 +388,6 @@ namespace ToolKit
                                 const Vec4& clearColor,
                                 GraphicFramebufferTypes fbType)
   {
-    CPU_FUNC_RANGE();
-
     if (fb != nullptr)
     {
       RHI::SetFramebuffer((GLenum) fbType, fb->GetFboId());
@@ -440,6 +437,8 @@ namespace ToolKit
   void Renderer::GetElapsedTime(float& cpu, float& gpu)
   {
     cpu = m_cpuTime;
+    gpu = 1.0f;
+#ifndef TK_ANDROID
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
       GLuint elapsedTime;
@@ -447,10 +446,7 @@ namespace ToolKit
 
       gpu = glm::max(1.0f, (float) (elapsedTime) / 1000000.0f);
     }
-    else
-    {
-      gpu = 1.0f;
-    }
+#endif
   }
 
   FramebufferPtr Renderer::GetFrameBuffer() { return m_framebuffer; }
@@ -485,34 +481,55 @@ namespace ToolKit
 
     dest->ReconstructIfNeeded(width, height);
 
+    FramebufferPtr lastFb = m_framebuffer;
+
     RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, srcId);
     RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
+
+    SetFramebuffer(lastFb, GraphicBitFields::None);
   }
 
-  void Renderer::InvalidateFramebufferDepth(FramebufferPtr fb)
+  // By invalidating the frame buffers attachment, bandwith and performance saving is aimed,
+  // Nvidia driver issue makes the invalidate perform much worse. Clear will work the same in terms of bandwith saving
+  // with no performance penalty.
+#define PREFER_CLEAR_OVER_INVALIDATE 1
+
+  void Renderer::InvalidateFramebufferDepth(FramebufferPtr frameBuffer)
   {
+#if PREFER_CLEAR_OVER_INVALIDATE
+    SetFramebuffer(frameBuffer, GraphicBitFields::DepthBits);
+#else
     constexpr GLenum invalidAttachments[1] = {GL_DEPTH_ATTACHMENT};
 
-    SetFramebuffer(fb, GraphicBitFields::None);
-    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+    SetFramebuffer(frameBuffer, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(GL_FRAMEBUFFER, 1, invalidAttachments);
+#endif
   }
 
-  void Renderer::InvalidateFramebufferStencil(FramebufferPtr fb)
+  void Renderer::InvalidateFramebufferStencil(FramebufferPtr frameBuffer)
   {
+#if PREFER_CLEAR_OVER_INVALIDATE
+    SetFramebuffer(frameBuffer, GraphicBitFields::StencilBits);
+#else
     constexpr GLenum invalidAttachments[1] = {GL_STENCIL_ATTACHMENT};
 
-    SetFramebuffer(fb, GraphicBitFields::None);
-    RHI::InvalidateFramebuffer(fb->GetFboId(), 1, invalidAttachments);
+    SetFramebuffer(frameBuffer, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(GL_FRAMEBUFFER, 1, invalidAttachments);
+#endif
   }
 
-  void Renderer::InvalidateFramebufferDepthStencil(FramebufferPtr fb)
+  void Renderer::InvalidateFramebufferDepthStencil(FramebufferPtr frameBuffer)
   {
+#if PREFER_CLEAR_OVER_INVALIDATE
+    SetFramebuffer(frameBuffer, GraphicBitFields::DepthStencilBits);
+#else
     constexpr GLenum invalidAttachments[2] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
 
-    SetFramebuffer(fb, GraphicBitFields::None);
-    RHI::InvalidateFramebuffer(fb->GetFboId(), 2, invalidAttachments);
+    SetFramebuffer(frameBuffer, GraphicBitFields::None);
+    RHI::InvalidateFramebuffer(GL_FRAMEBUFFER, 2, invalidAttachments);
+#endif
   }
 
   void Renderer::SetViewport(Viewport* viewport) { SetFramebuffer(viewport->m_framebuffer, GraphicBitFields::AllBits); }
@@ -567,7 +584,7 @@ namespace ToolKit
     SetCamera(m_tempQuadCam, true);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs({m_tempQuad}, jobs);
+    RenderJobProcessor::CreateRenderJobs(jobs, m_tempQuad);
 
     CompareFunctions lastDepthFunc = m_renderState.depthFunction;
     SetDepthTestFunc(CompareFunctions::FuncAlways);
@@ -584,8 +601,7 @@ namespace ToolKit
     SetCamera(cam, true);
 
     RenderJobArray jobs;
-    EntityPtrArray oneDummyDrawCube = {m_dummyDrawCube};
-    RenderJobProcessor::CreateRenderJobs(oneDummyDrawCube, jobs);
+    RenderJobProcessor::CreateRenderJobs(jobs, m_dummyDrawCube);
 
     CompareFunctions lastCompareFunc = m_renderState.depthFunction;
     SetDepthTestFunc(CompareFunctions::FuncAlways);
@@ -595,29 +611,25 @@ namespace ToolKit
     SetDepthTestFunc(lastCompareFunc);
   }
 
-  void Renderer::CopyTexture(TexturePtr source, TexturePtr dest)
+  void Renderer::CopyTexture(TexturePtr src, TexturePtr dst)
   {
-    CPU_FUNC_RANGE();
-
-    assert(source->m_width == dest->m_width && source->m_height == dest->m_height &&
-           "Sizes of the textures are not the same.");
-
-    assert(source->m_initiated && dest->m_initiated && "Texture is not initialized.");
-
-    assert(source);
+    assert(src->m_initiated && dst->m_initiated && "Texture is not initialized.");
+    assert(src->m_width == dst->m_width && src->m_height == dst->m_height && "Sizes of the textures are not the same.");
 
     if (m_copyFb == nullptr)
     {
-      m_copyFb = MakeNewPtr<Framebuffer>();
-      m_copyFb->Init({source->m_width, source->m_height, false, false});
+      FramebufferSettings fbSettings = {src->m_width, src->m_height, false, false};
+      m_copyFb                       = MakeNewPtr<Framebuffer>(fbSettings, "RendererCopyFB");
+      m_copyFb->Init();
     }
 
-    RenderTargetPtr rt = std::static_pointer_cast<RenderTarget>(dest);
-    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+    m_copyFb->ReconstructIfNeeded(src->m_width, src->m_height);
 
-    // Set and clear fb
     FramebufferPtr lastFb = m_framebuffer;
-    SetFramebuffer(m_copyFb, GraphicBitFields::None);
+
+    RenderTargetPtr rt    = Cast<RenderTarget>(dst);
+    m_copyFb->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, rt);
+    SetFramebuffer(m_copyFb, GraphicBitFields::AllBits);
 
     // Render to texture
     if (m_copyMaterial == nullptr)
@@ -627,12 +639,23 @@ namespace ToolKit
       m_copyMaterial->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("copyTextureFrag.shader", true));
     }
 
-    m_copyMaterial->UnInit();
-    m_copyMaterial->m_diffuseTexture = source;
+    m_copyMaterial->m_diffuseTexture = src;
     m_copyMaterial->Init();
 
     DrawFullQuad(m_copyMaterial);
     SetFramebuffer(lastFb, GraphicBitFields::None);
+  }
+
+  void Renderer::OverrideBlendState(bool enableOverride, BlendFunction func)
+  {
+    RenderState stateCpy       = m_renderState;
+    stateCpy.blendFunction     = func;
+
+    m_blendStateOverrideEnable = false;
+
+    SetRenderState(&stateCpy);
+
+    m_blendStateOverrideEnable = enableOverride;
   }
 
   void Renderer::EnableBlending(bool enable)
@@ -674,16 +697,9 @@ namespace ToolKit
     }
   }
 
-  void Renderer::Apply7x1GaussianBlur(const TexturePtr source,
-                                      RenderTargetPtr dest,
-                                      const Vec3& axis,
-                                      const float amount)
+  void Renderer::Apply7x1GaussianBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    CPU_FUNC_RANGE();
-
-    FramebufferPtr frmBackup = m_framebuffer;
-
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({dst->m_width, dst->m_height, false, false});
 
     if (m_gaussianBlurMaterial == nullptr)
     {
@@ -695,28 +711,21 @@ namespace ToolKit
       m_gaussianBlurMaterial->m_vertexShader     = vert;
       m_gaussianBlurMaterial->m_fragmentShader   = frag;
       m_gaussianBlurMaterial->m_diffuseTexture   = nullptr;
+      m_gaussianBlurMaterial->Init();
     }
 
-    m_gaussianBlurMaterial->UnInit();
-    m_gaussianBlurMaterial->m_diffuseTexture = source;
-    m_gaussianBlurMaterial->Init();
+    m_gaussianBlurMaterial->m_diffuseTexture = src;
     m_gaussianBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
-    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dst);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_gaussianBlurMaterial);
-
-    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
-  void Renderer::ApplyAverageBlur(const TexturePtr source, RenderTargetPtr dest, const Vec3& axis, const float amount)
+  void Renderer::ApplyAverageBlur(const TexturePtr src, RenderTargetPtr dst, const Vec3& axis, const float amount)
   {
-    CPU_FUNC_RANGE();
-
-    FramebufferPtr frmBackup = m_framebuffer;
-
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({dst->m_width, dst->m_height, false, false});
 
     if (m_averageBlurMaterial == nullptr)
     {
@@ -728,20 +737,16 @@ namespace ToolKit
       m_averageBlurMaterial->m_vertexShader     = vert;
       m_averageBlurMaterial->m_fragmentShader   = frag;
       m_averageBlurMaterial->m_diffuseTexture   = nullptr;
+      m_averageBlurMaterial->Init();
     }
 
-    m_averageBlurMaterial->UnInit();
-    m_averageBlurMaterial->m_diffuseTexture = source;
-    m_averageBlurMaterial->Init();
-
+    m_averageBlurMaterial->m_diffuseTexture = src;
     m_averageBlurMaterial->UpdateProgramUniform("BlurScale", axis * amount);
 
-    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dest);
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, dst);
 
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
     DrawFullQuad(m_averageBlurMaterial);
-
-    SetFramebuffer(frmBackup, GraphicBitFields::None);
   }
 
   void Renderer::GenerateBRDFLutTexture()
@@ -760,8 +765,13 @@ namespace ToolKit
           MakeNewPtr<RenderTarget>(RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, set);
       brdfLut->Init();
 
-      FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>();
-      utilFramebuffer->Init({RHIConstants::BrdfLutTextureSize, RHIConstants::BrdfLutTextureSize, false, false});
+      FramebufferSettings fbSettings = {RHIConstants::BrdfLutTextureSize,
+                                        RHIConstants::BrdfLutTextureSize,
+                                        false,
+                                        false};
+
+      FramebufferPtr utilFramebuffer = MakeNewPtr<Framebuffer>(fbSettings, "RendererLUTFB");
+      utilFramebuffer->Init();
       utilFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, brdfLut);
 
       MaterialPtr material       = MakeNewPtr<Material>();
@@ -779,7 +789,7 @@ namespace ToolKit
       SetCamera(camera, true);
 
       RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs({quad}, jobs);
+      RenderJobProcessor::CreateRenderJobs(jobs, quad);
       RenderWithProgramFromMaterial(jobs);
 
       brdfLut->SetFile(TKBrdfLutTexture);
@@ -787,6 +797,15 @@ namespace ToolKit
       m_brdfLut = brdfLut;
 
       SetFramebuffer(prevFrameBuffer, GraphicBitFields::None);
+    }
+  }
+
+  void Renderer::SetAmbientOcclusionTexture(TexturePtr aoTexture)
+  {
+    m_aoTexture = aoTexture;
+    if (m_aoTexture)
+    {
+      SetTexture(5, m_aoTexture->m_textureId);
     }
   }
 
@@ -816,8 +835,6 @@ namespace ToolKit
 
   void Renderer::FeedUniforms(const GpuProgramPtr& program, const RenderJob& job)
   {
-    CPU_FUNC_RANGE();
-
     // Update camera related uniforms.
     if (m_gpuProgramHasCameraUpdates.find(program->m_handle) == m_gpuProgramHasCameraUpdates.end())
     {
@@ -855,7 +872,7 @@ namespace ToolKit
       if (uniformLoc != -1)
       {
         EngineSettings& set = GetEngineSettings();
-        glUniform1f(uniformLoc, set.PostProcessing.ShadowDistance);
+        glUniform1f(uniformLoc, set.Graphics.GetShadowMaxDistance());
       }
 
       m_gpuProgramHasCameraUpdates.insert(program->m_handle);
@@ -876,11 +893,10 @@ namespace ToolKit
         glUniform1f(uniformLoc, Main::GetInstance()->TimeSinceStartup() / 1000.0f);
       }
 
-      const EngineSettings& engineSettings = GetEngineSettings();
-      uniformLoc                           = program->GetDefaultUniformLocation(Uniform::AO_ENABLED);
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::SHADOW_ATLAS_SIZE);
       if (uniformLoc != -1)
       {
-        glUniform1i(uniformLoc, engineSettings.PostProcessing.SSAOEnabled);
+        glUniform1f(uniformLoc, (float) RHIConstants::ShadowAtlasTextureSize);
       }
 
       m_gpuProgramHasFrameUpdates.insert(program->m_handle);
@@ -916,18 +932,6 @@ namespace ToolKit
           color = Vec4(1.0f, 1.0f, 1.0f, color.w);
         }
         glUniform4fv(uniformLoc, 1, &color.x);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_INTENSITY);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, m_renderState.iblIntensity);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
-      if (uniformLoc != -1)
-      {
-        glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
       }
 
       uniformLoc = program->GetDefaultUniformLocation(Uniform::COLOR_ALPHA);
@@ -1000,7 +1004,6 @@ namespace ToolKit
     }
 
     // Built-in variables.
-
     {
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_VIEW_MATRIX);
       if (uniformLoc != -1)
@@ -1015,11 +1018,13 @@ namespace ToolKit
         Mat4 mul = m_projectView * m_model;
         glUniformMatrix4fv(uniformLoc, 1, false, &mul[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL);
       if (uniformLoc != -1)
       {
         glUniformMatrix4fv(uniformLoc, 1, false, &m_model[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::MODEL_NO_TR);
       if (uniformLoc != -1)
       {
@@ -1033,12 +1038,14 @@ namespace ToolKit
         modelNoTr[3][2] = 0.0f;
         glUniformMatrix4fv(uniformLoc, 1, false, &modelNoTr[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::INV_TR_MODEL);
       if (uniformLoc != -1)
       {
         Mat4 invTrModel = glm::transpose(glm::inverse(m_model));
         glUniformMatrix4fv(uniformLoc, 1, false, &invTrModel[0][0]);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::METALLIC_ROUGHNESS_TEXTURE_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1050,6 +1057,7 @@ namespace ToolKit
           }
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::NORMAL_MAP_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1058,6 +1066,7 @@ namespace ToolKit
           SetTexture(9, m_mat->m_normalMap->m_textureId);
         }
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::USE_IBL);
       if (uniformLoc != -1)
       {
@@ -1069,6 +1078,7 @@ namespace ToolKit
         }
         glUniform1i(uniformLoc, (GLint) m_renderState.IBLInUse);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_ROTATION);
       if (uniformLoc != -1)
       {
@@ -1077,6 +1087,19 @@ namespace ToolKit
           glUniformMatrix4fv(uniformLoc, 1, false, &m_iblRotation[0][0]);
         }
       }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_INTENSITY);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, m_renderState.iblIntensity);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::IBL_MAX_REFLECTION_LOD);
+      if (uniformLoc != -1)
+      {
+        glUniform1i(uniformLoc, RHIConstants::SpecularIBLLods - 1);
+      }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::EMISSIVE_TEXTURE_IN_USE);
       if (uniformLoc != -1)
       {
@@ -1085,26 +1108,38 @@ namespace ToolKit
           SetTexture(1, m_mat->m_emissiveTexture->m_textureId);
         }
       }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::AO_ENABLED);
+      if (uniformLoc != -1)
+      {
+        bool aoEnabled = m_aoTexture != nullptr;
+        glUniform1i(uniformLoc, aoEnabled);
+      }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.firstKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_2);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.secondKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_INT_TIME);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.keyFrameInterpolationTime);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_COUNT);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.keyFrameCount);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::IS_ANIMATED);
       if (uniformLoc != -1)
       {
@@ -1115,26 +1150,31 @@ namespace ToolKit
       {
         glUniform1i(uniformLoc, job.animData.blendAnimation != nullptr);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_FACTOR);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.animationBlendFactor);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_1);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendFirstKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_2);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendSecondKeyFrame);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_INT_TIME);
       if (uniformLoc != -1)
       {
         glUniform1f(uniformLoc, job.animData.blendKeyFrameInterpolationTime);
       }
+
       uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_COUNT);
       if (uniformLoc != -1)
       {
@@ -1185,8 +1225,6 @@ namespace ToolKit
 
   void Renderer::FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job)
   {
-    CPU_FUNC_RANGE();
-
     GLint loc = program->GetDefaultUniformLocation(Uniform::LIGHT_DATA_ACTIVECOUNT);
     if (loc != -1)
     {
@@ -1285,8 +1323,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1316,7 +1352,7 @@ namespace ToolKit
 
     mat->UpdateProgramUniform("Exposure", exposure);
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({(int) size, (int) size, false, false});
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
@@ -1328,7 +1364,7 @@ namespace ToolKit
                     glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
                     glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 6; i++)
     {
       Vec3 pos, sca;
       Quaternion rot;
@@ -1344,10 +1380,6 @@ namespace ToolKit
                                                           0,
                                                           -1,
                                                           (Framebuffer::CubemapFace) i);
-      if (i > 0)
-      {
-        AddHWRenderPass();
-      }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
@@ -1361,8 +1393,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1399,7 +1429,7 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->Init({(int) size, (int) size, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({(int) size, (int) size, false, false});
 
     for (int i = 0; i < 6; ++i)
     {
@@ -1417,10 +1447,6 @@ namespace ToolKit
                                                           0,
                                                           -1,
                                                           (Framebuffer::CubemapFace) i);
-      if (i > 0)
-      {
-        AddHWRenderPass();
-      }
 
       SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
       DrawCube(cam, mat);
@@ -1436,8 +1462,6 @@ namespace ToolKit
 
   CubeMapPtr Renderer::GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps)
   {
-    CPU_FUNC_RANGE();
-
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
@@ -1471,6 +1495,7 @@ namespace ToolKit
     // Create material
     MaterialPtr mat         = MakeNewPtr<Material>();
     mat->m_isShaderMaterial = true;
+
     ShaderPtr vert          = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
     ShaderPtr frag          = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 
@@ -1480,12 +1505,12 @@ namespace ToolKit
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 
-    m_oneColorAttachmentFramebuffer->Init({0, 0, false, false});
+    m_oneColorAttachmentFramebuffer->ReconstructIfNeeded({(int) size, (int) size, false, false});
 
     UVec2 lastViewportSize = m_viewportSize;
 
     assert(size >= 128 && "Due to RHIConstants::SpecularIBLLods, it can't be lower than this resolution.");
-    for (int mip = 0; mip < mipMaps; ++mip)
+    for (int mip = 0; mip < mipMaps; mip++)
     {
       uint mipSize              = (uint) (size * std::powf(0.5f, (float) mip));
 
@@ -1510,16 +1535,10 @@ namespace ToolKit
                                                             -1,
                                                             (Framebuffer::CubemapFace) i);
 
-        if (mip != 0 && i != 0)
-        {
-          AddHWRenderPass();
-        }
+        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
 
         mat->UpdateProgramUniform("roughness", (float) mip / (float) mipMaps);
         mat->UpdateProgramUniform("resPerFace", (float) mipSize);
-
-        SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::None);
-        SetViewportSize(mipSize, mipSize);
 
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
 
@@ -1528,9 +1547,6 @@ namespace ToolKit
         // Copy color attachment to cubemap's correct mip level and face.
         RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId, 0);
         glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
-
-        // Set the read cubemap back. When renderer hijacked like this, we need to restore its state manually.
-        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
       }
     }
 

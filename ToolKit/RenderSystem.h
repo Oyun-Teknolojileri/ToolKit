@@ -22,6 +22,8 @@ namespace ToolKit
     RenderPath();
     virtual ~RenderPath();
     virtual void Render(Renderer* renderer);
+    virtual void PreRender(Renderer* renderer);
+    virtual void PostRender(Renderer* renderer);
 
    public:
     PassPtrArray m_passArray;
@@ -55,7 +57,6 @@ namespace ToolKit
     ~RenderSystem();
 
     void Init();
-    void AddRenderTask(RenderPath* technique);
     void AddRenderTask(RenderTask task);
     void ExecuteRenderTasks();
     void FlushRenderTasks();
@@ -125,22 +126,22 @@ namespace ToolKit
     RenderTaskArray m_lowQueue;
 
     /** Current Renderer. */
-    Renderer* m_renderer            = nullptr;
+    Renderer* m_renderer                 = nullptr;
 
     /** Holds number of frames to skip. If its greater than zero renderer skip given frames. */
-    int m_skipFrames                = 0;
+    int m_skipFrames                     = 0;
 
     /** States if the back buffer is srgb. */
-    bool m_backbufferFormatIsSRGB   = true;
+    bool m_backbufferFormatIsSRGB        = true;
 
     /** Number of elapsed frames since the engine start. */
-    uint m_frameCount               = 0;
-
-    /** Consumed by ShadowPass to understands if the shadow atlas should be recreated. */
-    bool m_shadowAtlasInvalidated   = false;
+    uint m_frameCount                    = 0;
 
     /** Consumed by Renderer to understands if the light cache should be updated. */
-    bool m_gpuLightCacheInvalidated = false;
+    bool m_gpuLightCacheInvalidated      = false;
+
+    float m_gpuPerformanceCounterAverage = 0.0f;
+    float m_cpuPerformanceCounterAverage = 0.0f;
   };
 
 } // namespace ToolKit

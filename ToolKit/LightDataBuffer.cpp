@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019-2024 OtSofware
+ * This code is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0).
+ * For more information, including options for a more permissive commercial license,
+ * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
+ */
+
 #include "LightDataBuffer.h"
 
 #include "DirectionComponent.h"
@@ -18,6 +25,7 @@ namespace ToolKit
     glGenBuffers(1, &m_lightDataBufferId);
     RHI::BindUniformBuffer(m_lightDataBufferId);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(LightData), NULL, GL_DYNAMIC_COPY);
+
     glGenBuffers(1, &m_lightIndicesBufferId);
     RHI::BindUniformBuffer(m_lightIndicesBufferId);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(ActiveLightIndices), NULL, GL_DYNAMIC_COPY);
@@ -49,16 +57,14 @@ namespace ToolKit
     m_lightData.cascadeDistances.z                         = graphicSettings.cascadeDistances[2];
     m_lightData.cascadeDistances.w                         = graphicSettings.cascadeDistances[3];
 
-    for (int i = 0; i < size; ++i)
+    for (int i = 0; i < size; i++)
     {
       if (cachedLights[i] == nullptr)
       {
         continue;
       }
 
-      const Light* currLight  = cachedLights[i].get();
-      const bool castShadow   = currLight->GetCastShadowVal();
-      bool isDirectionalLight = false;
+      const Light* currLight = cachedLights[i].get();
 
       // Point light uniforms
       if (currLight->GetLightType() == Light::Point)
@@ -73,24 +79,11 @@ namespace ToolKit
       // Directional light uniforms
       else if (currLight->GetLightType() == Light::Directional)
       {
-        isDirectionalLight                    = true;
-
         const DirectionalLight* dLight        = static_cast<const DirectionalLight*>(currLight);
         m_lightData.perLightData[i].type      = 1;
         m_lightData.perLightData[i].color     = dLight->GetColorVal();
         m_lightData.perLightData[i].intensity = dLight->GetIntensityVal();
         m_lightData.perLightData[i].dir       = dLight->GetComponentFast<DirectionComponent>()->GetDirection();
-
-        if (castShadow)
-        {
-          const int cascades = graphicSettings.cascadeCount;
-          for (int ii = 0; ii < cascades; ++ii)
-          {
-            m_lightData.perLightData[i].projectionViewMatrices[ii] =
-                dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
-          }
-          m_lightData.perLightData[i].numOfCascades = cascades;
-        }
       }
       // Spot light uniforms
       else if (currLight->GetLightType() == Light::Spot)
@@ -106,34 +99,64 @@ namespace ToolKit
         m_lightData.perLightData[i].innAngle  = glm::cos(glm::radians(sLight->GetInnerAngleVal() / 2.0f));
       }
 
-      if (castShadow)
+      bool isShadowCaster = currLight->GetCastShadowVal();
+
+      if (isShadowCaster)
       {
         const int PCFSamples = currLight->GetPCFSamplesVal();
-        if (!isDirectionalLight)
+        if (currLight->GetLightType() == Light::LightType::Directional)
         {
-          m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
+          const DirectionalLight* dLight               = static_cast<const DirectionalLight*>(currLight);
+          m_lightData.perLightData[i].shadowAtlasLayer = dLight->m_shadowAtlasLayers[0];
+          m_lightData.perLightData[i].shadowAtlasCoord = dLight->m_shadowAtlasCoords[0];
+
+          const int cascades                           = graphicSettings.cascadeCount;
+          for (int ii = 0; ii < cascades; ii++)
+          {
+            const Mat4& cascadeMatrix = dLight->m_shadowMapCascadeCameraProjectionViewMatrices[ii];
+            m_lightData.perLightData[i].projectionViewMatrices[ii] = cascadeMatrix;
+          }
+
+          m_lightData.perLightData[i].numOfCascades = cascades;
         }
-        m_lightData.perLightData[i].shadowMapCameraFar = currLight->m_shadowMapCameraFar;
+        else if (currLight->GetLightType() == Light::LightType::Point)
+        {
+          // Provide layer.
+          m_lightData.perLightData[i].shadowAtlasLayer = currLight->m_shadowAtlasLayers[0];
+
+          // Provide coordinate.
+          m_lightData.perLightData[i].shadowAtlasCoord = currLight->m_shadowAtlasCoords[0];
+        }
+        else
+        {
+          assert(currLight->GetLightType() == Light::LightType::Spot);
+
+          m_lightData.perLightData[i].projectionViewMatrices[0] = currLight->m_shadowMapCameraProjectionViewMatrix;
+          m_lightData.perLightData[i].shadowAtlasLayer          = currLight->m_shadowAtlasLayers[0];
+          m_lightData.perLightData[i].shadowAtlasCoord          = currLight->m_shadowAtlasCoords[0];
+        }
+
+        m_lightData.perLightData[i].shadowMapCameraFar = currLight->m_shadowCamera->Far();
         m_lightData.perLightData[i].BleedingReduction  = currLight->GetBleedingReductionVal();
         m_lightData.perLightData[i].PCFSamples         = PCFSamples;
         m_lightData.perLightData[i].PCFRadius          = currLight->GetPCFRadiusVal();
-        m_lightData.perLightData[i].softShadows        = PCFSamples > 1;
-        m_lightData.perLightData[i].shadowAtlasLayer   = (float) currLight->m_shadowAtlasLayer;
-        m_lightData.perLightData[i].shadowAtlasCoord =
-            currLight->m_shadowAtlasCoord / (float) RHIConstants::ShadowAtlasTextureSize;
-        m_lightData.perLightData[i].shadowAtlasResRatio =
-            currLight->GetShadowResVal() / RHIConstants::ShadowAtlasTextureSize;
+
+        float ratio = currLight->GetShadowResVal().GetValue<float>() / RHIConstants::ShadowAtlasTextureSize;
+        m_lightData.perLightData[i].shadowAtlasResRatio = ratio;
         m_lightData.perLightData[i].shadowBias = currLight->GetShadowBiasVal() * RHIConstants::ShadowBiasMultiplier;
       }
-      m_lightData.perLightData[i].castShadow = (int) castShadow;
+
+      m_lightData.perLightData[i].castShadow = (int) isShadowCaster;
     }
   }
 
   void LightDataBuffer::UpdateLightIndices(const LightRawPtrArray& lightsToRender)
   {
-    for (int i = 0; i < lightsToRender.size(); ++i)
+    uint loopLimit = glm::min((uint) lightsToRender.size(), RHIConstants::LightCacheSize);
+    for (uint i = 0; i < loopLimit; i++)
     {
       m_activeLightIndices.activeLightIndices[i] = lightsToRender[i]->m_lightCacheIndex;
     }
   }
+
 } // namespace ToolKit

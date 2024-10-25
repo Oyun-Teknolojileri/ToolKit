@@ -10,8 +10,6 @@
 #include "App.h"
 #include "EditorViewport.h"
 
-
-
 namespace ToolKit
 {
   namespace Editor
@@ -43,8 +41,8 @@ namespace ToolKit
 
         // If the status message has changed.
         static String prevMsg = g_app->m_statusMsg;
-        bool nte              = EndsWith(g_app->m_statusMsg, g_statusNoTerminate);
-        if (g_app->m_statusMsg != "OK" && !nte)
+        bool noTerminate      = EndsWith(g_app->m_statusMsg, g_statusNoTerminate);
+        if (g_app->m_statusMsg != "OK" && !noTerminate)
         {
           // Hold msg for 3 sec. before switching to OK.
           static float elapsedTime  = 0.0f;
@@ -68,21 +66,14 @@ namespace ToolKit
         // Inject status.
         ImGui::SameLine();
 
-        if (nte)
+        if (noTerminate)
         {
           String trimmed = Trim(g_app->m_statusMsg.c_str(), g_statusNoTerminate);
           ImGui::Text(trimmed.c_str());
         }
         else
         {
-          if (g_app->m_publishManager != nullptr && g_app->m_publishManager->m_isBuilding)
-          {
-            ImGui::Text("Packing...");
-          }
-          else
-          {
-            ImGui::Text(g_app->m_statusMsg.c_str());
-          }
+          ImGui::Text(g_app->m_statusMsg.c_str());
         }
 
         ImVec2 msgSize = ImGui::CalcTextSize(g_app->m_statusMsg.c_str());

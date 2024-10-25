@@ -25,21 +25,16 @@ namespace ToolKit
     GraphicTypes InternalFormat = GraphicTypes::FormatRGBA16F;
     GraphicTypes Format         = GraphicTypes::FormatRGBA;
     GraphicTypes Type           = GraphicTypes::TypeFloat;
-    int Layers                  = -1;
-    bool GenerateMipMap         = false;
+    int Layers                  = 0;     //!< Number of layers that this texture have if this is a texture array.
+    bool GenerateMipMap         = false; //!< Generates mipmaps for the texture automatically.
 
-    bool operator==(const TextureSettings& other) const
-    {
-      return Target == other.Target && WarpS == other.WarpS && WarpT == other.WarpT && WarpR == other.WarpR &&
-             MinFilter == other.MinFilter && MagFilter == other.MagFilter && InternalFormat == other.InternalFormat &&
-             Format == other.Format && Type == other.Type && Layers == other.Layers;
-    }
+    bool operator==(const TextureSettings& other) const { return memcmp(this, &other, sizeof(TextureSettings)) == 0; }
 
     bool operator!=(const TextureSettings& other) const { return !(*this == other); }
   };
 
   // Texture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   class TK_API Texture : public Resource
   {
@@ -49,7 +44,8 @@ namespace ToolKit
     Texture();
     Texture(const String& file);
     virtual ~Texture();
-    virtual void NativeConstruct(int widht, int height, const TextureSettings& settings);
+    virtual void NativeConstruct(StringView label);
+    virtual void NativeConstruct(int widht, int height, const TextureSettings& settings, StringView label = "");
 
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
@@ -68,13 +64,14 @@ namespace ToolKit
     int m_numChannels = 0; //!< Number of channels (r, g, b, a) for loaded images.
     uint8* m_image    = nullptr;
     float* m_imagef   = nullptr;
+    StringView m_label; //!< Debug label which appears in the gpu debuggers.
 
    protected:
     TextureSettings m_settings;
   };
 
   // DepthTexture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   class TK_API DepthTexture : public Texture
   {
@@ -83,18 +80,30 @@ namespace ToolKit
 
    public:
     void Load() override;
-    void Init(int width, int height, bool stencil);
+    void Init(int width, int height, bool stencil, int multiSample = 0);
     void UnInit() override;
+
+    /** Returns depth buffer format in use. */
+    GraphicTypes GetDepthFormat();
 
    protected:
     void Clear() override;
 
    public:
-    bool m_stencil;
+    /** States if the depth texture is constructed with stencil. */
+    bool m_stencil     = false;
+
+    /**
+     * States if the render target for depth is constructed.
+     * Construction occurs when the depth texture is attached to a frame buffer.
+     */
+    bool m_constructed = false;
+
+    int m_multiSample;
   };
 
   // DataTexture
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   class TK_API DataTexture : public Texture
   {
@@ -108,7 +117,7 @@ namespace ToolKit
   };
 
   // CubeMap
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   class TK_API CubeMap : public Texture
   {
@@ -138,7 +147,7 @@ namespace ToolKit
   };
 
   // Hdri
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   class TK_API Hdri : public Texture
   {
@@ -168,7 +177,7 @@ namespace ToolKit
   };
 
   // RenderTarget
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   class TK_API RenderTarget : public Texture
   {
@@ -182,11 +191,11 @@ namespace ToolKit
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
     void Reconstruct(int width, int height, const TextureSettings& settings);
-    void ReconstructIfNeeded(int width, int height);
+    void ReconstructIfNeeded(int width, int height, const TextureSettings* settings = nullptr);
   };
 
   // TextureManager
-  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////
 
   class TK_API TextureManager : public ResourceManager
   {

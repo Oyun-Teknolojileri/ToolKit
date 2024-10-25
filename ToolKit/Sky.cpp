@@ -14,14 +14,12 @@
 #include "Shader.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
   TKDefineClass(SkyBase, Entity);
 
-  SkyBase::SkyBase() {}
+  SkyBase::SkyBase() { m_partOfAABBTree = false; }
 
   void SkyBase::NativeConstruct() { Super::NativeConstruct(); }
 
@@ -99,7 +97,7 @@ namespace ToolKit
     return hdri;
   }
 
-  BoundingBox SkyBase::GetBoundingBox(bool inWorld) { return unitBox; }
+  const BoundingBox& SkyBase::GetBoundingBox(bool inWorld) { return unitBox; }
 
   bool SkyBase::ReadyToRender()
   {
@@ -135,19 +133,10 @@ namespace ToolKit
          createParameterVariantFn("1024", 1024),
          createParameterVariantFn("2048", 2048),
          createParameterVariantFn("4096", 4096)},
-        1,
-        [&](Value& oldVal, Value& newVal)
-        {
-          EnvironmentComponentPtr ec = GetComponent<EnvironmentComponent>();
-          if (ec != nullptr)
-          {
-            ec->m_localData[ec->IBLTextureSizeIndex()].GetVarPtr<MultiChoiceVariant>()->CurrentVal = {
-                std::get<unsigned int>(newVal)};
-          }
-         }
+        1
     };
 
-    IBLTextureSize_Define(mcv, "Sky", 90, true, true, {false, false});
+    IBLTextureSize_Define(mcv, "Sky", 90, true, true);
 
     SetNameVal("SkyBase");
   }
@@ -155,6 +144,16 @@ namespace ToolKit
   void SkyBase::ParameterEventConstructor()
   {
     Super::ParameterEventConstructor();
+
+    ParamIBLTextureSize().GetVar<MultiChoiceVariant>().CurrentVal.Callback = [&](Value& oldVal, Value& newVal)
+    {
+      // Pass parameter to environment component.
+      if (EnvironmentComponentPtr ec = GetComponent<EnvironmentComponent>())
+      {
+        MultiChoiceVariant& self = ec->ParamIBLTextureSize().GetVar<MultiChoiceVariant>();
+        self.CurrentVal          = std::get<uint>(newVal);
+      }
+    };
 
     ParamIlluminate().m_onValueChangedFn.clear();
     ParamIlluminate().m_onValueChangedFn.push_back(

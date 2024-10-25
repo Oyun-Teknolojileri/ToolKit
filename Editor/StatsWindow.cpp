@@ -34,7 +34,10 @@ namespace ToolKit
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
         float cpuTime, gpuTime;
-        GetRenderTime(cpuTime, gpuTime);
+        Stats::GetRenderTime(cpuTime, gpuTime);
+
+        float cpuTimeAvg, gpuTimeAvg;
+        Stats::GetRenderTimeAvg(cpuTimeAvg, gpuTimeAvg);
 
         bool* gpuTimer             = &GetEngineSettings().Graphics.enableGpuTimer;
         EditorViewportPtr viewport = g_app->GetViewport(g_3dViewport);
@@ -46,13 +49,15 @@ namespace ToolKit
         UI::AddTooltipToLastItem("Have a negative impact on cpu performance.\nEnable it to see the gpu times.");
         ImGui::SameLine();
         ImGui::Text("Render Time (gpu-ms): %.2f, FPS: %.2f", gpuTime, 1000.0f / gpuTime);
+        ImGui::Text("Render Time (gpuAvg-ms): %.2f, FPS: %.2f", gpuTimeAvg, 1000.0f / gpuTimeAvg);
         ImGui::Text("Render Time (cpu-ms): %.2f, FPS: %.2f", cpuTime, 1000.0f / cpuTime);
+        ImGui::Text("Render Time (cpuAvg-ms): %.2f, FPS: %.2f", cpuTimeAvg, 1000.0f / cpuTimeAvg);
         ImGui::Text("Editor FPS: %d", g_app->m_fps);
         ImGui::Spacing();
         ImGui::Text("Total Draw Call: %llu", g_app->GetLastFrameDrawCallCount());
         ImGui::Text("Total Hardware Render Pass: %llu", g_app->GetLastFrameHWRenderPassCount());
-        ImGui::Text("Approximate Total VRAM Usage: %llu MB", GetTotalVRAMUsageInMB());
-        ImGui::Text("Light Cache Invalidation Per Frame: %u", GetLightCacheInvalidationPerFrame());
+        ImGui::Text("Approximate Total VRAM Usage: %llu MB", Stats::GetTotalVRAMUsageInMB());
+        ImGui::Text("Light Cache Invalidation Per Frame: %u", Stats::GetLightCacheInvalidationPerFrame());
       }
       ImGui::End();
     }

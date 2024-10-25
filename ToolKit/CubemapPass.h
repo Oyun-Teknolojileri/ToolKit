@@ -14,20 +14,18 @@ namespace ToolKit
 
   struct CubeMapPassParams
   {
-    FramebufferPtr FrameBuffer = nullptr;
-    CameraPtr Cam              = nullptr;
-    MaterialPtr Material       = nullptr;
-    CompareFunctions DepthFn   = CompareFunctions::FuncLequal;
+    FramebufferPtr FrameBuffer   = nullptr;
+    CameraPtr Cam                = nullptr;
+    MaterialPtr Material         = nullptr;
+    CompareFunctions DepthFn     = CompareFunctions::FuncLequal;
+    GraphicBitFields clearBuffer = GraphicBitFields::AllBits;
     Mat4 Transform;
-    bool ClearFramebuffer = false;
   };
 
   class TK_API CubeMapPass : public Pass
   {
    public:
     CubeMapPass();
-    explicit CubeMapPass(const CubeMapPassParams& params);
-    ~CubeMapPass();
 
     void Render() override;
     void PreRender() override;

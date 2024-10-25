@@ -8,7 +8,6 @@
 #include "Light.h"
 
 #include "AABBOverrideComponent.h"
-#include "BVH.h"
 #include "Camera.h"
 #include "Component.h"
 #include "DirectionComponent.h"
@@ -21,7 +20,6 @@
 #include "Renderer.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
@@ -34,7 +32,11 @@ namespace ToolKit
 
   Light::Light()
   {
-    m_shadowCamera = MakeNewPtr<Camera>();
+    m_shadowCamera      = MakeNewPtr<Camera>();
+
+    float minShadowClip = GetEngineSettings().Graphics.shadowMinDistance;
+
+    m_shadowCamera->SetNearClipVal(minShadowClip);
     m_shadowCamera->SetOrthographicScaleVal(1.0f);
   }
 
@@ -46,12 +48,27 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
 
+    auto createParameterVariant = [](const String& name, float val)
+    {
+      ParameterVariant param {val};
+      param.m_name = name;
+      return param;
+    };
+
+    MultiChoiceVariant mcv = {
+        {createParameterVariant("512", 512.0f),
+         createParameterVariant("1024", 1024.0f),
+         createParameterVariant("2048", 2048.0f)},
+        1
+    };
+
+    ShadowRes_Define(mcv, "Light", 90, true, true);
+
     Color_Define(Vec3(1.0f), "Light", 0, true, true, {true});
     Intensity_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
     CastShadow_Define(false, "Light", 90, true, true);
-    ShadowRes_Define(512.0f, "Light", 90, true, true, {false, true, 32.0f, 4096.0f, 2.0f});
-    PCFSamples_Define(32, "Light", 90, true, true, {false, true, 0, 128, 1});
-    PCFRadius_Define(0.01f, "Light", 90, true, true, {false, true, 0.0f, 5.0f, 0.0001f});
+    PCFSamples_Define(12, "Light", 90, true, true, {false, true, 1, 128, 1});
+    PCFRadius_Define(1.0f, "Light", 90, true, true, {false, true, 0.0f, 10.0f, 0.1f});
     ShadowBias_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 20000.0f, 0.01f});
     BleedingReduction_Define(0.1f, "Light", 90, true, true, {false, true, 0.0f, 1.0f, 0.001f});
   }
@@ -59,6 +76,15 @@ namespace ToolKit
   void Light::ParameterEventConstructor()
   {
     Super::ParameterEventConstructor();
+
+    ParamShadowRes().GetVar<MultiChoiceVariant>().CurrentVal.Callback = [&](Value& oldVal, Value& newVal)
+    {
+      if (GetCastShadowVal())
+      {
+        m_shadowResolutionUpdated  = true;
+        m_invalidatedForLightCache = true;
+      }
+    };
 
     ParamColor().m_onValueChangedFn.clear();
     ParamColor().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
@@ -71,26 +97,6 @@ namespace ToolKit
     ParamCastShadow().m_onValueChangedFn.clear();
     ParamCastShadow().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
                                                    { m_invalidatedForLightCache = true; });
-
-    ParamShadowRes().m_onValueChangedFn.clear();
-    ParamShadowRes().m_onValueChangedFn.push_back(
-        [this](Value& oldVal, Value& newVal) -> void
-        {
-          const float val = std::get<float>(newVal);
-
-          if (val > 0.0f && val < RHIConstants::ShadowAtlasTextureSize + 0.1f)
-          {
-            if (GetCastShadowVal())
-            {
-              m_shadowResolutionUpdated  = true;
-              m_invalidatedForLightCache = true;
-            }
-          }
-          else
-          {
-            newVal = oldVal;
-          }
-        });
 
     ParamPCFSamples().m_onValueChangedFn.clear();
     ParamPCFSamples().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
@@ -109,32 +115,9 @@ namespace ToolKit
                                                           { m_invalidatedForLightCache = true; });
   }
 
-  MaterialPtr Light::GetShadowMaterial() { return m_shadowMapMaterial; }
-
-  void Light::UpdateShadowCamera()
-  {
-    m_shadowMapCameraProjectionViewMatrix = m_shadowCamera->GetProjectViewMatrix();
-    m_shadowMapCameraFar                  = m_shadowCamera->Far();
-  }
+  void Light::UpdateShadowCamera() { m_shadowMapCameraProjectionViewMatrix = m_shadowCamera->GetProjectViewMatrix(); }
 
   float Light::AffectDistance() { return 1000.0f; }
-
-  void Light::InitShadowMapDepthMaterial()
-  {
-    // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("orthogonalDepthFrag.shader", true));
-
-    if (m_shadowMapMaterial == nullptr)
-    {
-      m_shadowMapMaterial = MakeNewPtr<Material>();
-    }
-    m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader                  = vert;
-    m_shadowMapMaterial->m_fragmentShader                = frag;
-    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
-    m_shadowMapMaterial->Init();
-  }
 
   void Light::InvalidateSpatialCaches()
   {
@@ -186,14 +169,20 @@ namespace ToolKit
   DirectionalLight::DirectionalLight()
   {
     m_shadowCamera->SetOrthographicVal(true);
-    for (int i = 0; i < RHIConstants::MaxCascadeCount; ++i)
+    for (int i = 0; i < RHIConstants::MaxCascadeCount; i++)
     {
       CameraPtr cam = MakeNewPtr<Camera>();
       cam->SetOrthographicVal(true);
       cam->SetOrthographicScaleVal(1.0f);
       cam->InvalidateSpatialCaches();
       m_cascadeShadowCameras.push_back(cam);
+
+      m_cascadeCullCameras.push_back(Cast<Camera>(cam->Copy()));
+
+      m_shadowAtlasLayers.push_back(-1);
+      m_shadowAtlasCoords.push_back(Vec2(-1.0f));
     }
+
     m_shadowMapCascadeCameraProjectionViewMatrices.resize(RHIConstants::MaxCascadeCount);
   }
 
@@ -211,34 +200,35 @@ namespace ToolKit
 
   void DirectionalLight::UpdateShadowFrustum(CameraPtr cameraView, ScenePtr scene)
   {
-    int cascades               = GetEngineSettings().Graphics.cascadeCount;
-    float* cascadeDists        = GetEngineSettings().Graphics.cascadeDistances;
+    EngineSettings& settings   = GetEngineSettings();
+    int cascades               = settings.Graphics.cascadeCount;
+    float* cascadeDists        = settings.Graphics.cascadeDistances;
 
     const float lastCameraNear = cameraView->Near();
     const float lastCameraFar  = cameraView->Far();
 
-    for (int i = 0; i < cascades; ++i)
-    {
-      float near = cascadeDists[i];
-      float far;
-      if (i == cascades - 1)
-      {
-        far = GetEngineSettings().PostProcessing.ShadowDistance;
-      }
-      else
-      {
-        far = cascadeDists[i + 1];
-      }
+    float nearClip             = settings.Graphics.shadowMinDistance;
+    float farClip              = cascadeDists[0];
 
-      cameraView->SetNearClipVal(near);
-      cameraView->SetFarClipVal(far);
+    for (int i = 0; i < cascades; i++)
+    {
+      // Setting near far to cascade z boundaries for calculating tight cascade frustum.
+      cameraView->SetNearClipVal(nearClip);
+      cameraView->SetFarClipVal(farClip);
 
       FitViewFrustumIntoLightFrustum(m_cascadeShadowCameras[i],
                                      cameraView,
-                                     near,
-                                     far);
+                                     nearClip,
+                                     farClip,
+                                     settings.Graphics.stableShadowMap);
+
+      FitViewFrustumIntoLightFrustum(m_cascadeCullCameras[i], cameraView, nearClip, farClip, false);
+
+      nearClip = cascadeDists[i];
+      farClip  = cascadeDists[i + 1];
     }
 
+    // Setting back the original view distances.
     cameraView->SetNearClipVal(lastCameraNear);
     cameraView->SetFarClipVal(lastCameraFar);
 
@@ -249,7 +239,7 @@ namespace ToolKit
 
   void DirectionalLight::UpdateShadowCamera()
   {
-    for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; ++i)
+    for (int i = 0; i < GetEngineSettings().Graphics.cascadeCount; i++)
     {
       m_shadowMapCascadeCameraProjectionViewMatrices[i] = m_cascadeShadowCameras[i]->GetProjectViewMatrix();
     }
@@ -263,170 +253,108 @@ namespace ToolKit
     return node;
   }
 
-  void DirectionalLight::FitEntitiesBBoxIntoShadowFrustum(CameraPtr lightCamera, const RenderJobArray& jobs)
-  {
-    // Calculate all scene's bounding box
-    BoundingBox totalBBox;
-    for (const RenderJob& job : jobs)
-    {
-      if (!job.ShadowCaster)
-      {
-        continue;
-      }
-
-      totalBBox.UpdateBoundary(job.BoundingBox.max);
-      totalBBox.UpdateBoundary(job.BoundingBox.min);
-    }
-    Vec3 center = totalBBox.GetCenter();
-
-    // Set light transformation
-    lightCamera->m_node->SetTranslation(center);
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    Mat4 lightView   = lightCamera->GetViewMatrix();
-
-    // Bounding box of the scene
-    Vec3 min         = totalBBox.min;
-    Vec3 max         = totalBBox.max;
-    Vec4 vertices[8] = {Vec4(min.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, min.y, max.z, 1.0f),
-                        Vec4(min.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, min.y, min.z, 1.0f),
-                        Vec4(min.x, max.y, max.z, 1.0f),
-                        Vec4(max.x, min.y, max.z, 1.0f),
-                        Vec4(max.x, max.y, min.z, 1.0f),
-                        Vec4(max.x, max.y, max.z, 1.0f)};
-
-    // Calculate bounding box in light space
-    BoundingBox shadowBBox;
-    for (int i = 0; i < 8; ++i)
-    {
-      Vec4 vertex = lightView * vertices[i];
-      shadowBBox.UpdateBoundary(vertex);
-    }
-
-    lightCamera->SetLens(shadowBBox.min.x,
-                         shadowBBox.max.x,
-                         shadowBBox.min.y,
-                         shadowBBox.max.y,
-                         shadowBBox.min.z,
-                         shadowBBox.max.z);
-  }
-
   void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
                                                         CameraPtr viewCamera,
                                                         float near,
-                                                        float far)
+                                                        float far,
+                                                        bool stableFit)
   {
-    const Vec3Array frustum = viewCamera->ExtractFrustumCorner();
+    // View camera has near far distances coming from i'th cascade boundaries.
+    // Shadow camera is aligned with light direction, and positioned to the view camera frustum's center.
+    // Now we can calculate a bounding box that tightly fits to the i'th cascade.
+    Vec3Array frustum = viewCamera->ExtractFrustumCorner(); // World space frustum.
 
-    Vec3 center             = ZERO;
-    for (int i = 0; i < 8; ++i)
+    Vec3 center       = ZERO;
+    for (int i = 0; i < 8; i++)
     {
       center += frustum[i];
     }
     center /= 8.0f;
 
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    lightCamera->m_node->SetTranslation(center);
+    lightCamera->m_node->SetOrientation(m_node->GetOrientation()); // shadow camera direction aligned with light.
+    lightCamera->m_node->SetTranslation(center);                   // shadow camera is at the frustum center.
 
-    const Mat4 lightView = lightCamera->GetViewMatrix();
+    EngineSettings& settings = GetEngineSettings();
 
-    // Calculate tight shadow volume.
+    // Calculate tight shadow volume, in light's view.
     BoundingBox tightShadowVolume;
-    for (int i = 0; i < 8; i++)
+    if (stableFit)
     {
-      const Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      tightShadowVolume.UpdateBoundary(vertex);
+      // Fit a sphere around the view frustum to prevent swimming when rotating the view camera.
+      // Sphere fit will prevent size / center changes of the frustum, which will yield the same shadow map
+      // after the camera is rotated.
+      // Additional shadow map resolution will be wasted due to bounding box / bounding sphere difference.
+      float radius = 0.0f;
+      for (int i = 0; i < 8; i++)
+      {
+        radius = glm::max(radius, glm::distance(center, frustum[i]));
+      }
+
+      radius                = glm::ceil(radius * 16.0f) / 16.0f;
+      tightShadowVolume.min = Vec3(-radius);
+      tightShadowVolume.max = Vec3(radius);
+    }
+    else
+    {
+      // Tight fit a bounding box to the view frustum in light space.
+      Mat4 lightView = lightCamera->GetViewMatrix();
+      for (int i = 0; i < 8; i++)
+      {
+        Vec4 vertex = lightView * Vec4(frustum[i], 1.0f); // Move the view camera frustum to light's view.
+        tightShadowVolume.UpdateBoundary(vertex);         // Calculate its boundary.
+      }
     }
 
-    const float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
+    // Now frustum is sitting at the origin in light's view. Since the light was placed at the frustum center,
+    // half of the volume is behind the camera.
 
+    // Push the tighShadowVolume just in front of the camera by pulling the camera backwards from the center
+    // exactly max z units. If we not perform this, frustum center will be placed to origin, from 0 to max.z will stay
+    // behind the camera.
+    lightCamera->m_node->SetTranslation(center - lightCamera->Direction() * tightShadowVolume.max.z);
+
+    // Set the lens such that it only captures everything inside the frustum.
+    float tightFar = tightShadowVolume.max.z - tightShadowVolume.min.z;
+    // Can't figure out why but without this offset some parts of the objects fall behind the far plane.
+    tightFar       = tightFar + 2.5f;
     lightCamera->SetLens(tightShadowVolume.min.x,
                          tightShadowVolume.max.x,
                          tightShadowVolume.min.y,
                          tightShadowVolume.max.y,
-                         -0.5f * tightFar,
-                         0.5f * tightFar);
+                         0.0f,
+                         tightFar);
 
-    /*
-    const float tightWidth  = tightShadowVolume.max.x - tightShadowVolume.min.x;
-    const float tightHeight = tightShadowVolume.max.y - tightShadowVolume.min.y;
-    lightCamera->SetLens(-tightWidth * 0.5f,
-                         tightWidth * 0.5f,
-                         -tightHeight * 0.5f,
-                         tightHeight * 0.5f,
-                         -tightFar * 0.5f,
-                         tightFar * 0.5f);
-    */
+    // Allow camera to only make texel size movements.
+    // To do this, find the camera origin in projection space and calculate the offset that
+    // puts the camera origin on to a texel, prevent sub pixel movements and shimmering in shadow map.
+    float shadowMapRes                     = GetShadowResVal().GetValue<float>();
+    Mat4 shadowMatrix                      = lightCamera->GetProjectViewMatrix();
+    Vec4 shadowOrigin                      = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    shadowOrigin                           = shadowMatrix * shadowOrigin;
+    shadowOrigin                           = shadowOrigin * shadowMapRes / 2.0f;
+
+    Vec4 roundedOrigin                     = glm::round(shadowOrigin);
+    Vec4 roundOffset                       = roundedOrigin - shadowOrigin;
+    roundOffset                            = roundOffset * 2.0f / shadowMapRes;
+    roundOffset.z                          = 0.0f;
+    roundOffset.w                          = 0.0f;
+
+    lightCamera->GetProjectionMatrix()[3] += roundOffset;
   }
 
-  /*
-  void DirectionalLight::FitViewFrustumIntoLightFrustum(CameraPtr lightCamera,
-                                                        CameraPtr viewCamera,
-                                                        const BoundingBox& shadowVolume,
-                                                        float near,
-                                                        float far)
-  {
-    // Set far for view frustum
-    float lastCameraNear = viewCamera->GetNearClipVal();
-    float lastCameraFar  = viewCamera->GetFarClipVal();
-    viewCamera->SetNearClipVal(near);
-    viewCamera->SetFarClipVal(far);
-
-    Vec3Array frustum = viewCamera->ExtractFrustumCorner();
-    viewCamera->SetNearClipVal(lastCameraNear);
-    viewCamera->SetFarClipVal(lastCameraFar);
-
-    const float worldUnitPerTexel = far * 25.0f / RHIConstants::ShadowAtlasTextureSize;
-    const Vec3 vWorldUnitPerTexel = Vec3(worldUnitPerTexel, worldUnitPerTexel, worldUnitPerTexel);
-
-    Vec3 center                   = ZERO;
-    for (int i = 0; i < 8; ++i)
-    {
-      frustum[i] /= vWorldUnitPerTexel;
-      frustum[i]  = glm::floor(frustum[i]);
-      frustum[i] *= vWorldUnitPerTexel;
-
-      center     += frustum[i];
-    }
-    center /= 8.0f;
-
-    lightCamera->m_node->SetOrientation(m_node->GetOrientation());
-    lightCamera->m_node->SetTranslation(center);
-
-    Mat4 lightView = lightCamera->GetViewMatrix();
-
-    // Calculate tight shadow volume.
-    BoundingBox tightShadowVolume;
-    for (int i = 0; i < 8; i++)
-    {
-      Vec4 vertex = lightView * Vec4(frustum[i], 1.0f);
-      tightShadowVolume.UpdateBoundary(vertex);
-    }
-
-    // Fit the frustum into the scene only for far
-    float width       = shadowVolume.max.x - shadowVolume.min.x;
-    float height      = shadowVolume.max.y - shadowVolume.min.y;
-    float depth       = shadowVolume.max.z - shadowVolume.min.z;
-    float maxDistance = glm::sqrt(width * width + height * height + depth * depth);
-
-    float tightFar    = tightShadowVolume.max.z - tightShadowVolume.min.z;
-    tightFar          = glm::min(tightFar, maxDistance);
-
-    lightCamera->SetLens(tightShadowVolume.min.x,
-                         tightShadowVolume.max.x,
-                         tightShadowVolume.min.y,
-                         tightShadowVolume.max.y,
-                         -tightFar * 0.5f,
-                         tightFar * 0.5f);
-  }
-  */
   // PointLight
   //////////////////////////////////////////
 
   TKDefineClass(PointLight, Light);
 
-  PointLight::PointLight() {}
+  PointLight::PointLight()
+  {
+    for (int i = 0; i < 6; i++)
+    {
+      m_shadowAtlasLayers.push_back(-1);
+      m_shadowAtlasCoords.push_back(Vec2(-1.0f));
+    }
+  }
 
   PointLight::~PointLight() {}
 
@@ -442,23 +370,6 @@ namespace ToolKit
   }
 
   float PointLight::AffectDistance() { return GetRadiusVal(); }
-
-  void PointLight::InitShadowMapDepthMaterial()
-  {
-    // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
-
-    if (m_shadowMapMaterial == nullptr)
-    {
-      m_shadowMapMaterial = MakeNewPtr<Material>();
-    }
-    m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader                  = vert;
-    m_shadowMapMaterial->m_fragmentShader                = frag;
-    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
-    m_shadowMapMaterial->Init();
-  }
 
   XmlNode* PointLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
@@ -477,11 +388,7 @@ namespace ToolKit
     ParamRadius().m_onValueChangedFn.push_back(
         [this](Value& oldVal, Value& newVal) -> void
         {
-          if (BVHPtr bvh = m_bvh.lock())
-          {
-            EntityPtr self = Self<PointLight>();
-            bvh->UpdateEntity(self);
-          }
+          InvalidateSpatialCaches();
           m_invalidatedForLightCache = true;
         });
   }
@@ -489,7 +396,7 @@ namespace ToolKit
   void PointLight::UpdateLocalBoundingBox()
   {
     float radius            = GetRadiusVal();
-    m_localBoundingBoxCache = BoundingBox(Vec3(radius), Vec3(radius));
+    m_localBoundingBoxCache = BoundingBox(Vec3(-radius), Vec3(radius));
   }
 
   // SpotLight
@@ -497,7 +404,11 @@ namespace ToolKit
 
   TKDefineClass(SpotLight, Light);
 
-  SpotLight::SpotLight() {}
+  SpotLight::SpotLight()
+  {
+    m_shadowAtlasLayers.push_back(-1);
+    m_shadowAtlasCoords.push_back(Vec2(-1.0f));
+  }
 
   SpotLight::~SpotLight() {}
 
@@ -505,9 +416,9 @@ namespace ToolKit
   {
     m_shadowCamera->SetLens(glm::radians(GetOuterAngleVal()), 1.0f, 0.01f, AffectDistance());
 
-    Light::UpdateShadowCamera();
-
     UpdateShadowCameraTransform();
+
+    Light::UpdateShadowCamera();
 
     // Calculate frustum.
     m_frustumCache           = ExtractFrustum(m_shadowMapCameraProjectionViewMatrix, false);
@@ -522,23 +433,6 @@ namespace ToolKit
   }
 
   float SpotLight::AffectDistance() { return GetRadiusVal(); }
-
-  void SpotLight::InitShadowMapDepthMaterial()
-  {
-    // Create shadow material
-    ShaderPtr vert = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthVert.shader", true));
-    ShaderPtr frag = GetShaderManager()->Create<Shader>(ShaderPath("perspectiveDepthFrag.shader", true));
-
-    if (m_shadowMapMaterial == nullptr)
-    {
-      m_shadowMapMaterial = MakeNewPtr<Material>();
-    }
-    m_shadowMapMaterial->UnInit();
-    m_shadowMapMaterial->m_vertexShader                  = vert;
-    m_shadowMapMaterial->m_fragmentShader                = frag;
-    m_shadowMapMaterial->GetRenderState()->blendFunction = BlendFunction::NONE;
-    m_shadowMapMaterial->Init();
-  }
 
   XmlNode* SpotLight::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
@@ -578,17 +472,17 @@ namespace ToolKit
         {
           const float radius = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, radius, 32, GetOuterAngleVal());
-          if (BVHPtr bvh = m_bvh.lock())
-          {
-            EntityPtr self = Self<PointLight>();
-            bvh->UpdateEntity(self);
-          }
+          InvalidateSpatialCaches();
           m_invalidatedForLightCache = true;
         });
 
     ParamInnerAngle().m_onValueChangedFn.clear();
-    ParamInnerAngle().m_onValueChangedFn.push_back([this](Value& oldVal, Value& newVal) -> void
-                                                   { m_invalidatedForLightCache = true; });
+    ParamInnerAngle().m_onValueChangedFn.push_back(
+        [this](Value& oldVal, Value& newVal) -> void
+        {
+          InvalidateSpatialCaches();
+          m_invalidatedForLightCache = true;
+        });
 
     ParamOuterAngle().m_onValueChangedFn.clear();
     ParamOuterAngle().m_onValueChangedFn.push_back(
@@ -596,12 +490,9 @@ namespace ToolKit
         {
           const float outerAngle = std::get<float>(newVal);
           MeshGenerator::GenerateConeMesh(m_volumeMesh, GetRadiusVal(), 32, outerAngle);
-          if (BVHPtr bvh = m_bvh.lock())
-          {
-            EntityPtr self = Self<PointLight>();
-            bvh->UpdateEntity(self);
-          }
+          InvalidateSpatialCaches();
           m_invalidatedForLightCache = true;
         });
   }
+
 } // namespace ToolKit

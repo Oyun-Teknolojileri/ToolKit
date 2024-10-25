@@ -22,7 +22,7 @@ namespace ToolKit
   {
 
     // MaterialView
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     MaterialView::MaterialView() : View("Material View")
     {
@@ -55,17 +55,27 @@ namespace ToolKit
 
     void MaterialView::SetMaterials(const MaterialPtrArray& mat) { m_materials = mat; }
 
-    void MaterialView::ResetCamera() { m_viewport->ResetCamera(); }
+    void MaterialView::ResetCamera()
+    {
+      CameraPtr cam = m_viewport->GetCamera();
+      cam->FocusToBoundingBox(BoundingBox(Vec3(-0.5f, -1.0f, -0.5f), Vec3(0.5f, 2.8f, -0.5f)), 1.1f);
+    }
 
     void MaterialView::UpdatePreviewScene()
     {
       m_viewport->SetScene(m_scenes[m_activeObjectIndx]);
 
-      EntityPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
-      for (EntityPtr ntt : materialNtties)
-      {
-        ntt->GetMaterialComponent()->SetFirstMaterial(m_materials[m_currentMaterialIndex]);
-      }
+      // Perform material change as a render task, because consecutive preview renders may override the
+      // preview scene's material, which causes wrong materials to appear in the preview.
+      GetRenderSystem()->AddRenderTask({[this](Renderer* renderer) -> void
+                                        {
+                                          EntityPtrArray materialNtties = m_viewport->GetScene()->GetByTag("target");
+                                          for (EntityPtr ntt : materialNtties)
+                                          {
+                                            ntt->GetMaterialComponent()->SetFirstMaterial(
+                                                m_materials[m_currentMaterialIndex]);
+                                          }
+                                        }});
     }
 
     int DrawTypeToInt(DrawType drawType)
@@ -122,16 +132,16 @@ namespace ToolKit
 
       if (ImGui::CollapsingHeader("Material Preview", ImGuiTreeNodeFlags_DefaultOpen))
       {
-        const ImVec2 iconSize = ImVec2(16.0f, 16.0f);
-        const ImVec2 spacing  = ImGui::GetStyle().ItemSpacing;
+        const Vec2 iconSize = Vec2(16.0f, 16.0f);
+        const Vec2 spacing  = ImGui::GetStyle().ItemSpacing;
         UpdatePreviewScene();
         if (UI::ImageButtonDecorless(UI::m_cameraIcon->m_textureId, iconSize, false))
         {
           ResetCamera();
         }
 
-        const ImVec2 viewportSize = ImVec2(ImGui::GetContentRegionAvail().x - iconSize.x - 9.0f * spacing.x, 130.0f);
-        if (viewportSize.x > 1 && viewportSize.y > 1)
+        const Vec2 viewportSize = Vec2(ImGui::GetContentRegionAvail().x - iconSize.x - 9.0f * spacing.x, 130.0f);
+        if (viewportSize.x > 1.0f && viewportSize.y > 1.0f)
         {
           ImGui::SameLine();
           m_viewport->m_isTempView = m_isTempView;
@@ -373,7 +383,7 @@ namespace ToolKit
       }
       else if (numMaterials > 1)
       {
-        ImGui::BeginChild("##MultiMaterials", ImVec2(0.0f, treeHeight), true);
+        ImGui::BeginChild("##MultiMaterials", Vec2(0.0f, treeHeight), true);
 
         if (ImGui::TreeNode("Multi Materials"))
         {
@@ -400,7 +410,7 @@ namespace ToolKit
     }
 
     // MaterialWindow
-    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////
 
     TKDefineClass(MaterialWindow, Window);
 
@@ -410,28 +420,25 @@ namespace ToolKit
       m_view->m_isTempView = true;
     }
 
-    MaterialWindow::~MaterialWindow()
-    {
-      RemoveFromUI();
-      m_view = nullptr;
-    }
+    MaterialWindow::~MaterialWindow() { m_view = nullptr; }
 
     void MaterialWindow::SetMaterial(MaterialPtr mat) { m_view->SetMaterials({mat}); }
 
     void MaterialWindow::Show()
     {
-      ImGuiIO io = ImGui::GetIO();
-      ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_Once);
-      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
-                              ImGuiCond_Once,
-                              ImVec2(0.5f, 0.5f));
+      ULongID wndId   = GetIdVal();
+      String strWndId = "Material View##" + std::to_string(wndId);
 
-      if (ImGui::Begin("Material View", &m_visible))
+      ImGuiIO io      = ImGui::GetIO();
+      ImGui::SetNextWindowSize(Vec2(400.0f, 700.0f), ImGuiCond_Once);
+      ImGui::SetNextWindowPos(Vec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Once, Vec2(0.5f, 0.5f));
+
+      if (ImGui::Begin(strWndId.c_str(), &m_visible))
       {
         HandleStates();
         m_view->Show();
-        ImGui::End();
       }
+      ImGui::End();
     }
 
   } // namespace Editor

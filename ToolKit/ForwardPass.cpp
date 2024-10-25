@@ -7,147 +7,135 @@
 
 #include "ForwardPass.h"
 
+#include "EngineSettings.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Pass.h"
 #include "Shader.h"
-#include "TKProfiler.h"
 #include "ToolKit.h"
 
 namespace ToolKit
 {
 
-  ForwardRenderPass::ForwardRenderPass() {}
-
-  ForwardRenderPass::ForwardRenderPass(const ForwardRenderPassParams& params) : m_params(params)
+  ForwardRenderPass::ForwardRenderPass() : Pass("ForwardRenderPass")
   {
-    // Create a default frame buffer.
-    if (m_params.FrameBuffer == nullptr)
-    {
-      m_params.FrameBuffer = MakeNewPtr<Framebuffer>();
-      m_params.FrameBuffer->Init({1024u, 768u, false, true});
-    }
+    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
+    m_EVSM4                                           = graphicsSettings.useEVSM4;
+    m_SMFormat16Bit                                   = !graphicsSettings.use32BitShadowMap;
+
+    m_programConfigMat                                = GetMaterialManager()->GetCopyOfDefaultMaterial();
+
+    m_programConfigMat->m_fragmentShader->SetDefine("EVSM4", std::to_string(m_EVSM4));
+    m_programConfigMat->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(m_SMFormat16Bit));
   }
 
   void ForwardRenderPass::Render()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::Render");
-    PUSH_CPU_MARKER("ForwardRenderPass::Render");
-
     RenderOpaque(m_params.renderData);
     RenderTranslucent(m_params.renderData);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
-
-  ForwardRenderPass::~ForwardRenderPass() {}
 
   void ForwardRenderPass::PreRender()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::PreRender");
-    PUSH_CPU_MARKER("ForwardRenderPass::PreRender");
-
     Pass::PreRender();
+
     // Set self data.
     Renderer* renderer = GetRenderer();
 
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
-    renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
     renderer->SetCamera(m_params.Cam, true);
 
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
+    // Adjust the depth test considering z-pre pass.
+    if (m_params.hasForwardPrePass)
+    {
+      // This is the optimal flag if the depth buffer is filled.
+      // Only the visible fragments will pass the test.
+      renderer->SetDepthTestFunc(CompareFunctions::FuncEqual);
+    }
+    else
+    {
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
+    }
   }
 
   void ForwardRenderPass::PostRender()
   {
-    PUSH_GPU_MARKER("ForwardRenderPass::PostRender");
-    PUSH_CPU_MARKER("ForwardRenderPass::PostRender");
-
     Pass::PostRender();
+
+    // Set the default depth test.
     Renderer* renderer = GetRenderer();
     renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
-
-    POP_CPU_MARKER();
-    POP_GPU_MARKER();
   }
 
   void ForwardRenderPass::RenderOpaque(RenderData* renderData)
   {
-    PUSH_CPU_MARKER("ForwardRenderPass::RenderOpaque");
+    // Adjust program configuration.
+    ConfigureProgram();
 
-    const MaterialPtr mat    = GetMaterialManager()->GetDefaultMaterial();
-    GpuProgramPtr gpuProgram = GetGpuProgramManager()->CreateProgram(mat->m_vertexShader, mat->m_fragmentShader);
+    // Render opaque.
+    m_programConfigMat->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
+    GpuProgramPtr gpuProgram =
+        GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
 
-    RenderJobItr begin       = renderData->GetForwardOpaqueBegin();
-    RenderJobItr end         = renderData->GetForwardAlphaMaskedBegin();
+    RenderJobItr begin = renderData->GetForwardOpaqueBegin();
+    RenderJobItr end   = renderData->GetForwardAlphaMaskedBegin();
     RenderOpaqueHelper(renderData, begin, end, gpuProgram);
 
-    POP_CPU_MARKER();
-
-    PUSH_CPU_MARKER("ForwardRenderPass::RenderAlphaMasked");
-
-    const MaterialPtr matAlphaMasked = GetMaterialManager()->GetDefaultAlphaMaskedMaterial();
-    GpuProgramPtr gpuProgramAlphaMasked =
-        GetGpuProgramManager()->CreateProgram(matAlphaMasked->m_vertexShader, matAlphaMasked->m_fragmentShader);
+    // Render alpha masked.
+    m_programConfigMat->m_fragmentShader->SetDefine("DrawAlphaMasked", "1");
+    gpuProgram =
+        GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
 
     begin = renderData->GetForwardAlphaMaskedBegin();
     end   = renderData->GetForwardTranslucentBegin();
-    RenderOpaqueHelper(renderData, begin, end, gpuProgramAlphaMasked);
-
-    POP_CPU_MARKER();
+    RenderOpaqueHelper(renderData, begin, end, gpuProgram);
   }
 
   void ForwardRenderPass::RenderTranslucent(RenderData* renderData)
   {
-    PUSH_CPU_MARKER("ForwardRenderPass::RenderTranslucent");
+    ConfigureProgram();
+
+    m_programConfigMat->m_fragmentShader->SetDefine("DrawAlphaMasked", "0");
+
+    GpuProgramPtr program =
+        GetGpuProgramManager()->CreateProgram(m_programConfigMat->m_vertexShader, m_programConfigMat->m_fragmentShader);
+
+    Renderer* renderer = GetRenderer();
+    renderer->BindProgram(program);
 
     RenderJobItr begin = renderData->GetForwardTranslucentBegin();
     RenderJobItr end   = renderData->jobs.end();
-
     RenderJobProcessor::SortByDistanceToCamera(begin, end, m_params.Cam);
 
-    Renderer* renderer = GetRenderer();
-    auto renderFnc     = [&](RenderJob& job)
+    if (begin != end)
     {
-      Material* mat = job.Material;
-      if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLess);
+      renderer->EnableDepthWrite(false);
+      for (RenderJobArray::iterator job = begin; job != end; job++)
       {
-        mat->GetRenderState()->cullMode = CullingType::Front;
-        renderer->Render(job);
+        if (job->Material->m_isShaderMaterial)
+        {
+          renderer->BindProgramOfMaterial(job->Material);
+        }
 
-        mat->GetRenderState()->cullMode = CullingType::Back;
-        renderer->Render(job);
+        Material* mat = job->Material;
+        if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
+        {
+          mat->GetRenderState()->cullMode = CullingType::Front;
+          renderer->Render(*job);
 
-        mat->GetRenderState()->cullMode = CullingType::TwoSided;
-      }
-      else
-      {
-        renderer->Render(job);
-      }
-    };
+          mat->GetRenderState()->cullMode = CullingType::Back;
+          renderer->Render(*job);
 
-    const MaterialPtr defualtMat = GetMaterialManager()->GetDefaultMaterial();
-    GpuProgramPtr defaultProgram =
-        GetGpuProgramManager()->CreateProgram(defualtMat->m_vertexShader, defualtMat->m_fragmentShader);
-
-    renderer->EnableDepthWrite(false);
-    for (RenderJobArray::iterator job = begin; job != end; job++)
-    {
-      if (job->Material->m_isShaderMaterial)
-      {
-        renderer->BindProgramOfMaterial(job->Material);
+          mat->GetRenderState()->cullMode = CullingType::TwoSided;
+        }
+        else
+        {
+          renderer->Render(*job);
+        }
       }
-      else
-      {
-        renderer->BindProgram(defaultProgram);
-      }
-      renderFnc(*job);
+      renderer->EnableDepthWrite(true);
     }
-    renderer->EnableDepthWrite(true);
-
-    POP_CPU_MARKER();
   }
 
   void ForwardRenderPass::RenderOpaqueHelper(RenderData* renderData,
@@ -156,11 +144,7 @@ namespace ToolKit
                                              GpuProgramPtr defaultGpuProgram)
   {
     Renderer* renderer = GetRenderer();
-
-    if (m_params.SsaoTexture)
-    {
-      renderer->SetTexture(5, m_params.SsaoTexture->m_textureId);
-    }
+    renderer->SetAmbientOcclusionTexture(m_params.SsaoTexture);
 
     for (RenderJobItr job = begin; job != end; job++)
     {
@@ -173,6 +157,23 @@ namespace ToolKit
         renderer->BindProgram(defaultGpuProgram);
         renderer->Render(*job);
       }
+    }
+  }
+
+  void ForwardRenderPass::ConfigureProgram()
+  {
+    EngineSettings::GraphicSettings& graphicsSettings = GetEngineSettings().Graphics;
+    if (graphicsSettings.useEVSM4 != m_EVSM4)
+    {
+      m_EVSM4 = graphicsSettings.useEVSM4;
+      m_programConfigMat->m_fragmentShader->SetDefine("EVSM4", std::to_string(m_EVSM4));
+    }
+
+    bool is16Bit = !graphicsSettings.use32BitShadowMap;
+    if (is16Bit != m_SMFormat16Bit)
+    {
+      m_SMFormat16Bit = is16Bit;
+      m_programConfigMat->m_fragmentShader->SetDefine("SMFormat16Bit", std::to_string(is16Bit));
     }
   }
 

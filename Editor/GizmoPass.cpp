@@ -10,7 +10,6 @@
 #include <AABBOverrideComponent.h>
 #include <Material.h>
 #include <Mesh.h>
-#include <TKProfiler.h>
 
 #include <DebugNew.h>
 
@@ -19,7 +18,7 @@ namespace ToolKit
   namespace Editor
   {
 
-    GizmoPass::GizmoPass()
+    GizmoPass::GizmoPass() : Pass("GizmoPass")
     {
       m_depthMaskSphere = MakeNewPtr<Sphere>();
       m_depthMaskSphere->SetRadiusVal(0.95f);
@@ -34,8 +33,6 @@ namespace ToolKit
 
     void GizmoPass::Render()
     {
-      PUSH_CPU_MARKER("GizmoPass::Render");
-
       Renderer* renderer                   = GetRenderer();
       GpuProgramManager* gpuProgramManager = GetGpuProgramManager();
 
@@ -49,30 +46,26 @@ namespace ToolKit
           renderer->ColorMask(false, false, false, false);
 
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({m_depthMaskSphere}, jobs);
+          RenderJobProcessor::CreateRenderJobs(jobs, m_depthMaskSphere);
           renderer->RenderWithProgramFromMaterial(jobs);
 
           renderer->ColorMask(true, true, true, true);
 
           jobs.clear();
-          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
+          RenderJobProcessor::CreateRenderJobs(jobs, billboard);
           renderer->RenderWithProgramFromMaterial(jobs);
         }
         else
         {
           RenderJobArray jobs;
-          RenderJobProcessor::CreateRenderJobs({billboard}, jobs);
+          RenderJobProcessor::CreateRenderJobs(jobs, billboard);
           renderer->RenderWithProgramFromMaterial(jobs);
         }
       }
-
-      POP_CPU_MARKER();
     }
 
     void GizmoPass::PreRender()
     {
-      PUSH_CPU_MARKER("GizmoPass::PreRender");
-
       Pass::PreRender();
       Renderer* renderer = GetRenderer();
 
@@ -95,16 +88,9 @@ namespace ToolKit
                                         return false;
                                       }),
                        gizmoArray.end());
-
-      POP_CPU_MARKER();
     }
 
-    void GizmoPass::PostRender()
-    {
-      PUSH_CPU_MARKER("GizmoPass::PostRender");
-      Pass::PostRender();
-      POP_CPU_MARKER();
-    }
+    void GizmoPass::PostRender() { Pass::PostRender(); }
 
   } // namespace Editor
 } // namespace ToolKit

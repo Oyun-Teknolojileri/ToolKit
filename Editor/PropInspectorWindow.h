@@ -8,7 +8,6 @@
 #pragma once
 
 #include "EditorViewport.h"
-#include "SceneRenderPath.h"
 #include "UI.h"
 #include "View.h"
 
@@ -35,7 +34,7 @@ namespace ToolKit
       void SetMeshView(MeshPtr mesh);
 
      private:
-      void DeterminateSelectedMaterial(EntityPtr curEntity);
+      void DetermineSelectedMaterial(EntityPtr curEntity);
 
      public:
       ViewRawPtrArray m_views;

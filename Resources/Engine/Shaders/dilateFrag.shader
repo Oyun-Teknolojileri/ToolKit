@@ -17,7 +17,7 @@
 		
 		void main()
 		{
-			vec2 uv = vec2(v_texture.x, 1.0 - v_texture.y);
+			vec2 uv = v_texture;
 			float c = texture(u_texture, uv).r;
 			if (c == 0.0)
 			{

@@ -230,6 +230,7 @@ namespace ToolKit
   template <typename T>
   inline std::shared_ptr<T> Cast(ObjectPtr tkObj)
   {
+    assert(tkObj->IsA<T>());
     return std::static_pointer_cast<T>(tkObj);
   }
 

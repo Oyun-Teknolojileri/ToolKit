@@ -209,7 +209,7 @@ namespace ToolKit
     void SetLocalTransforms(Vec3 translation, Quaternion rotation, Vec3 scale);
 
     /** Odd number of negative values in scale requires back / front culling to be flipped for proper winding order. */
-    bool RequresCullFlip();
+    bool RequireCullFlip();
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent);
@@ -265,5 +265,8 @@ namespace ToolKit
 
     bool m_dirty; //!< Hint for child to update its parent cache.
   };
+
+  /** Recursively traverse each child of the parent and apply callback function. */
+  TK_API void TraverseChildNodes(Node* parent, const std::function<void(Node* node)>& callbackFn);
 
 } // namespace ToolKit

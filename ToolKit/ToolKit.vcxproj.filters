@@ -88,9 +88,6 @@
     <ClCompile Include="UIManager.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="AdditiveLightingPass.cpp">
-      <Filter>Render\RenderPass</Filter>
-    </ClCompile>
     <ClCompile Include="BillboardPass.cpp">
       <Filter>Render\RenderPass</Filter>
     </ClCompile>
@@ -118,15 +115,6 @@
     <ClCompile Include="FullQuadPass.cpp">
       <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
-    <ClCompile Include="FxaaPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClCompile>
-    <ClCompile Include="GammaPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClCompile>
-    <ClCompile Include="GBufferPass.cpp">
-      <Filter>Render\RenderPass</Filter>
-    </ClCompile>
     <ClCompile Include="GlErrorReporter.cpp">
       <Filter>Render</Filter>
     </ClCompile>
@@ -136,7 +124,7 @@
     <ClCompile Include="MaterialComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="MobileSceneRenderPath.cpp">
+    <ClCompile Include="ForwardSceneRenderPath.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="OutlinePass.cpp">
@@ -150,9 +138,6 @@
     </ClCompile>
     <ClCompile Include="PluginManager.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="PostProcessPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Render</Filter>
@@ -187,9 +172,6 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="SceneRenderPath.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
     <ClCompile Include="TKImage.cpp">
       <Filter>Render</Filter>
     </ClCompile>
@@ -198,9 +180,6 @@
     </ClCompile>
     <ClCompile Include="ToolKit.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="ToneMapPass.cpp">
-      <Filter>Render\PostProcessPass</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Resources</Filter>
@@ -244,10 +223,15 @@
     <ClCompile Include="Plugin.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="BVH.cpp">
+    <ClCompile Include="LightDataBuffer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="AABBTree.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="LightDataBuffer.cpp" />
+    <ClCompile Include="TKStats.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -346,9 +330,6 @@
     <ClInclude Include="UIManager.h">
       <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="AdditiveLightingPass.h">
-      <Filter>Render\RenderPass</Filter>
-    </ClInclude>
     <ClInclude Include="BillboardPass.h">
       <Filter>Render\RenderPass</Filter>
     </ClInclude>
@@ -376,15 +357,6 @@
     <ClInclude Include="FullQuadPass.h">
       <Filter>Render\PostProcessPass</Filter>
     </ClInclude>
-    <ClInclude Include="FxaaPass.h">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClInclude>
-    <ClInclude Include="GammaPass.h">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClInclude>
-    <ClInclude Include="GBufferPass.h">
-      <Filter>Render\RenderPass</Filter>
-    </ClInclude>
     <ClInclude Include="GlErrorReporter.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -394,7 +366,7 @@
     <ClInclude Include="MaterialComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="MobileSceneRenderPath.h">
+    <ClInclude Include="ForwardSceneRenderPath.h">
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="OutlinePass.h">
@@ -411,9 +383,6 @@
     </ClInclude>
     <ClInclude Include="PluginManager.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="PostProcessPass.h">
-      <Filter>Render\PostProcessPass</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>Render</Filter>
@@ -448,9 +417,6 @@
     <ClInclude Include="Scene.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="SceneRenderPath.h">
-      <Filter>Render</Filter>
-    </ClInclude>
     <ClInclude Include="TKImage.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -461,12 +427,6 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="ToolKit.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="ToneMapPass.h">
-      <Filter>Render\PostProcessPass</Filter>
-    </ClInclude>
-    <ClInclude Include="TKProfiler.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="TKPlatform.h">
@@ -520,9 +480,6 @@
     <ClInclude Include="GammaTonemapFxaaPass.h">
       <Filter>Render\PostProcessPass</Filter>
     </ClInclude>
-    <ClInclude Include="BVH.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="LightCache.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -531,6 +488,9 @@
     </ClInclude>
     <ClInclude Include="RHIConstants.h">
       <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="AABBTree.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -558,5 +518,169 @@
     <Filter Include="Render\PostProcessPass">
       <UniqueIdentifier>{b7ee736e-cc29-484b-90ee-93de84685c95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Render\Shaders">
+      <UniqueIdentifier>{2252f47f-c3ed-4d44-8828-b7e639f283f0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Engine\Shaders\AO.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\avgBlurFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\avgBlurVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\bloomDownsample.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\bloomUpsample.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\BRDFLutFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\camera.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\copyTextureFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\copyTextureVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\defaultFragment.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\defaultVertex.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\depthOfFieldFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\dilateFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\equirectToCubeFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\equirectToCubeVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\forwardPreProcess.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\forwardPreProcessVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\fullQuadVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\fxaaFunctions.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gammaFunctions.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gammaTonemapFxaa.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gausBlur7x1Frag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gausBlur7x1Vert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gradientSkyboxFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gridFragment.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\gridVertex.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\ibl.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\irradianceGenerateFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\irradianceGenerateVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\lightComplexity.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\lighting.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\normalFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthViewFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\orthogonalDepthViewVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\pbr.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\perspectiveDepthViewFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\positionVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\preFilterEnvMapFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\shadow.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\skinning.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\skyboxFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\skyboxVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\solidColorFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\ssaoCalcFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\texCoordFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\textureUtil.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\tonemapFunctions.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\unlitFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\VSM.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

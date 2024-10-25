@@ -11,9 +11,7 @@
 
 #include <zlib.h>
 
-#include <variant>
-
-#ifdef __ANDROID__
+#ifdef TK_ANDROID
   #include <Android/minizip/unzip.h>
   #include <Android/minizip/zip.h>
 #else
@@ -81,7 +79,7 @@ namespace ToolKit
 
    private:
     StringSet m_allPaths;
-    std::unordered_map<String, std::pair<ZPOS64_T, uint32_t>> m_zipFilesOffsetTable;
+    std::unordered_map<String, std::pair<ZPOS64_T, uint>> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
     zipFile m_zfile           = nullptr;
 

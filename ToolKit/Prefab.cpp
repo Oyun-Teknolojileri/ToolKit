@@ -12,8 +12,6 @@
 #include "Scene.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -22,6 +20,19 @@ namespace ToolKit
   Prefab::Prefab() {}
 
   Prefab::~Prefab() { UnInit(); }
+
+  bool Prefab::IsDrawable() const
+  {
+    for (int i = 0; i < (int) m_instanceEntities.size(); i++)
+    {
+      if (m_instanceEntities[i]->IsDrawable())
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   void Prefab::UnInit()
   {
@@ -37,7 +48,16 @@ namespace ToolKit
       if (m_linked)
       {
         m_linked = false;
-        m_currentScene->RemoveEntity(m_instanceEntities);
+
+        EntityPtrArray roots;
+        GetRootEntities(m_instanceEntities, roots);
+        m_currentScene->RemoveEntity(roots);
+
+        // Detach roots from prefab.
+        for (EntityPtr root : roots)
+        {
+          root->m_node->OrphanSelf();
+        }
       }
     }
   }
@@ -52,6 +72,14 @@ namespace ToolKit
       {
         m_currentScene->AddEntity(child);
       }
+
+      // Attach roots to prefab.
+      EntityPtrArray roots;
+      GetRootEntities(m_instanceEntities, roots);
+      for (EntityPtr root : roots)
+      {
+        m_node->AddChild(root->m_node);
+      }
     }
   }
 
@@ -59,7 +87,7 @@ namespace ToolKit
   {
     if (ntt->IsA<Prefab>())
     {
-      return std::static_pointer_cast<Prefab>(ntt);
+      return Cast<Prefab>(ntt);
     }
 
     if (EntityPtr parent = ntt->Parent())
@@ -75,7 +103,7 @@ namespace ToolKit
     Entity::CopyTo(other);
     Prefab* prefab = (Prefab*) other;
     prefab->Init(m_currentScene);
-    prefab->Link();
+
     return other;
   }
 
@@ -117,6 +145,8 @@ namespace ToolKit
     return nullptr;
   }
 
+  const EntityPtrArray& Prefab::GetInstancedEntities() { return m_instanceEntities; }
+
   void Prefab::Init(Scene* curScene)
   {
     if (m_initiated)
@@ -145,7 +175,7 @@ namespace ToolKit
     {
       EntityPtrArray instantiatedEntityList;
       DeepCopy(root, instantiatedEntityList);
-      m_node->AddChild(instantiatedEntityList[0]->m_node);
+
       for (EntityPtr child : instantiatedEntityList)
       {
         child->SetTransformLockVal(true);

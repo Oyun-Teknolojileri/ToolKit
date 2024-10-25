@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Resource.h"
 #include "Texture.h"
 
 namespace ToolKit
@@ -14,18 +15,29 @@ namespace ToolKit
 
   struct FramebufferSettings
   {
-    int width            = 128;
-    int height           = 128;
-    bool depthStencil    = false;
-    bool useDefaultDepth = true;
+    /**Height of the frame buffer. */
+    int width                  = 128;
+    /** Width of the frame buffer. */
+    int height                 = 128;
+    /** States whether the default depth has stencil or not. */
+    bool depthStencil          = false;
+    /** Creates a default depth attachment. */
+    bool useDefaultDepth       = true;
+    /** Creates multi sample frame buffers. Suggested values are 0, 2, 4, 6. */
+    int multiSampleFrameBuffer = 0;
 
-    bool Compare(const FramebufferSettings& settings);
+    bool operator==(const FramebufferSettings& other) const
+    {
+      return memcmp(this, &other, sizeof(FramebufferSettings)) == 0;
+    }
+
+    bool operator!=(const FramebufferSettings& other) const { return !(*this == other); }
   };
 
-  class TK_API Framebuffer
+  class TK_API Framebuffer : public Resource
   {
-    // NOTE: This class does not handle renderbuffer attachments, multi-sampled
-    // cubemaps.
+   public:
+    TKDeclareClass(Framebuffer, Resource);
 
    public:
     enum class Attachment
@@ -55,10 +67,15 @@ namespace ToolKit
 
    public:
     Framebuffer();
-    ~Framebuffer();
+    virtual ~Framebuffer();
 
-    void Init(const FramebufferSettings& settings);
-    void UnInit();
+    virtual void NativeConstruct(StringView label);
+    virtual void NativeConstruct(const FramebufferSettings& settings, StringView label = "");
+
+    void Init(bool flushClientSideArray = false) override;
+    void UnInit() override;
+    void Load() override;
+
     bool Initialized();
 
     RenderTargetPtr SetColorAttachment(Attachment atc,
@@ -67,19 +84,18 @@ namespace ToolKit
                                        int layer        = -1,
                                        CubemapFace face = CubemapFace::NONE);
 
-    DepthTexturePtr GetDepthTexture();
-    void AttachDepthTexture(DepthTexturePtr rt);
-    RenderTargetPtr GetAttachment(Attachment atc);
+    RenderTargetPtr GetColorAttachment(Attachment atc);
+    RenderTargetPtr DetachColorAttachment(Attachment atc);
     void ClearAttachments();
 
-    uint GetFboId();
-
-    inline const FramebufferSettings& GetSettings() { return m_settings; }
-
-    void ReconstructIfNeeded(int width, int height);
-
-    RenderTargetPtr DetachColorAttachment(Attachment atc);
+    DepthTexturePtr GetDepthTexture();
+    void AttachDepthTexture(DepthTexturePtr rt);
     void RemoveDepthAttachment();
+
+    uint GetFboId();
+    const FramebufferSettings& GetSettings();
+    void ReconstructIfNeeded(int width, int height);
+    void ReconstructIfNeeded(const FramebufferSettings& settings);
 
    private:
     void SetDrawBuffers();
@@ -88,11 +104,11 @@ namespace ToolKit
 
    public:
     static const int m_maxColorAttachmentCount = 8;
+    StringView m_label; //!< Debug label which appears in the gpu debuggers.
 
    private:
     FramebufferSettings m_settings;
 
-    bool m_initialized  = false;
     uint m_fboId        = 0;
     uint m_defaultRboId = 0;
     RenderTargetPtr m_colorAtchs[m_maxColorAttachmentCount];
