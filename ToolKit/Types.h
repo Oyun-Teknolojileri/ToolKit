@@ -408,10 +408,11 @@ namespace ToolKit
 
   static const String TKResourcePak    = "MinResources.pak";
 
-  static const char* TKVersionStr      = "v0.4.7";
+  static const char* TKVersionStr      = "v0.4.8";
   static const String TKV044           = "v0.4.4";
   static const String TKV045           = "v0.4.5";
   static const String TKV046           = "v0.4.6";
   static const String TKV047           = "v0.4.7";
+  static const String TKV048           = "v0.4.8";
 
 } // namespace ToolKit
