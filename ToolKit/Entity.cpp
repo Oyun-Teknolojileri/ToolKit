@@ -376,7 +376,14 @@ namespace ToolKit
     m_spatialCachesInvalidated = false;
   }
 
+  void Entity::InvalidateRenderJobCaches(RenderJobInvalidationFlags invalidateFlags)
+  {
+    m_invalidRenderJobFlags |= (int) invalidateFlags;
+  }
+
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
+
+  void Entity::GetRenderJob(RenderJobArray& jobArray) {}
 
   bool Entity::IsVisible()
   {

@@ -186,6 +186,10 @@ namespace ToolKit
   typedef std::shared_ptr<class Dpad> DpadPtr;
   typedef std::shared_ptr<class GammaTonemapFxaaPass> GammaTonemapFxaaPassPtr;
 
+  // Component types.
+  typedef std::shared_ptr<class EnvironmentComponent> EnvironmentComponentPtr;
+  typedef std::vector<EnvironmentComponentPtr> EnvironmentComponentPtrArray;
+
   // Xml types.
   typedef rapidxml::xml_node<char> XmlNode;
   typedef rapidxml::xml_attribute<char> XmlAttribute;

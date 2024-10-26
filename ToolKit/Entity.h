@@ -17,6 +17,7 @@
 #include "MeshComponent.h"
 #include "Node.h"
 #include "Object.h"
+#include "RenderJob.h"
 #include "ToolKit.h"
 #include "Types.h"
 
@@ -49,6 +50,12 @@ namespace ToolKit
     virtual const BoundingBox& GetBoundingBox(bool inWorld = false);
     ObjectPtr Copy() const override;
     virtual void RemoveResources();
+
+    /**
+     * Push the render job array required to render this entity to the given jobArray. Performs updates if parts of the
+     * job structure is invalidated such as transforms, mesh / material components, light assignments etc ...
+     */
+    virtual void GetRenderJob(RenderJobArray& jobArray);
 
     /**
      * Returns the visibility status of the current Entity. If it belongs to a
@@ -180,6 +187,9 @@ namespace ToolKit
     /** Updates spatial caches related to entity. AABB tree is updated upon access. */
     virtual void UpdateSpatialCaches();
 
+    /** Parts of the flags assumed to be invalidated. Upon access, the job array gets updated based on invalidation. */
+    void InvalidateRenderJobCaches(RenderJobInvalidationFlags invalidateFlags);
+
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor() override;
@@ -222,12 +232,15 @@ namespace ToolKit
     /** The Scene that entity belongs to. */
     SceneWeakPtr m_scene;
 
-    /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
-    bool m_spatialCachesInvalidated = true;
-
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
+
+    /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
+    bool m_spatialCachesInvalidated = true;
+
+    RenderJobArray m_renderJobCache; //!< Cached render jobs.
+    int m_invalidRenderJobFlags;     //!< Stats which parts of the render jobs are invalid.
 
    private:
     /**

@@ -139,6 +139,7 @@
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="Pass.h" />
+    <ClInclude Include="RenderJob.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RHI.h" />
     <ClInclude Include="RHIConstants.h" />
