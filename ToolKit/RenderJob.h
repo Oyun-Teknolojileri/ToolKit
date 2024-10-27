@@ -10,14 +10,14 @@
 namespace ToolKit
 {
 
-  enum class RenderJobInvalidationFlags
+  namespace RenderJobInvalidationFlags
   {
-    Mesh                  = 1 << 0,
-    Material              = 1 << 1,
-    EnvironmentAssignment = 1 << 2,
-    LightAssignment       = 1 << 3,
-    Spatial               = 1 << 4 //!< Flag for stating invalidation for transformation and bounding box.
-  };
+    const int Appareal    = 1 << 0; //!< Flag for indicating change in material or mesh components
+    const int Transform   = 1 << 1;
+    const int Environment = 1 << 2;                          //!< Flag for indicating change of environment.
+    const int Light       = 1 << 3;                          //!< Flag for indicating change of effecting lights.
+    const int Spatial     = Transform | Environment | Light; //!< Flag for indicating change in transform and AABB.
+  }                                                          // namespace RenderJobInvalidationFlags
 
   /** This struct holds all the data required to make a drawcall. */
   struct RenderJob
@@ -95,6 +95,8 @@ namespace ToolKit
 
     static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
 
+    static void CreateRenderJobs(RenderJobArray& jobArray, Entity* entity);
+
     /**
      * Separate jobs such that job array starts with culled jobs, than deferred jobs, than forward opaque and
      * translucent jobs.
@@ -103,8 +105,13 @@ namespace ToolKit
      */
     static void SeperateRenderData(RenderData& renderData, bool forwardOnly);
 
-    /** Assign all lights affecting the job. */
-    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex);
+    /**
+     * Assign all lights affecting the job.
+     * All the lights before startIndex assumed to be directional lights and directly gets added to the job's light
+     * list. endIndex is used to detect invalidation. If job's light cache is invalid, the endIndex is greater than
+     * startIndex and test all the lights until the endIndex to detect if they are affecting the job.
+     */
+    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex, int endIndex);
 
     /** Assign environment to each job. If job is under influence of many environment, picks the smallest volume. */
     static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);

@@ -63,6 +63,7 @@
     <ClCompile Include="Prefab.cpp" />
     <ClCompile Include="Primative.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RenderJob.cpp" />
     <ClCompile Include="RenderState.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="Resource.cpp" />

@@ -54,8 +54,9 @@ namespace ToolKit
     /**
      * Push the render job array required to render this entity to the given jobArray. Performs updates if parts of the
      * job structure is invalidated such as transforms, mesh / material components, light assignments etc ...
+     * @return number of jobs for this entity.
      */
-    virtual void GetRenderJob(RenderJobArray& jobArray);
+    virtual int GetRenderJob(RenderJobArray& jobArray);
 
     /**
      * Returns the visibility status of the current Entity. If it belongs to a
@@ -187,8 +188,14 @@ namespace ToolKit
     /** Updates spatial caches related to entity. AABB tree is updated upon access. */
     virtual void UpdateSpatialCaches();
 
-    /** Parts of the flags assumed to be invalidated. Upon access, the job array gets updated based on invalidation. */
-    void InvalidateRenderJobCaches(RenderJobInvalidationFlags invalidateFlags);
+    /**
+     * Parts of the flags assumed to be invalidated. Upon access, the job array gets updated based on invalidation.
+     * @param invalidateFlags must be a combination of values in RenderJobInvalidationFlags
+     */
+    void InvalidateRenderJobCaches(int invalidateFlags);
+
+    /** Checks whether the given flag among RenderJobInvalidationFlags is valid or not. */
+    bool CheckRenderJobCacheFlag(int flag);
 
    protected:
     virtual Entity* CopyTo(Entity* other) const;
@@ -224,10 +231,10 @@ namespace ToolKit
     Entity* _prefabRootEntity;
 
     /** Index into the bvh tree that points to the node for this entity. */
-    AABBNodeProxy m_aabbTreeNodeProxy = AABBTree::nullNode;
+    AABBNodeProxy m_aabbTreeNodeProxy;
 
     /** Entity causes AABBTree to be updated when added removed to the scene. */
-    bool m_partOfAABBTree             = true;
+    bool m_partOfAABBTree;
 
     /** The Scene that entity belongs to. */
     SceneWeakPtr m_scene;
@@ -237,10 +244,10 @@ namespace ToolKit
     BoundingBox m_worldBoundingBoxCache;
 
     /** If true, transform related caches (aabb, abbtree etc...) are updated upon access. */
-    bool m_spatialCachesInvalidated = true;
+    bool m_spatialCachesInvalidated;
 
     RenderJobArray m_renderJobCache; //!< Cached render jobs.
-    int m_invalidRenderJobFlags;     //!< Stats which parts of the render jobs are invalid.
+    int m_invalidRenderJobFlags;     //!< States which parts of the render jobs are invalid.
 
    private:
     /**

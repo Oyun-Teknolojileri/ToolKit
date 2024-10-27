@@ -34,9 +34,15 @@ namespace ToolKit
 
   Entity::Entity()
   {
-    m_node            = new Node();
-    _prefabRootEntity = nullptr;
-    _parentId         = NULL_HANDLE;
+    m_node                      = new Node();
+    _prefabRootEntity           = nullptr;
+    _parentId                   = NULL_HANDLE;
+
+    m_aabbTreeNodeProxy         = AABBTree::nullNode;
+    m_partOfAABBTree            = true;
+
+    m_spatialCachesInvalidated  = true;
+    m_invalidRenderJobFlags    |= RenderJobInvalidationFlags::Appareal | RenderJobInvalidationFlags::Spatial;
   }
 
   Entity::~Entity()
@@ -139,6 +145,7 @@ namespace ToolKit
       }
     }
 
+    InvalidateRenderJobCaches(RenderJobInvalidationFlags::Spatial);
     m_spatialCachesInvalidated = true;
   }
 
@@ -376,14 +383,41 @@ namespace ToolKit
     m_spatialCachesInvalidated = false;
   }
 
-  void Entity::InvalidateRenderJobCaches(RenderJobInvalidationFlags invalidateFlags)
-  {
-    m_invalidRenderJobFlags |= (int) invalidateFlags;
-  }
+  void Entity::InvalidateRenderJobCaches(int invalidateFlags) { m_invalidRenderJobFlags |= invalidateFlags; }
+
+  bool Entity::CheckRenderJobCacheFlag(int flag) { return m_invalidRenderJobFlags & flag; }
 
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
 
-  void Entity::GetRenderJob(RenderJobArray& jobArray) {}
+  int Entity::GetRenderJob(RenderJobArray& jobArray)
+  {
+    // If apparel changes, re create all jobs.
+    if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Appareal)
+    {
+      m_renderJobCache.clear();
+      RenderJobProcessor::CreateRenderJobs(m_renderJobCache, this);
+      m_invalidRenderJobFlags &= ~(RenderJobInvalidationFlags::Appareal | RenderJobInvalidationFlags::Spatial);
+    }
+    else if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Transform) // Just update transform data.
+    {
+      Mat4 worldTransform  = m_node->GetTransform();
+      bool requireCullFlip = m_node->RequireCullFlip();
+      BoundingBox worldBox = GetBoundingBox(true);
+
+      for (RenderJob& job : m_renderJobCache)
+      {
+        job.requireCullFlip = requireCullFlip;
+        job.WorldTransform  = worldTransform;
+        job.BoundingBox     = worldBox;
+      }
+
+      m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::Transform;
+    }
+
+    jobArray.insert(jobArray.end(), m_renderJobCache.begin(), m_renderJobCache.end());
+
+    return (int) m_renderJobCache.size();
+  }
 
   bool Entity::IsVisible()
   {
