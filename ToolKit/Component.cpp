@@ -17,6 +17,7 @@
 #include "Object.h"
 #include "SkeletonComponent.h"
 #include "ToolKit.h"
+#include "Entity.h"
 
 namespace ToolKit
 {

@@ -7,6 +7,10 @@
 
 #pragma once
 
+#include "Types.h"
+#include "GeometryTypes.h"
+#include "SkeletonComponent.h"
+
 namespace ToolKit
 {
 
