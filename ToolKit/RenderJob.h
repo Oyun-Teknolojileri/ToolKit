@@ -93,12 +93,7 @@ namespace ToolKit
      * @param environments are the environment volumes to consider.
      * @param ingnoreVisibility when set true, construct jobs for entities that has visibility set to false.
      */
-    static void CreateRenderJobs(RenderJobArray& jobArray,
-                                 EntityRawPtrArray& entities,
-                                 bool ignoreVisibility                            = false,
-                                 int dirLightEndIndex                             = 0,
-                                 const LightRawPtrArray& lights                   = {},
-                                 const EnvironmentComponentPtrArray& environments = {});
+    static void CreateRenderJobs(RenderJobArray& jobArray, EntityRawPtrArray& entities, bool ignoreVisibility = false);
 
     /** Ignores the RenderJob cache of the entity and recreates the RenderJobArray. */
     static void ForceCreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
@@ -120,7 +115,7 @@ namespace ToolKit
      * list. endIndex is used to detect invalidation. If job's light cache is invalid, the endIndex is greater than
      * startIndex and test all the lights until the endIndex to detect if they are affecting the job.
      */
-    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex);
+    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex, int endIndex);
 
     /** Assign environment to each job. If job is under influence of many environment, picks the smallest volume. */
     static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);

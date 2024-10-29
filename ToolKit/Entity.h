@@ -194,9 +194,6 @@ namespace ToolKit
      */
     void InvalidateRenderJobCaches(int invalidateFlags);
 
-    /** Checks whether the given flag among RenderJobInvalidationFlags is valid or not. */
-    bool CheckRenderJobCacheFlag(int flag);
-
     /** Updates light assignments for render job caches. */
     void UpdateLightAssignment(const LightRawPtrArray& lights, int dirLightEndIndex);
 

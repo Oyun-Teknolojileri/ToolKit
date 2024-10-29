@@ -20,10 +20,7 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray,
                                             EntityRawPtrArray& entities,
-                                            bool ignoreVisibility,
-                                            int dirLightEndIndex,
-                                            const LightRawPtrArray& lights,
-                                            const EnvironmentComponentPtrArray& environments)
+                                            bool ignoreVisibility)
   {
     // Each entity can contain several meshes. This submeshIndexLookup array will be used
     // to find the index of the submesh for a given entity index.
@@ -71,18 +68,6 @@ namespace ToolKit
     {
       Entity* ntt = entities[i];
       ntt->GetRenderJob(jobArray);
-
-      // Perform light assignments.
-      if (ntt->CheckRenderJobCacheFlag(RenderJobInvalidationFlags::Light))
-      {
-        ntt->UpdateLightAssignment(lights, dirLightEndIndex);
-      }
-
-      // Perform environment assignments.
-      if (ntt->CheckRenderJobCacheFlag(RenderJobInvalidationFlags::Environment))
-      {
-        ntt->UpdateEnvironmentAssignment(environments);
-      }
     }
   }
 
@@ -214,7 +199,7 @@ namespace ToolKit
     renderData.forwardTranslucentStartIndex     = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
-  void RenderJobProcessor::AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex)
+  void RenderJobProcessor::AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex, int endIndex)
   {
     // Add all directional lights.
     for (int i = 0; i < startIndex; i++)
@@ -233,7 +218,7 @@ namespace ToolKit
       return;
     }
 
-    for (int i = startIndex; i < (int) lights.size(); i++)
+    for (int i = startIndex; i < endIndex; i++)
     {
       Light* light = lights[i];
       if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
