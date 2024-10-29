@@ -387,6 +387,30 @@ namespace ToolKit
 
   bool Entity::CheckRenderJobCacheFlag(int flag) { return m_invalidRenderJobFlags & flag; }
 
+  void Entity::UpdateLightAssignment(const LightRawPtrArray& lights, int dirLightEndIndex)
+  {
+    // Perform light assignments.
+    for (RenderJob& job : m_renderJobCache)
+    {
+      job.lights.clear();
+      RenderJobProcessor::AssignLight(job, lights, dirLightEndIndex);
+    }
+
+    m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::Light;
+  }
+
+  void Entity::UpdateEnvironmentAssignment(const EnvironmentComponentPtrArray& environments)
+  {
+    // Perform volume assignments.
+    for (RenderJob& job : m_renderJobCache)
+    {
+      job.EnvironmentVolume = nullptr;
+      RenderJobProcessor::AssignEnvironment(job, environments);
+    }
+
+    m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::Environment;
+  }
+
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
 
   int Entity::GetRenderJob(RenderJobArray& jobArray)

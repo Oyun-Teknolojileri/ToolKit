@@ -150,10 +150,9 @@ namespace ToolKit
         if (!jobs.empty())
         {
           int dirStart = RenderJobProcessor::PreSortLights(lights);
-
           for (RenderJob& job : jobs)
           {
-            RenderJobProcessor::AssignLight(job, lights, dirStart, (int) lights.size());
+            RenderJobProcessor::AssignLight(job, lights, dirStart);
           }
 
           RenderJob& job = jobs.front();

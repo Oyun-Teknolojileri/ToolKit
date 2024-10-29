@@ -69,32 +69,19 @@ namespace ToolKit
     // Construct jobs.
     for (int i = 0; i < (int) entities.size(); i++)
     {
-      Entity* ntt           = entities[i];
-      int jobCount          = ntt->GetRenderJob(jobArray);
+      Entity* ntt = entities[i];
+      ntt->GetRenderJob(jobArray);
 
       // Perform light assignments.
-      int lightCountToCheck = dirLightEndIndex;
       if (ntt->CheckRenderJobCacheFlag(RenderJobInvalidationFlags::Light))
       {
-        lightCountToCheck = (int) lights.size();
-      }
-
-      // Reverse iterate to get last n jobs.
-      for (int i = 0; i < jobCount; i++)
-      {
-        auto jobItr = jobArray.rbegin() + i;
-        AssignLight(*jobItr, lights, dirLightEndIndex, lightCountToCheck);
+        ntt->UpdateLightAssignment(lights, dirLightEndIndex);
       }
 
       // Perform environment assignments.
       if (ntt->CheckRenderJobCacheFlag(RenderJobInvalidationFlags::Environment))
       {
-        // Reverse iterate to get last n jobs.
-        for (int i = 0; i < jobCount; i++)
-        {
-          auto jobItr = jobArray.rbegin() + i;
-          AssignEnvironment(*jobItr, environments);
-        }
+        ntt->UpdateEnvironmentAssignment(environments);
       }
     }
   }
@@ -227,7 +214,7 @@ namespace ToolKit
     renderData.forwardTranslucentStartIndex     = (int) std::distance(renderData.jobs.begin(), translucentItr);
   }
 
-  void RenderJobProcessor::AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex, int endIndex)
+  void RenderJobProcessor::AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex)
   {
     // Add all directional lights.
     for (int i = 0; i < startIndex; i++)
@@ -246,7 +233,7 @@ namespace ToolKit
       return;
     }
 
-    for (int i = startIndex; i < endIndex; i++)
+    for (int i = startIndex; i < (int) lights.size(); i++)
     {
       Light* light = lights[i];
       if (job.lights.size() >= RHIConstants::MaxLightsPerObject)

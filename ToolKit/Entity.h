@@ -197,6 +197,12 @@ namespace ToolKit
     /** Checks whether the given flag among RenderJobInvalidationFlags is valid or not. */
     bool CheckRenderJobCacheFlag(int flag);
 
+    /** Updates light assignments for render job caches. */
+    void UpdateLightAssignment(const LightRawPtrArray& lights, int dirLightEndIndex);
+
+    /** Updates environment assignments for render job caches. */
+    void UpdateEnvironmentAssignment(const EnvironmentComponentPtrArray& environments);
+
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor() override;

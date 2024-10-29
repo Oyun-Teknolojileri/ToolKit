@@ -120,7 +120,7 @@ namespace ToolKit
      * list. endIndex is used to detect invalidation. If job's light cache is invalid, the endIndex is greater than
      * startIndex and test all the lights until the endIndex to detect if they are affecting the job.
      */
-    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex, int endIndex);
+    static void AssignLight(RenderJob& job, const LightRawPtrArray& lights, int startIndex);
 
     /** Assign environment to each job. If job is under influence of many environment, picks the smallest volume. */
     static void AssignEnvironment(RenderJob& job, const EnvironmentComponentPtrArray& environments);
