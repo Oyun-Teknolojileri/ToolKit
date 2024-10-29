@@ -398,20 +398,40 @@ namespace ToolKit
       RenderJobProcessor::ForceCreateRenderJobs(m_renderJobCache, this);
       m_invalidRenderJobFlags &= ~(RenderJobInvalidationFlags::Appearance | RenderJobInvalidationFlags::Transform);
     }
-    else if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Transform) // Just update transform data.
+    else
     {
-      Mat4 worldTransform  = m_node->GetTransform();
-      bool requireCullFlip = m_node->RequireCullFlip();
-      BoundingBox worldBox = GetBoundingBox(true);
-
-      for (RenderJob& job : m_renderJobCache)
+      // Update transform data.
+      if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Transform)
       {
-        job.requireCullFlip = requireCullFlip;
-        job.WorldTransform  = worldTransform;
-        job.BoundingBox     = worldBox;
+        Mat4 worldTransform  = m_node->GetTransform();
+        bool requireCullFlip = m_node->RequireCullFlip();
+        BoundingBox worldBox = GetBoundingBox(true);
+
+        for (RenderJob& job : m_renderJobCache)
+        {
+          job.requireCullFlip = requireCullFlip;
+          job.WorldTransform  = worldTransform;
+          job.BoundingBox     = worldBox;
+        }
+
+        m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::Transform;
       }
 
-      m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::Transform;
+      // Update animation data.
+      if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Animation)
+      {
+        // Update skeletal animation.
+        if (SkeletonComponent* sklComp = GetComponentFast<SkeletonComponent>())
+        {
+          for (RenderJob& job : m_renderJobCache)
+          {
+            job.animData = sklComp->GetAnimData();
+          }
+        }
+
+        // TODO: Key frame animation needs to be updated.
+        m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::Animation;
+      }
     }
 
     jobArray.insert(jobArray.end(), m_renderJobCache.begin(), m_renderJobCache.end());

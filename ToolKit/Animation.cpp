@@ -388,6 +388,11 @@ namespace ToolKit
         return false;
       }
 
+      if (EntityPtr ntt = record->m_entity.lock())
+      {
+        ntt->InvalidateRenderJobCaches(RenderJobInvalidationFlags::Animation);
+      }
+
       AnimRecord::State state = record->m_state;
       if (state == AnimRecord::State::Play)
       {

@@ -18,11 +18,12 @@ namespace ToolKit
   {
     const int Appearance  = 1 << 0; //!< Flag for indicating change in material or mesh components
     const int Transform   = 1 << 1;
-    const int Environment = 1 << 2;                          //!< Flag for indicating change of environment.
-    const int Light       = 1 << 3;                          //!< Flag for indicating change of effecting lights.
-    const int Spatial     = Transform | Environment | Light; //!< Flag for indicating change in transform and AABB.
-    const int All         = Appearance | Spatial;            //!< Flag for indicating change in all RenderJob fields.
-  }                                                          // namespace RenderJobInvalidationFlags
+    const int Environment = 1 << 2;                           //!< Flag for indicating change of environment.
+    const int Light       = 1 << 3;                           //!< Flag for indicating change of effecting lights.
+    const int Animation   = 1 << 4;                           //!< Flag for indicating change of animation data.
+    const int Spatial     = Transform | Environment | Light;  //!< Flag for indicating change in transform and AABB.
+    const int All         = Appearance | Spatial | Animation; //!< Flag for indicating change in all RenderJob fields.
+  }                                                           // namespace RenderJobInvalidationFlags
 
   /** This struct holds all the data required to make a drawcall. */
   struct RenderJob
