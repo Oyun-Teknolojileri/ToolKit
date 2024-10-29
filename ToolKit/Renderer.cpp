@@ -584,7 +584,7 @@ namespace ToolKit
     SetCamera(m_tempQuadCam, true);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs(jobs, m_tempQuad);
+    RenderJobProcessor::ForceCreateRenderJobs(jobs, m_tempQuad);
 
     CompareFunctions lastDepthFunc = m_renderState.depthFunction;
     SetDepthTestFunc(CompareFunctions::FuncAlways);
@@ -601,7 +601,7 @@ namespace ToolKit
     SetCamera(cam, true);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs(jobs, m_dummyDrawCube);
+    RenderJobProcessor::ForceCreateRenderJobs(jobs, m_dummyDrawCube);
 
     CompareFunctions lastCompareFunc = m_renderState.depthFunction;
     SetDepthTestFunc(CompareFunctions::FuncAlways);
@@ -789,7 +789,7 @@ namespace ToolKit
       SetCamera(camera, true);
 
       RenderJobArray jobs;
-      RenderJobProcessor::CreateRenderJobs(jobs, quad);
+      RenderJobProcessor::ForceCreateRenderJobs(jobs, quad);
       RenderWithProgramFromMaterial(jobs);
 
       brdfLut->SetFile(TKBrdfLutTexture);

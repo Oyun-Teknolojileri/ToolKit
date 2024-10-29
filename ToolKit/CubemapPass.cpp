@@ -22,7 +22,7 @@ namespace ToolKit
     renderer->SetFramebuffer(m_params.FrameBuffer, m_params.clearBuffer);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs(jobs, m_cube);
+    RenderJobProcessor::ForceCreateRenderJobs(jobs, m_cube);
 
     renderer->RenderWithProgramFromMaterial(jobs);
   }

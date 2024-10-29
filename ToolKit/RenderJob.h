@@ -84,7 +84,8 @@ namespace ToolKit
   {
    public:
     /**
-     * Constructs all render jobs from entities.
+     * Constructs all render jobs from entities. Utilize the RenderJob cache in the entity.
+     * Only recreates the part of the RenderJob which is invalidated.
      * @param jobArray is the array of constructed jobs.
      * @param entities are the entities to construct render jobs for.
      * @param lights are the list of lights to consider. Lights must be presorted before sending them to this function.
@@ -98,9 +99,11 @@ namespace ToolKit
                                  const LightRawPtrArray& lights                   = {},
                                  const EnvironmentComponentPtrArray& environments = {});
 
-    static void CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
+    /** Ignores the RenderJob cache of the entity and recreates the RenderJobArray. */
+    static void ForceCreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity);
 
-    static void CreateRenderJobs(RenderJobArray& jobArray, Entity* entity);
+    /** Ignores the RenderJob cache of the entity and recreates the RenderJobArray. */
+    static void ForceCreateRenderJobs(RenderJobArray& jobArray, Entity* entity);
 
     /**
      * Separate jobs such that job array starts with culled jobs, than deferred jobs, than forward opaque and

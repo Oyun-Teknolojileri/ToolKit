@@ -390,7 +390,7 @@ namespace ToolKit
               billboardCasted->LookAt(viewportCamera, viewport->GetBillboardScale());
             }
 
-            RenderJobProcessor::CreateRenderJobs(billboardJobs, billboard);
+            RenderJobProcessor::ForceCreateRenderJobs(billboardJobs, billboard);
           }
         }
 

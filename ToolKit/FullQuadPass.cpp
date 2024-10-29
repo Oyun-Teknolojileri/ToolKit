@@ -32,7 +32,7 @@ namespace ToolKit
     renderer->SetCamera(m_camera, true);
 
     RenderJobArray jobs;
-    RenderJobProcessor::CreateRenderJobs(jobs, m_quad);
+    RenderJobProcessor::ForceCreateRenderJobs(jobs, m_quad);
     renderer->Render(jobs);
   }
 

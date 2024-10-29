@@ -99,12 +99,12 @@ namespace ToolKit
     }
   }
 
-  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
+  void RenderJobProcessor::ForceCreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
   {
-    CreateRenderJobs(jobArray, entity.get());
+    ForceCreateRenderJobs(jobArray, entity.get());
   }
 
-  void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, Entity* entity)
+  void RenderJobProcessor::ForceCreateRenderJobs(RenderJobArray& jobArray, Entity* entity)
   {
     Entity* ntt                    = entity;
     MaterialPtrArray* materialList = nullptr;

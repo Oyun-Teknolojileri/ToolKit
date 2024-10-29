@@ -395,7 +395,7 @@ namespace ToolKit
     if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Appearance)
     {
       m_renderJobCache.clear();
-      RenderJobProcessor::CreateRenderJobs(m_renderJobCache, this);
+      RenderJobProcessor::ForceCreateRenderJobs(m_renderJobCache, this);
       m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::All;
     }
     else if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Transform) // Just update transform data.
