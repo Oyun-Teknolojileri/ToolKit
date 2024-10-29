@@ -382,12 +382,13 @@ namespace ToolKit
             EnableLightGizmo(light, false);
           }
 
-          // Add billboards to draw list
-          EntityPtr billboard = m_params.App->GetCurrentScene()->GetBillboard(entity);
-
-          if (billboard)
+          // Add billboards to draw list.
+          if (EntityPtr billboard = m_params.App->GetCurrentScene()->GetBillboard(entity))
           {
-            static_cast<Billboard*>(billboard.get())->LookAt(viewportCamera, viewport->GetBillboardScale());
+            if (Billboard* billboardCasted = billboard->As<Billboard>())
+            {
+              billboardCasted->LookAt(viewportCamera, viewport->GetBillboardScale());
+            }
 
             RenderJobProcessor::CreateRenderJobs(billboardJobs, billboard);
           }
