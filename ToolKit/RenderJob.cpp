@@ -101,8 +101,7 @@ namespace ToolKit
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, EntityPtr entity)
   {
-    EntityRawPtrArray singleNtt = {entity.get()};
-    CreateRenderJobs(jobArray, singleNtt, true);
+    CreateRenderJobs(jobArray, entity.get());
   }
 
   void RenderJobProcessor::CreateRenderJobs(RenderJobArray& jobArray, Entity* entity)

@@ -34,15 +34,15 @@ namespace ToolKit
 
   Entity::Entity()
   {
-    m_node                      = new Node();
-    _prefabRootEntity           = nullptr;
-    _parentId                   = NULL_HANDLE;
+    m_node                     = new Node();
+    _prefabRootEntity          = nullptr;
+    _parentId                  = NULL_HANDLE;
 
-    m_aabbTreeNodeProxy         = AABBTree::nullNode;
-    m_partOfAABBTree            = true;
+    m_aabbTreeNodeProxy        = AABBTree::nullNode;
+    m_partOfAABBTree           = true;
 
-    m_spatialCachesInvalidated  = true;
-    m_invalidRenderJobFlags    |= RenderJobInvalidationFlags::Appareal | RenderJobInvalidationFlags::Spatial;
+    m_spatialCachesInvalidated = true;
+    m_invalidRenderJobFlags    = RenderJobInvalidationFlags::All;
   }
 
   Entity::~Entity()
@@ -392,11 +392,11 @@ namespace ToolKit
   int Entity::GetRenderJob(RenderJobArray& jobArray)
   {
     // If apparel changes, re create all jobs.
-    if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Appareal)
+    if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Appearance)
     {
       m_renderJobCache.clear();
       RenderJobProcessor::CreateRenderJobs(m_renderJobCache, this);
-      m_invalidRenderJobFlags &= ~(RenderJobInvalidationFlags::Appareal | RenderJobInvalidationFlags::Spatial);
+      m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::All;
     }
     else if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Transform) // Just update transform data.
     {

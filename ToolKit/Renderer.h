@@ -204,4 +204,5 @@ namespace ToolKit
     float m_cpuTime                                = 0.0f;
     bool m_blendStateOverrideEnable                = false;
   };
+
 } // namespace ToolKit
