@@ -180,6 +180,9 @@ namespace ToolKit
     /** Updates spatial caches related to entity. AABB tree is updated upon access. */
     virtual void UpdateSpatialCaches();
 
+    /** Return lights that effects this entity. */
+    LightPtrArray GetEffectingLights();
+
    protected:
     virtual Entity* CopyTo(Entity* other) const;
     void ParameterConstructor() override;
@@ -190,6 +193,9 @@ namespace ToolKit
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
     virtual void UpdateLocalBoundingBox();
+
+    /** Assign lights that effects this entity. */
+    void AssignLights();
 
    public:
     TKDeclareParam(String, Name);
@@ -228,6 +234,9 @@ namespace ToolKit
    protected:
     BoundingBox m_localBoundingBoxCache;
     BoundingBox m_worldBoundingBoxCache;
+
+    /** Lights that effects this entity. Don't access directly it may be invalid. Use GetEffectingLights */
+    LightWeakPtrArray m_effectingLightsCache;
 
    private:
     /**

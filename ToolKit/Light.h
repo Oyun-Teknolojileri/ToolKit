@@ -113,6 +113,9 @@ namespace ToolKit
 
     /** Cascade camera projection matrices to fill the light buffer. */
     Mat4Array m_shadowMapCascadeCameraProjectionViewMatrices;
+
+    /** The shadow map for this light has to be rendered if its invalidated. */
+    bool m_shadowMapInvalidated = true;
   };
 
   typedef std::shared_ptr<DirectionalLight> DirectionalLightPtr;

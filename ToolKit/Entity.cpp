@@ -376,6 +376,30 @@ namespace ToolKit
     m_spatialCachesInvalidated = false;
   }
 
+  LightPtrArray Entity::GetEffectingLights()
+  {
+    if (m_spatialCachesInvalidated)
+    {
+      UpdateSpatialCaches();
+    }
+
+    LightPtrArray lights;
+    erase_if(m_effectingLightsCache,
+             [&lights](LightWeakPtr* light) -> bool
+             {
+               if (light->expired())
+               {
+                 return true;
+               }
+               else
+               {
+                 lights.push_back(light->lock());
+               }
+             });
+
+    return lights;
+  }
+
   void Entity::RemoveResources() { assert(false && "Not implemented"); }
 
   bool Entity::IsVisible()
