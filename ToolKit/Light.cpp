@@ -122,6 +122,12 @@ namespace ToolKit
   void Light::InvalidateSpatialCaches()
   {
     Super::InvalidateSpatialCaches();
+
+    if (ScenePtr scene = m_scene.lock())
+    {
+      scene->InvalidateLighting();
+    }
+
     m_invalidatedForLightCache = true;
   }
 

@@ -153,18 +153,18 @@ namespace ToolKit
       }
     }
 
+    // Create jobs.
+    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false);
+
+    // Perform assignments.
     int dirEndIndx                                   = RenderJobProcessor::PreSortLights(lights);
     const EnvironmentComponentPtrArray& environments = m_params.Scene->GetEnvironmentVolumes();
 
-    // Perform assignments.
     for (Entity* ntt : entities)
     {
       ntt->UpdateLightAssignment(lights, dirEndIndx);
       ntt->UpdateEnvironmentAssignment(environments);
     }
-
-    // Create jobs.
-    RenderJobProcessor::CreateRenderJobs(m_renderData.jobs, entities, false);
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;

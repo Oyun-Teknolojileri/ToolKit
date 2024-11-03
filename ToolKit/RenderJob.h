@@ -16,14 +16,15 @@ namespace ToolKit
 
   namespace RenderJobInvalidationFlags
   {
-    const int Appearance  = 1 << 0; //!< Flag for indicating change in material or mesh components
-    const int Transform   = 1 << 1;
-    const int Environment = 1 << 2;                           //!< Flag for indicating change of environment.
-    const int Light       = 1 << 3;                           //!< Flag for indicating change of effecting lights.
-    const int Animation   = 1 << 4;                           //!< Flag for indicating change of animation data.
-    const int Spatial     = Transform | Environment | Light;  //!< Flag for indicating change in transform and AABB.
-    const int All         = Appearance | Spatial | Animation; //!< Flag for indicating change in all RenderJob fields.
-  }                                                           // namespace RenderJobInvalidationFlags
+    const int Appearance  = 1 << 0;              //!< Flag for indicating change of material or mesh components
+    const int Transform   = 1 << 1;              //!< Flag for indicating change of transforms and AABB invalidated.
+    const int Environment = 1 << 2;              //!< Flag for indicating change of environment.
+    const int Light       = 1 << 3;              //!< Flag for indicating change of effecting lights.
+    const int Animation   = 1 << 4;              //!< Flag for indicating change of animation data.
+    const int Lighting    = Light | Environment; //!< Flag for indicating change of Environment and Lighting.
+    const int Spatial = Transform | Lighting;    //!< Flag for indicating change of Transform and lighting invalidated..
+    const int All     = Appearance | Spatial | Animation; //!< Flag for indicating change in all RenderJob fields.
+  }                                                       // namespace RenderJobInvalidationFlags
 
   /** This struct holds all the data required to make a drawcall. */
   struct RenderJob
@@ -40,6 +41,7 @@ namespace ToolKit
     Mat4 WorldTransform;     //!< World transform of the entity.
     AnimData animData;       //!< Animation data of render job.
 
+    int dirLightCount = 0;
     LightRawPtrArray lights;
   };
 

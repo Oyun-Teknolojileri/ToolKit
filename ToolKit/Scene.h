@@ -236,6 +236,9 @@ namespace ToolKit
     /** Returns scene boundary from the BVH. */
     const BoundingBox& GetSceneBoundary();
 
+    /** Invalidate all cached light data. */
+    void InvalidateLighting();
+
    protected:
     /**
      * Serializes the scene to an XML document.

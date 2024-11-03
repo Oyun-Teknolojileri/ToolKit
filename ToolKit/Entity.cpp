@@ -135,6 +135,11 @@ namespace ToolKit
     if (EnvironmentComponent* envComp = GetComponentFast<EnvironmentComponent>())
     {
       envComp->m_spatialCachesInvalidated = true;
+
+      if (ScenePtr scene = m_scene.lock())
+      {
+        scene->InvalidateLighting();
+      }
     }
 
     if (m_aabbTreeNodeProxy != AABBTree::nullNode)
@@ -387,15 +392,59 @@ namespace ToolKit
 
   void Entity::UpdateLightAssignment(const LightRawPtrArray& lights, int dirLightEndIndex)
   {
-    // Directional lights always gets assigned and other lights only assigned if assignment is invalidated.
-    int endIndex =
-        (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Light) ? (int) lights.size() : dirLightEndIndex;
-
     // Perform light assignments.
     for (RenderJob& job : m_renderJobCache)
     {
-      job.lights.clear();
-      RenderJobProcessor::AssignLight(job, lights, dirLightEndIndex, endIndex);
+      // Add all directional lights always.
+      job.lights.erase(job.lights.begin(), job.lights.begin() + job.dirLightCount);
+      job.dirLightCount = 0;
+
+      for (int i = dirLightEndIndex - 1; i > -1; i--)
+      {
+        job.lights.insert(job.lights.begin(), lights[i]);
+        job.dirLightCount++;
+
+        if (job.dirLightCount >= RHIConstants::MaxLightsPerObject)
+        {
+          return; // Capacity is filled.
+        }
+      }
+
+      // Update other lights if needed.
+      if (m_invalidRenderJobFlags & RenderJobInvalidationFlags::Light)
+      {
+        job.lights.erase(job.lights.begin() + dirLightEndIndex, job.lights.end());
+
+        // Assign remaining lights.
+        for (int i = dirLightEndIndex; i < (int) lights.size(); i++)
+        {
+          Light* light = lights[i];
+          if (job.lights.size() >= RHIConstants::MaxLightsPerObject)
+          {
+            return;
+          }
+
+          if (light->GetLightType() == Light::LightType::Spot)
+          {
+            SpotLight* spot = static_cast<SpotLight*>(light);
+            if (FrustumBoxIntersection(spot->m_frustumCache, job.BoundingBox) != IntersectResult::Outside)
+            {
+              job.lights.push_back(light);
+            }
+          }
+          else
+          {
+            // The only light type that remains is point light.
+            // lights must be presorted, check it.
+            assert(light->IsA<PointLight>());
+            PointLight* point = static_cast<PointLight*>(light);
+            if (SphereBoxIntersection(point->m_boundingSphereCache, job.BoundingBox))
+            {
+              job.lights.push_back(light);
+            }
+          }
+        }
+      }
     }
 
     m_invalidRenderJobFlags &= ~RenderJobInvalidationFlags::Light;

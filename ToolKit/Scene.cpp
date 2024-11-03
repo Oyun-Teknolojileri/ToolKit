@@ -583,6 +583,8 @@ namespace ToolKit
     }
     else if (Light* light = ntt->As<Light>())
     {
+      InvalidateLighting();
+
       if (add)
       {
         m_lightCache.push_back(light);
@@ -603,6 +605,8 @@ namespace ToolKit
 
     if (const EnvironmentComponentPtr& envComp = ntt->GetComponent<EnvironmentComponent>())
     {
+      InvalidateLighting();
+
       if (envComp->GetHdriVal() != nullptr && envComp->GetIlluminateVal())
       {
         if (add)
@@ -615,6 +619,14 @@ namespace ToolKit
           remove(m_environmentVolumeCache, envComp);
         }
       }
+    }
+  }
+
+  void Scene::InvalidateLighting()
+  {
+    for (EntityPtr ntt : m_entities)
+    {
+      ntt->InvalidateRenderJobCaches(RenderJobInvalidationFlags::Lighting);
     }
   }
 
