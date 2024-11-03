@@ -129,8 +129,7 @@ namespace ToolKit
       m_lightSystem->m_parentNode->OrphanSelf();
       m_camera->m_node->AddChild(m_lightSystem->m_parentNode);
 
-      EditorScenePtr scene            = app->GetCurrentScene();
-
+      EditorScenePtr scene            = m_params.scene;
       EditorViewport* viewport        = static_cast<EditorViewport*>(m_params.Viewport);
 
       // Scene renderer will render the given scene independent of editor.

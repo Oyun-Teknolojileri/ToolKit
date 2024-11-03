@@ -10,6 +10,7 @@
 #include "BillboardPass.h"
 #include "BloomPass.h"
 #include "EditorLight.h"
+#include "EditorScene.h"
 #include "EditorTypes.h"
 #include "ForwardSceneRenderPath.h"
 #include "GammaTonemapFxaaPass.h"
@@ -45,6 +46,7 @@ namespace ToolKit
     {
       class App* App                 = nullptr;
       class EditorViewport* Viewport = nullptr;
+      EditorScenePtr scene           = nullptr;
       EditorLitMode LitMode          = EditorLitMode::EditorLit;
     };
 
