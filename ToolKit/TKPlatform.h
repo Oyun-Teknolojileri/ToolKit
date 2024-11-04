@@ -37,7 +37,7 @@ namespace ToolKit
   #else // Static binding.
     #define TK_API
   #endif
-#elif defined(TK_ANDROID)
+#else
   #define TK_API __attribute__((visibility("default")))
   #define TK_STDCAL
 #endif
@@ -56,9 +56,9 @@ namespace ToolKit
   #endif
 #else
   #if defined(__aarch64__) || defined(__arm__)
-    #define HyperThreadPause() asm volatile("yield");
+    #define HyperThreadPause() asm volatile("yield")
   #else
-    #define HyperThreadPause() __builtin_ia32_pause()
+    #define HyperThreadPause() std::this_thread::yield()
   #endif
 #endif
 

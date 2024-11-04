@@ -10,6 +10,11 @@
 
 #include "Types.h"
 
+#ifdef TK_WEB
+  #include <emscripten.h>
+  #include <emscripten/html5.h>
+#endif
+
 namespace ToolKit
 {
 
@@ -99,6 +104,31 @@ namespace ToolKit
         TK_GL_EXT_texture_filter_anisotropic = extensionsStr.find("GL_EXT_texture_filter_anisotropic") != String::npos;
       }
     }
+
+#endif
+
+#ifdef TK_WEB
+
+    // Load WebGL extensions with emscripten for WebGL context
+    tk_glRenderbufferStorageMultisampleEXT =
+        (TKGL_RenderbufferStorageMultisample) emscripten_webgl_get_proc_address("glRenderbufferStorageMultisampleEXT");
+    TK_LOG("glRenderbufferStorageMultisampleEXT address = %p", (void*) tk_glRenderbufferStorageMultisampleEXT);
+
+    tk_glFramebufferTexture2DMultisampleEXT = (TKGL_FramebufferTexture2DMultisample) emscripten_webgl_get_proc_address(
+        "glFramebufferTexture2DMultisampleEXT");
+    TK_LOG("glFramebufferTexture2DMultisampleEXT address = %p", (void*) tk_glFramebufferTexture2DMultisampleEXT);
+
+    tk_glInsertEventMarkerEXT = (TKGL_InsertEventMarker) emscripten_webgl_get_proc_address("glInsertEventMarkerEXT");
+    tk_glPopGroupMarkerEXT    = (TKGL_PopGroupMarker) emscripten_webgl_get_proc_address("glPopGroupMarkerEXT");
+    tk_glPushGroupMarkerEXT   = (TKGL_PushGroupMarker) emscripten_webgl_get_proc_address("glPushGroupMarkerEXT");
+    tk_glLabelObjectEXT       = (TKGL_LabelObject) emscripten_webgl_get_proc_address("glLabelObjectEXT");
+    tk_glGetObjectLabelEXT    = (TKGL_GetObjectLabel) emscripten_webgl_get_proc_address("glGetObjectLabelEXT");
+
+    // Check for extensions directly using WebGL's getExtension function
+    auto extensionsStr        = std::string((const char*) glGetString(GL_EXTENSIONS));
+
+    TK_GL_OES_texture_float_linear       = extensionsStr.find("GL_OES_texture_float_linear") != std::string::npos;
+    TK_GL_EXT_texture_filter_anisotropic = extensionsStr.find("GL_EXT_texture_filter_anisotropic") != std::string::npos;
 
 #endif
   }

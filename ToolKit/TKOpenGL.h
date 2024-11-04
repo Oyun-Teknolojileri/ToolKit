@@ -10,7 +10,7 @@
 #ifdef TK_ANDROID
   #include <GLES3/gl32.h>
 #elif defined(TK_WEB)
-  #include <GL/glew.h>
+  #include <GLES3/gl32.h>
 #else
   #include <glad/gles2.h>
 #endif
