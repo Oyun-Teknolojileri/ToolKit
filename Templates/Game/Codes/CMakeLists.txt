@@ -95,9 +95,8 @@ add_definitions(-DGLM_FORCE_INTRINSICS)
 
 set(
   PCH
- "${TOOLKIT_DIR}/Dependency/glm/glm/glm.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/glm/ext.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/glm/gtx/scalar_relational.hpp"
+ "${TOOLKIT_DIR}/ToolKit/stdafx.h"
+ "${TOOLKIT_DIR}/ToolKit/Types.h"
  )
 
 set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")

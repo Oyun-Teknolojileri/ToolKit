@@ -154,6 +154,7 @@ namespace ToolKit
   typedef std::vector<AnimRecordPtr> AnimRecordPtrArray;
 
   // Entity types.
+  typedef std::shared_ptr<class AudioSource> AudioSourcePtr;
   typedef std::shared_ptr<class Entity> EntityPtr;
   typedef std::weak_ptr<class Entity> EntityWeakPtr;
   typedef std::vector<EntityPtr> EntityPtrArray;
