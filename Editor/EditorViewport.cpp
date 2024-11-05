@@ -218,6 +218,8 @@ namespace ToolKit
       AdjustZoom(0.0f);
     }
 
+    void EditorViewport::ResetCameraToDefault() { SetCamera(MakeNewPtr<Camera>()); }
+
     void EditorViewport::UpdateContentArea()
     {
       // Content area size

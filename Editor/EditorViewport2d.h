@@ -28,6 +28,7 @@ namespace ToolKit
       void Update(float deltaTime) override;
       void OnResizeContentArea(float width, float height) override;
       void DispatchSignals() const override;
+      void ResetCameraToDefault() override;
 
      protected:
       void HandleDrop() override;
