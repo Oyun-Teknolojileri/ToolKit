@@ -162,6 +162,8 @@ namespace ToolKit
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::shared_ptr<class Light> LightPtr;
   typedef std::vector<LightPtr> LightPtrArray;
+  typedef std::weak_ptr<Light> LightWeakPtr;
+  typedef std::vector<LightWeakPtr> LightWeakPtrArray;
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
   typedef std::vector<class SpotLight*> SpotLightRawPtrArray;
   typedef std::vector<class PointLight*> PointLightRawPtrArray;

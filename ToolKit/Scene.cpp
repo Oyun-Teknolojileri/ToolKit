@@ -514,6 +514,11 @@ namespace ToolKit
     m_entities.clear();
     m_aabbTree.Reset();
 
+    m_lightCache.clear();
+    m_directionalLightCache.clear();
+    m_environmentVolumeCache.clear();
+    m_skyCache  = nullptr;
+
     m_loaded    = false;
     m_initiated = false;
   }
