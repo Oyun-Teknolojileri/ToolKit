@@ -10,8 +10,6 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "mini_audio/miniaudio.h"
 
-
-
 namespace ToolKit
 {
   // Audio
@@ -34,6 +32,7 @@ namespace ToolKit
     m_sound           = (void*) sound;
     String path       = GetFile();
     assert(CheckFile(path) && "audio file is not exist!");
+
     // we don't use spatialization, this flag is for performance. you can see this in the documentations.
     const ma_uint32 flag = MA_SOUND_FLAG_NO_SPATIALIZATION;
     ma_result result     = ma_sound_init_from_file(engine, path.c_str(), flag, nullptr, nullptr, sound);

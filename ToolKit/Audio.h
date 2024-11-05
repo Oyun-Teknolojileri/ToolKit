@@ -19,7 +19,7 @@ namespace ToolKit
     TKDeclareClass(Audio, Resource);
 
     Audio();
-    explicit Audio(const String& file);
+    Audio(const String& file);
     ~Audio();
 
     void Init(bool flushClientSideArray = false) override;
@@ -87,4 +87,5 @@ namespace ToolKit
     // Actual resource reference.
     AudioPtr m_audio = nullptr;
   };
+
 } // namespace ToolKit
