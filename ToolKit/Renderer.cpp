@@ -707,10 +707,9 @@ namespace ToolKit
       ShaderPtr frag         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Frag.shader", true));
 
       m_gaussianBlurMaterial = MakeNewPtr<Material>();
-      m_gaussianBlurMaterial->m_isShaderMaterial = true;
-      m_gaussianBlurMaterial->m_vertexShader     = vert;
-      m_gaussianBlurMaterial->m_fragmentShader   = frag;
-      m_gaussianBlurMaterial->m_diffuseTexture   = nullptr;
+      m_gaussianBlurMaterial->m_vertexShader   = vert;
+      m_gaussianBlurMaterial->m_fragmentShader = frag;
+      m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
       m_gaussianBlurMaterial->Init();
     }
 
@@ -733,10 +732,9 @@ namespace ToolKit
       ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurFrag.shader", true));
 
       m_averageBlurMaterial = MakeNewPtr<Material>();
-      m_averageBlurMaterial->m_isShaderMaterial = true;
-      m_averageBlurMaterial->m_vertexShader     = vert;
-      m_averageBlurMaterial->m_fragmentShader   = frag;
-      m_averageBlurMaterial->m_diffuseTexture   = nullptr;
+      m_averageBlurMaterial->m_vertexShader   = vert;
+      m_averageBlurMaterial->m_fragmentShader = frag;
+      m_averageBlurMaterial->m_diffuseTexture = nullptr;
       m_averageBlurMaterial->Init();
     }
 
@@ -1340,7 +1338,6 @@ namespace ToolKit
 
     // Create material
     MaterialPtr mat                 = MakeNewPtr<Material>();
-    mat->m_isShaderMaterial         = true;
     ShaderPtr vert                  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeVert.shader", true));
     ShaderPtr frag                  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeFrag.shader", true));
 
@@ -1485,23 +1482,21 @@ namespace ToolKit
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    Mat4 views[]            = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                               glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+    Mat4 views[]          = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     // Create material
-    MaterialPtr mat         = MakeNewPtr<Material>();
-    mat->m_isShaderMaterial = true;
+    MaterialPtr mat       = MakeNewPtr<Material>();
+    ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
+    ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 
-    ShaderPtr vert          = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
-    ShaderPtr frag          = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
-
-    mat->m_cubeMap          = cubemap;
-    mat->m_vertexShader     = vert;
-    mat->m_fragmentShader   = frag;
+    mat->m_cubeMap        = cubemap;
+    mat->m_vertexShader   = vert;
+    mat->m_fragmentShader = frag;
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 

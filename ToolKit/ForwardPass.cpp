@@ -113,7 +113,7 @@ namespace ToolKit
       renderer->EnableDepthWrite(false);
       for (RenderJobArray::iterator job = begin; job != end; job++)
       {
-        if (job->Material->m_isShaderMaterial)
+        if (job->Material->IsShaderMaterial())
         {
           renderer->BindProgramOfMaterial(job->Material);
         }
@@ -148,7 +148,7 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      if (job->Material->m_isShaderMaterial)
+      if (job->Material->IsShaderMaterial())
       {
         renderer->RenderWithProgramFromMaterial(*job);
       }

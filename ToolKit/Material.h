@@ -60,6 +60,9 @@ namespace ToolKit
      */
     bool IsPBR();
 
+    /** Returns true if not using default shaders. */
+    bool IsShaderMaterial();
+
     // This should be called when this material parameter changed except for Textures, Shaders and RenderState
     void UpdateRuntimeVersion();
 
@@ -84,9 +87,8 @@ namespace ToolKit
     ShaderPtr m_fragmentShader;
     Vec3 m_color;
     Vec3 m_emissiveColor;
-    float m_metallic        = 0.2f;
-    float m_roughness       = 0.5f;
-    bool m_isShaderMaterial = false;
+    float m_metallic  = 0.2f;
+    float m_roughness = 0.5f;
 
    private:
     float m_alpha = 1.0f;

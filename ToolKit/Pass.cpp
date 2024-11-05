@@ -193,7 +193,7 @@ namespace ToolKit
       forwardItr = std::partition(beginItr,
                                   renderData.jobs.end(),
                                   [](const RenderJob& job)
-                                  { return !job.Material->m_isShaderMaterial && !job.Material->IsTranslucent(); });
+                                  { return !job.Material->IsShaderMaterial() && !job.Material->IsTranslucent(); });
 
       deferredAlphaMaskedItr =
           std::partition(beginItr, forwardItr, [](const RenderJob& job) { return !job.Material->IsAlphaMasked(); });

@@ -23,7 +23,6 @@
 #include <UIManager.h>
 
 #include <sstream>
-#include <thread>
 
 #include <DebugNew.h>
 
