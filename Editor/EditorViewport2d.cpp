@@ -133,6 +133,8 @@ namespace ToolKit
       float offset = -100.0f; // Slightly offset for editor view. Unit is in pixel.
       cam->m_node->SetTranslation(Vec3(vpSize.x * 0.5f + offset, vpSize.y * 0.5f + offset, 10.0f));
 
+      m_zoomPercentage = 100.0f;
+
       SetCamera(cam);
     }
 
