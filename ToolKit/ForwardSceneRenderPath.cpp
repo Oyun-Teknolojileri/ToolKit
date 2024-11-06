@@ -122,6 +122,11 @@ namespace ToolKit
     Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
     EntityRawPtrArray entities = m_params.Scene->m_aabbTree.VolumeQuery(frustum);
 
+    if (m_params.grid != nullptr)
+    {
+      entities.push_back(m_params.grid.get());
+    }
+
     LightRawPtrArray lights;
     if (m_params.overrideLights.empty())
     {

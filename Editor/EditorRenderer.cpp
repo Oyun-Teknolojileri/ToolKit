@@ -71,6 +71,7 @@ namespace ToolKit
       {
       case EditorLitMode::Game:
         m_params.App->HideGizmos();
+        sceneRenderer->m_params.grid = nullptr;
         sceneRenderer->Render(renderer);
         m_passArray.push_back(m_uiPass);
         if (m_gammaTonemapFxaaPass->IsEnabled())
@@ -222,10 +223,10 @@ namespace ToolKit
 
       // Grid.
       GridPtr grid                       = m_params.Viewport->IsA<EditorViewport2d>() ? app->m_2dGrid : app->m_grid;
-
       grid->UpdateShaderParams();
-      editorEntities.push_back(grid);
+      m_sceneRenderPath->m_params.grid = grid;
 
+      // Light gizmos.
       for (Light* light : scene->GetLights())
       {
         if (light->GetLightType() == Light::LightType::Directional)

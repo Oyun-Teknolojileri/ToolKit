@@ -28,6 +28,7 @@ namespace ToolKit
     ScenePtr Scene                 = nullptr;
     CameraPtr Cam                  = nullptr;
     FramebufferPtr MainFramebuffer = nullptr;
+    EntityPtr grid                 = nullptr;
     bool applyGammaTonemapFxaa     = false;
     EngineSettings::PostProcessingSettings Gfx;
   };
