@@ -23,28 +23,18 @@ namespace ToolKit
 
     void ParameterConstructor() override;
 
-    /*
-     * @param mouseXY: mouse XY position in UI coordinates
-     */
+    /** @param mouseXY: mouse XY position in UI coordinates. */
     void UpdateDpad(const Vec2& mouseXY);
+    void Start();
+    void Stop();
 
-    inline void Start() { m_active = true; }
-
-    inline void Stop()
-    {
-      m_deltaXY = Vec2(0.0f);
-      m_active  = false;
-    }
-
-    inline float GetDeltaX() { return m_deltaXY.x; }
-
-    inline float GetDeltaY() { return m_deltaXY.y; }
-
-    inline float GetRadius() { return m_activeDpadRadius; }
+    float GetDeltaX();
+    float GetDeltaY();
+    float GetRadius();
 
    protected:
     void ComponentConstructor() override;
-    void SetDefaultMaterialIfMaterialIsNotOverriden() override;
+    void DeserializeComponents(const SerializationFileInfo& info, XmlNode* entityNode) override;
 
    public:
     TKDeclareParam(float, DpadRadius);
@@ -56,4 +46,5 @@ namespace ToolKit
     float m_activeDpadRadius = 100.0f;
     Vec3 m_lastScale         = {-1.0f, -1.0f, -1.0f};
   };
+
 } // namespace ToolKit

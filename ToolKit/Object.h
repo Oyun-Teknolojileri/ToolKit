@@ -151,8 +151,13 @@ namespace ToolKit
     }
 
    protected:
+    /** Responsible for creating default components of the object. */
+    virtual void ComponentConstructor();
+    /** Responsible for creating default parameters of the object. */
     virtual void ParameterConstructor();
+    /** Responsible for creating parameter events of the object. */
     virtual void ParameterEventConstructor();
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;

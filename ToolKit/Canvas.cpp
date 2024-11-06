@@ -26,6 +26,14 @@ namespace ToolKit
   void Canvas::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    // TODO: Quad lines are not needed for the game engine. This can be moved to EditorCanvas.
+    m_canvasMaterial                              = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    m_canvasMaterial->m_name                      = "CavasBorder";
+    m_canvasMaterial->GetRenderState()->drawType  = DrawType::Line;
+    m_canvasMaterial->GetRenderState()->lineWidth = 3.0f;
+    GetMaterialComponent()->SetFirstMaterial(m_canvasMaterial);
+
     CreateQuadLines();
   }
 
@@ -51,6 +59,11 @@ namespace ToolKit
     XmlNode* canvasNode  = CreateXmlNode(doc, StaticClass()->Name, surfaceNode);
 
     return canvasNode;
+  }
+
+  void Canvas::DeserializeComponents(const SerializationFileInfo& info, XmlNode* entityNode)
+  {
+    // Just keep using defaults.
   }
 
   XmlNode* Canvas::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
@@ -191,12 +204,6 @@ namespace ToolKit
     mesh->CalculateAABB();
     mesh->Init();
     GetMeshComponent()->SetMeshVal(mesh);
-
-    MaterialPtr material = GetMaterialComponent()->GetFirstMaterial();
-    material->UnInit();
-    material->GetRenderState()->drawType  = DrawType::Line;
-    material->GetRenderState()->lineWidth = 3.f;
-    material->Init();
   }
 
 } // namespace ToolKit

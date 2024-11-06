@@ -24,12 +24,7 @@ namespace ToolKit
 
   Surface::~Surface() {}
 
-  void Surface::NativeConstruct()
-  {
-    ComponentConstructor();
-
-    Super::NativeConstruct();
-  }
+  void Surface::NativeConstruct() { Super::NativeConstruct(); }
 
   void Surface::Update(TexturePtr texture, const Vec2& pivotOffset)
   {
@@ -90,7 +85,6 @@ namespace ToolKit
         ReadAttr(node, "offsets" + std::to_string(i), m_anchorParams.m_offsets[i]);
       }
     }
-    ParameterEventConstructor();
 
     // Re assign default material.
     MaterialComponentPtr matCom = GetMaterialComponent();
@@ -117,23 +111,18 @@ namespace ToolKit
         ReadAttr(node, "offsets" + std::to_string(i), m_anchorParams.m_offsets[i]);
       }
     }
-    ParameterEventConstructor();
 
-    SetDefaultMaterialIfMaterialIsNotOverriden();
+    // Dynamic materials are not saved, if not material is saved with surface
+    // re assign default material.
+    MaterialComponentPtr matCom = GetMaterialComponent();
+    if (matCom != nullptr && matCom->GetMaterialList().empty())
+    {
+      matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfUIMaterial());
+    }
 
     CreateQuat();
 
     return surfaceNode;
-  }
-
-  void Surface::SetDefaultMaterialIfMaterialIsNotOverriden()
-  {
-    // Re assign default material.
-    MaterialComponentPtr matCom = GetMaterialComponent();
-    if (matCom->GetFirstMaterial()->IsDynamic())
-    {
-      matCom->SetFirstMaterial(GetMaterialManager()->GetCopyOfUIMaterial());
-    }
   }
 
   void Surface::UpdateGeometry(bool byTexture)
@@ -154,9 +143,7 @@ namespace ToolKit
     AddComponent<MeshComponent>();
     AddComponent<MaterialComponent>();
 
-    MeshComponentPtr meshCom             = GetComponent<MeshComponent>();
-    meshCom->ParamMesh().m_exposed       = false;
-    meshCom->ParamCastShadow().m_exposed = false;
+    MeshComponentPtr meshCom = GetComponent<MeshComponent>();
     meshCom->SetCastShadowVal(false);
 
     MaterialPtr material        = GetMaterialManager()->GetCopyOfUIMaterial();
@@ -438,9 +425,6 @@ namespace ToolKit
           // Override surface material.
           SetMaterialVal(std::get<MaterialPtr>(newVal));
         });
-
-    GetMeshComponent()->ParamMesh().m_exposed       = false;
-    GetMeshComponent()->ParamCastShadow().m_exposed = false;
   }
 
   XmlNode* Button::SerializeImp(XmlDocument* doc, XmlNode* parent) const

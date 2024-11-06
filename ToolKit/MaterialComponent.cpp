@@ -13,8 +13,6 @@
 #include "MeshComponent.h"
 #include "ToolKit.h"
 
-
-
 namespace ToolKit
 {
 
@@ -50,15 +48,31 @@ namespace ToolKit
 
     XmlNode* matNode = CreateXmlNode(doc, StaticClass()->Name, compNode);
 
-    WriteAttr(matNode, doc, XmlMatCountAttrib, std::to_string(m_materialList.size()));
+    // Skip dynamic materials.
+    int matRefCount  = 0;
     for (size_t i = 0; i < m_materialList.size(); i++)
     {
-      if (m_materialList[i]->m_dirty)
+      if (!m_materialList[i]->IsDynamic())
       {
-        m_materialList[i]->Save(true);
+        matRefCount++;
       }
-      XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), matNode);
-      m_materialList[i]->SerializeRef(doc, resourceRefNode);
+    }
+
+    WriteAttr(matNode, doc, XmlMatCountAttrib, std::to_string(matRefCount));
+
+    // Write references.
+    for (size_t i = 0; i < m_materialList.size(); i++)
+    {
+      MaterialPtr material = m_materialList[i];
+      if (!material->IsDynamic())
+      {
+        if (m_materialList[i]->m_dirty)
+        {
+          m_materialList[i]->Save(true);
+        }
+        XmlNode* resourceRefNode = CreateXmlNode(doc, std::to_string(i), matNode);
+        m_materialList[i]->SerializeRef(doc, resourceRefNode);
+      }
     }
 
     return matNode;
