@@ -63,7 +63,10 @@ namespace ToolKit
     void EditorViewport2d::Update(float deltaTime)
     {
       // Resize Grid
-      g_app->m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, (float) (m_gridCellSizeByPixel), 2.0f);
+      if (IsShown())
+      {
+        g_app->m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, (float) (m_gridCellSizeByPixel), 2.0f);
+      }
 
       if (!IsActive())
       {
