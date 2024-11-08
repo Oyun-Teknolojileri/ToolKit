@@ -62,6 +62,9 @@ namespace ToolKit
 
     void EditorViewport2d::Update(float deltaTime)
     {
+      // Resize Grid
+      g_app->m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, (float) (m_gridCellSizeByPixel), 2.0f);
+
       if (!IsActive())
       {
         // Always update the anchor.
@@ -69,9 +72,6 @@ namespace ToolKit
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
         return;
       }
-
-      // Resize Grid
-      g_app->m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, (float) (m_gridCellSizeByPixel), 2.0f);
 
       PanZoom(deltaTime);
       m_anchorMode->Update(deltaTime);
