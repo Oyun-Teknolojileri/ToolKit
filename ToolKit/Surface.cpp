@@ -444,7 +444,6 @@ namespace ToolKit
 
     // Old file.
     XmlNode* nttNode = Super::DeSerializeImp(info, parent);
-    ParameterEventConstructor();
     return nttNode;
   }
 
@@ -452,7 +451,6 @@ namespace ToolKit
   {
     XmlNode* nttNode     = Super::DeSerializeImp(info, parent);
     XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
-    ParameterEventConstructor();
     return surfaceNode;
   }
 

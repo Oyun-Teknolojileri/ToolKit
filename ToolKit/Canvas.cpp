@@ -75,7 +75,6 @@ namespace ToolKit
 
     // Old file, keep parsing.
     XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
-    ParameterEventConstructor();
     CreateQuadLines();
 
     return surfaceNode;
@@ -84,7 +83,6 @@ namespace ToolKit
   XmlNode* Canvas::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
-    ParameterEventConstructor();
     CreateQuadLines();
 
     return surfaceNode->first_node(StaticClass()->Name.c_str());
