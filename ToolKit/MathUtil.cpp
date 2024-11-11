@@ -859,7 +859,7 @@ namespace ToolKit
     // Check if the vectors are parallel
     if (dotProduct >= 1.0f)
     {
-      return glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // Identity quaternion, no rotation needed
+      return Quaternion(); // Identity quaternion, no rotation needed
     }
 
     // Check if the vectors are opposite
