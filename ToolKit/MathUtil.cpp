@@ -851,27 +851,36 @@ namespace ToolKit
 
   Quaternion RotationTo(Vec3 a, Vec3 b)
   {
-    a              = normalize(a);
-    b              = normalize(b);
+    Vec3 aNorm       = glm::normalize(a);
+    Vec3 bNorm       = glm::normalize(b);
 
-    Vec3 axis      = normalize(cross(a, b));
-    float cosAngle = dot(a, b);
+    float dotProduct = glm::dot(aNorm, bNorm);
 
-    // Handle colinear vectors (including opposite directions)
-    if (abs(cosAngle) >= 1.0f - glm::epsilon<float>())
+    // Check if the vectors are parallel
+    if (dotProduct >= 1.0f)
     {
-      // If very close to 1 or -1, choose an arbitrary perpendicular axis
-      axis = Orthogonal(a); // You can define orthogonal here if not available
+      return glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // Identity quaternion, no rotation needed
     }
 
-    // Calculate shortest rotation angle considering opposite directions
-    float angle = acos(cosAngle);
-    if (dot(cross(a, b), b) < 0.0f)
+    // Check if the vectors are opposite
+    if (dotProduct < -0.999999f)
     {
-      angle = glm::pi<float>() - angle;
+      Vec3 orthogonal = glm::normalize(glm::cross(aNorm, Vec3(1.0f, 0.0f, 0.0f)));
+
+      // If `a` is collinear with the X axis, choose Y axis
+      if (glm::length(orthogonal) < 0.0001f)
+      {
+        orthogonal = glm::normalize(glm::cross(aNorm, Vec3(0.0f, 1.0f, 0.0f)));
+      }
+
+      return glm::angleAxis(glm::pi<float>(), orthogonal);
     }
 
-    return angleAxis(angle, axis);
+    // Calculate the rotation axis and angle
+    Vec3 rotationAxis   = glm::normalize(glm::cross(aNorm, bNorm));
+    float rotationAngle = glm::acos(dotProduct);
+
+    return glm::angleAxis(rotationAngle, rotationAxis);
   }
 
   // Converted from OgreVector3.h perpendicular()
