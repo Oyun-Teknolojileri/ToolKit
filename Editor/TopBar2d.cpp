@@ -12,8 +12,8 @@
 #include "EditorViewport2d.h"
 
 #include <Canvas.h>
-#include <Surface.h>
 #include <Dpad.h>
+#include <Surface.h>
 
 #include <DebugNew.h>
 
@@ -56,7 +56,6 @@ namespace ToolKit
         {
           CanvasPtr canvasPanel = MakeNewPtr<Canvas>();
           canvasPanel->Update(Vec2(800.0f, 600.0f));
-          canvasPanel->SetPivotOffsetVal(Vec2(0.5f));
           canvasPanel->GetMeshComponent()->Init(false);
           currScene->AddEntity(canvasPanel);
         }
@@ -64,7 +63,7 @@ namespace ToolKit
         if (ImGui::MenuItem("Dpad"))
         {
           DpadPtr dpad = MakeNewPtr<Dpad>();
-          dpad->Update(Vec2(100.0f, 100.0f), Vec2(0.5f, 0.5f));
+          dpad->Update(Vec2(100.0f, 100.0f), Vec2(-0.5f));
           dpad->GetMeshComponent()->Init(false);
           currScene->AddEntity(dpad);
         }

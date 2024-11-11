@@ -29,7 +29,7 @@ namespace ToolKit
     void Update(TexturePtr texture, const Vec2& pivotOffset);
     void Update(TexturePtr texture, const SpriteEntry& entry);
     void Update(const String& textureFile, const Vec2& pivotOffset);
-    void Update(const Vec2& size, const Vec2& offset = Vec2(0.5f));
+    void Update(const Vec2& size, const Vec2& offset = Vec2(0.0f));
 
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
     virtual void ResetCallbacks();
@@ -45,6 +45,9 @@ namespace ToolKit
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     Entity* CopyTo(Entity* other) const override;
+
+    /** Calculate local surface boundary with size and pivot offset in mind. */
+    void UpdateLocalBoundingBox() override;
 
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;

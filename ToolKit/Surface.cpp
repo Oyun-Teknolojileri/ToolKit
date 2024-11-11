@@ -53,6 +53,16 @@ namespace ToolKit
     SetPivotOffsetVal(offset);
   }
 
+  void Surface::UpdateLocalBoundingBox()
+  {
+    Vec2 size                   = GetSizeVal();
+    Vec3 offset                 = Vec3(GetPivotOffsetVal() * size, 0.0f);
+    Vec3 pos                    = ZERO;
+
+    m_localBoundingBoxCache.min = pos + offset;
+    m_localBoundingBoxCache.max = m_localBoundingBoxCache.min + Vec3(size, 0.0f);
+  }
+
   XmlNode* Surface::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* nttNode     = Entity::SerializeImp(doc, parent);
@@ -127,6 +137,8 @@ namespace ToolKit
 
   void Surface::UpdateGeometry(bool byTexture)
   {
+    InvalidateSpatialCaches();
+
     if (byTexture)
     {
       SetSizeFromTexture();
@@ -157,7 +169,7 @@ namespace ToolKit
 
     Size_Define({150.0f, 50.0f}, SurfaceCategory.Name, SurfaceCategory.Priority, true, true);
 
-    PivotOffset_Define({0.5f, 0.5f}, SurfaceCategory.Name, SurfaceCategory.Priority, true, true);
+    PivotOffset_Define({0.0f, 0.0f}, SurfaceCategory.Name, SurfaceCategory.Priority, true, true);
 
     Material_Define(GetMaterialComponent()->GetFirstMaterial(),
                     SurfaceCategory.Name,
@@ -217,26 +229,26 @@ namespace ToolKit
 
   void Surface::CreateQuat()
   {
-    float width    = GetSizeVal().x;
-    float height   = GetSizeVal().y;
-    float depth    = 0;
-    Vec2 absOffset = Vec2(GetPivotOffsetVal().x * width, GetPivotOffsetVal().y * height);
+    BoundingBox box = GetBoundingBox();
+    Vec3 min        = box.min;
+    Vec3 max        = box.max;
+    float depth     = box.min.z;
 
     VertexArray vertices;
     vertices.resize(6);
-    vertices[0].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
-    vertices[0].tex            = Vec2(0.0f, 1.0f);
-    vertices[1].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[1].tex            = Vec2(1.0f, 1.0f);
-    vertices[2].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[2].tex            = Vec2(0.0f, 0.0f);
+    vertices[0].pos            = min;
+    vertices[0].tex            = Vec2(0.0f, 0.0f);
+    vertices[1].pos            = Vec3(max.x, min.y, depth);
+    vertices[1].tex            = Vec2(1.0f, 0.0f);
+    vertices[2].pos            = Vec3(max.x, max.y, depth);
+    vertices[2].tex            = Vec2(1.0f, -1.0f);
 
-    vertices[3].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[3].tex            = Vec2(1.0f, 1.0f);
-    vertices[4].pos            = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[4].tex            = Vec2(1.0f, 0.0f);
-    vertices[5].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[5].tex            = Vec2(0.0f, 0.0f);
+    vertices[3].pos            = min;
+    vertices[3].tex            = Vec2(0.0f, 0.0f);
+    vertices[4].pos            = Vec3(max.x, max.y, depth);
+    vertices[4].tex            = Vec2(1.0f, -1.0f);
+    vertices[5].pos            = Vec3(min.x, max.y, depth);
+    vertices[5].tex            = Vec2(0.0f, -1.0f);
 
     MeshPtr mesh               = GetMeshComponent()->GetMeshVal();
     mesh->m_clientSideVertices = vertices;
@@ -291,6 +303,8 @@ namespace ToolKit
 
   void Surface::SetSizeFromTexture()
   {
+    InvalidateSpatialCaches();
+
     if (TexturePtr dt = GetMaterialVal()->m_diffuseTexture)
     {
       SetSizeVal(Vec2(dt->m_width, dt->m_height));

@@ -88,7 +88,11 @@ namespace ToolKit
     return surfaceNode->first_node(StaticClass()->Name.c_str());
   }
 
-  void Canvas::UpdateGeometry(bool byTexture) { CreateQuadLines(); }
+  void Canvas::UpdateGeometry(bool byTexture)
+  {
+    InvalidateSpatialCaches();
+    CreateQuadLines();
+  }
 
   void Canvas::ApplyRecursiveResizePolicy(float width, float height)
   {
@@ -181,21 +185,23 @@ namespace ToolKit
 
   void Canvas::CreateQuadLines()
   {
-    float width    = GetSizeVal().x;
-    float height   = GetSizeVal().y;
-    float depth    = 0;
-    Vec2 absOffset = Vec2(GetPivotOffsetVal().x * width, GetPivotOffsetVal().y * height);
+    BoundingBox box = GetBoundingBox();
+    Vec3 min        = box.min;
+    Vec3 max        = box.max;
+    float depth     = min.z;
 
+    // Lines of the boundary.
     VertexArray vertices;
     vertices.resize(8);
-    vertices[0].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
-    vertices[1].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[2].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[3].pos            = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[4].pos            = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[5].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[6].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[7].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
+
+    vertices[0].pos            = min;
+    vertices[1].pos            = Vec3(max.x, min.y, depth);
+    vertices[2].pos            = Vec3(max.x, min.y, depth);
+    vertices[3].pos            = Vec3(max.x, max.y, depth);
+    vertices[4].pos            = Vec3(max.x, max.y, depth);
+    vertices[5].pos            = Vec3(min.x, max.y, depth);
+    vertices[6].pos            = Vec3(min.x, max.y, depth);
+    vertices[7].pos            = min;
 
     MeshPtr mesh               = MakeNewPtr<Mesh>();
     mesh->m_clientSideVertices = vertices;
