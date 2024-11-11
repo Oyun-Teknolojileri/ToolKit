@@ -465,8 +465,6 @@ namespace ToolKit
         // Transitioning to play from stop.
         if (m_gameMod == GameMod::Stop)
         {
-          // Save to catch any changes in the editor.
-          GetCurrentScene()->Save(true);
           m_sceneLightingMode  = EditorLitMode::Game;
           m_lastActiveViewport = GetActiveViewport();
 
@@ -480,6 +478,12 @@ namespace ToolKit
               Mat4 view = viewport3d->GetCamera()->m_node->GetTransform();
               m_simulationViewport->GetCamera()->m_node->SetTransform(view);
             }
+          }
+
+          // Register ui viewport
+          if (ViewportPtr simViewport = GetSimulationViewport())
+          {
+            GetUIManager()->RegisterViewport(simViewport);
           }
 
           // Check if there is a new plugin.
@@ -776,7 +780,6 @@ namespace ToolKit
         vp->GetCamera()->m_node->SetTranslation({5.0f, 3.0f, 5.0f});
         vp->GetCamera()->GetComponent<DirectionComponent>()->LookAt(Vec3(0.0f));
         m_windows.push_back(vp);
-        GetUIManager()->RegisterViewport(vp);
 
         // 2d viewport.
         vp = MakeNewPtr<EditorViewport2d>();
