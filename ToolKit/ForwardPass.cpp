@@ -115,23 +115,27 @@ namespace ToolKit
       {
         if (job->Material->IsShaderMaterial())
         {
-          renderer->BindProgramOfMaterial(job->Material);
-        }
-
-        Material* mat = job->Material;
-        if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
-        {
-          mat->GetRenderState()->cullMode = CullingType::Front;
-          renderer->Render(*job);
-
-          mat->GetRenderState()->cullMode = CullingType::Back;
-          renderer->Render(*job);
-
-          mat->GetRenderState()->cullMode = CullingType::TwoSided;
+          renderer->RenderWithProgramFromMaterial(*job);
         }
         else
         {
-          renderer->Render(*job);
+          renderer->BindProgram(program);
+
+          Material* mat = job->Material;
+          if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
+          {
+            mat->GetRenderState()->cullMode = CullingType::Front;
+            renderer->Render(*job);
+
+            mat->GetRenderState()->cullMode = CullingType::Back;
+            renderer->Render(*job);
+
+            mat->GetRenderState()->cullMode = CullingType::TwoSided;
+          }
+          else
+          {
+            renderer->Render(*job);
+          }
         }
       }
       renderer->EnableDepthWrite(true);
