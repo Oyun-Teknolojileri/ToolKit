@@ -158,18 +158,21 @@ namespace ToolKit
 
       if (job.animData.currentAnimation != nullptr)
       {
-        // animation
+        // animation.
         AnimationPlayer* animPlayer = GetAnimationPlayer();
-        SetTexture(3,
-                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal())
-                       ->m_textureId);
+        DataTexturePtr animTexture =
+            animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal());
 
-        // animation to blend
+        if (animTexture != nullptr)
+        {
+          SetTexture(3, animTexture->m_textureId);
+        }
+
+        // animation to blend.
         if (job.animData.blendAnimation != nullptr)
         {
-          SetTexture(2,
-                     animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal())
-                         ->m_textureId);
+          animTexture = animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal());
+          SetTexture(2, animTexture->m_textureId);
         }
       }
       else
