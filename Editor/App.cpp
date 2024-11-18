@@ -187,8 +187,7 @@ namespace ToolKit
         viewports.push_back(m_simulationViewport.get());
       }
 
-      // Update Plugins.
-      GetPluginManager()->Update(deltaTime);
+      // Update simulation status.
       UpdateSimulation();
 
       UI::BeginUI();

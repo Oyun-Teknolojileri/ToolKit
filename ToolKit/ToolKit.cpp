@@ -295,6 +295,8 @@ namespace ToolKit
       scene->Update(deltaTime);
     }
 
+    GetPluginManager()->Update(deltaTime);
+
     GetRenderSystem()->DecrementSkipFrame();
     GetRenderSystem()->ExecuteRenderTasks();
   }
