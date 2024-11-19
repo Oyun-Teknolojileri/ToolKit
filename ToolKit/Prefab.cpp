@@ -51,7 +51,10 @@ namespace ToolKit
 
         EntityPtrArray roots;
         GetRootEntities(m_instanceEntities, roots);
-        m_currentScene->RemoveEntity(roots);
+        if (ScenePtr scene = m_currentScene.lock())
+        {
+          scene->RemoveEntity(roots);
+        }
 
         // Detach roots from prefab.
         for (EntityPtr root : roots)
@@ -68,14 +71,19 @@ namespace ToolKit
     if (!m_linked)
     {
       m_linked = true;
-      for (EntityPtr child : m_instanceEntities)
+
+      if (ScenePtr scene = m_currentScene.lock())
       {
-        m_currentScene->AddEntity(child);
+        for (EntityPtr child : m_instanceEntities)
+        {
+          scene->AddEntity(child);
+        }
       }
 
       // Attach roots to prefab.
       EntityPtrArray roots;
       GetRootEntities(m_instanceEntities, roots);
+
       for (EntityPtr root : roots)
       {
         m_node->AddChild(root->m_node);
@@ -109,7 +117,7 @@ namespace ToolKit
 
   EntityPtr Prefab::GetFirstByName(const String& name)
   {
-    if (!m_initiated || !m_linked || m_currentScene == nullptr)
+    if (!m_initiated || !m_linked || m_currentScene.lock() == nullptr)
     {
       return nullptr;
     }
@@ -128,7 +136,7 @@ namespace ToolKit
 
   EntityPtr Prefab::GetFirstByTag(const String& tag)
   {
-    if (!m_initiated || !m_linked || m_currentScene == nullptr)
+    if (!m_initiated || !m_linked || m_currentScene.lock() == nullptr)
     {
       return nullptr;
     }
@@ -147,7 +155,7 @@ namespace ToolKit
 
   const EntityPtrArray& Prefab::GetInstancedEntities() { return m_instanceEntities; }
 
-  void Prefab::Init(Scene* curScene)
+  void Prefab::Init(SceneWeakPtr curScene)
   {
     if (m_initiated)
     {

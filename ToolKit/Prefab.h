@@ -30,7 +30,7 @@ namespace ToolKit
     bool IsDrawable() const override;
 
     /** Initiates prefab scene and link to the current scene. */
-    void Init(Scene* currentScene);
+    void Init(SceneWeakPtr currentScene);
 
     /** Destroys all prefab scene entities and unlink. */
     void UnInit();
@@ -76,7 +76,7 @@ namespace ToolKit
 
    private:
     ScenePtr m_prefabScene;
-    Scene* m_currentScene;
+    SceneWeakPtr m_currentScene;
     bool m_initiated = false;
     bool m_linked    = false;
 
