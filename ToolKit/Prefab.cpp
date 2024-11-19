@@ -196,16 +196,17 @@ namespace ToolKit
     {
       ntt->_prefabRootEntity = this;
 
-      auto foundParamArray   = m_childCustomDatas.find(ntt->GetNameVal());
-      if (foundParamArray != m_childCustomDatas.end())
+      auto foundParamArray   = _childCustomDataMap.find(ntt->GetNameVal());
+      if (foundParamArray != _childCustomDataMap.end())
       {
-        for (ParameterVariant& var : ntt->m_localData.m_variants)
+        for (size_t i = 0; i < ntt->m_localData.m_variants.size(); i++)
         {
-          for (ParameterVariant& serializedVar : foundParamArray->second)
+          ParameterVariant& var = ntt->m_localData.m_variants[i];
+          for (const ParameterVariant& serializedVar : foundParamArray->second)
           {
             if (var.m_name == serializedVar.m_name)
             {
-              var = serializedVar;
+              ntt->m_localData.m_variants[i] = var;
             }
           }
         }
@@ -213,7 +214,7 @@ namespace ToolKit
     }
 
     // We need this data only at deserialization, no later
-    m_childCustomDatas.clear();
+    _childCustomDataMap.clear();
     m_initiated = true;
   }
 
@@ -272,7 +273,7 @@ namespace ToolKit
         vars.push_back(param);
       }
 
-      m_childCustomDatas.insert(std::make_pair(rootName, vars));
+      _childCustomDataMap.insert(std::make_pair(rootName, vars));
     }
 
     return nttNode;
@@ -295,7 +296,7 @@ namespace ToolKit
         vars.push_back(param);
       }
 
-      m_childCustomDatas.insert(std::make_pair(rootName, vars));
+      _childCustomDataMap.insert(std::make_pair(rootName, vars));
     }
 
     return prefabNode;
