@@ -43,9 +43,10 @@ namespace ToolKit
     m_frameBuffer = MakeNewPtr<Framebuffer>(FramebufferSettings {0, 0, false, false}, "SkyFB");
     m_frameBuffer->Init();
 
-    RenderTask task {[this](Renderer* renderer) -> void
+    GradientSkyPtr self = Self<GradientSky>(); // Make sure, the object will stay valid.
+    RenderTask task {[self, this](Renderer* renderer) -> void
                      {
-                       if (m_initialized)
+                       if (!self || m_initialized)
                        {
                          return;
                        }
