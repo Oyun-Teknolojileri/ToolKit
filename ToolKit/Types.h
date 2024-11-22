@@ -238,6 +238,8 @@ namespace ToolKit
   static const String BMP(".bmp");
   static const String PSD(".psd");
   static const String HDR(".hdr");
+  static const String WAW(".waw");
+  static const String MP3(".mp3");
 
   // Local formats.
   static const String SCENE(".scene");

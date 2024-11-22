@@ -114,6 +114,7 @@ namespace ToolKit
   TK_API String GetPathSeparatorAsStr();
   TK_API bool SupportedImageFormat(const String& ext);
   TK_API bool SupportedMeshFormat(const String& ext);
+  TK_API bool SupportedAudioFormat(const String& ext);
   TK_API bool IsLayer(const String& file);
   TK_API String GetPluginExtention();
 
