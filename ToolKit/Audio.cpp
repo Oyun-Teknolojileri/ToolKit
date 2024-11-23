@@ -7,6 +7,10 @@
 
 #include "Audio.h"
 
+#include "FileManager.h"
+
+#include "DebugNew.h"
+
 #define MINIAUDIO_IMPLEMENTATION
 #include "mini_audio/miniaudio.h"
 
@@ -27,20 +31,12 @@ namespace ToolKit
 
   void Audio::Load()
   {
-    ma_engine* engine = (ma_engine*) GetAudioManager()->m_engine;
-    ma_sound* sound   = new ma_sound();
-    m_sound           = (void*) sound;
-    String path       = GetFile();
-    assert(CheckFile(path) && "audio file is not exist!");
+    String path = GetFile();
+    m_sound     = GetFileManager()->GetAudioFile(path);
 
-    // we don't use spatialization, this flag is for performance. you can see this in the documentations.
-    const ma_uint32 flag = MA_SOUND_FLAG_NO_SPATIALIZATION;
-    ma_result result     = ma_sound_init_from_file(engine, path.c_str(), flag, nullptr, nullptr, sound);
-
-    if (result != MA_SUCCESS)
+    if (m_sound == nullptr)
     {
-      GetLogger()->WritePlatformConsole(LogType::Memo, "cannot load sound file! %s", path.c_str());
-      assert(0);
+      TK_ERR("Cannot load sound file! %s", path.c_str());
     }
   }
 
@@ -83,6 +79,59 @@ namespace ToolKit
     SafeDel(engine);
   }
 
+  SoundBuffer AudioManager::DecodeFromMemory(ubyte* buffer, uint bufferSize)
+  {
+    ma_resource_manager* resourceManager = ma_engine_get_resource_manager((ma_engine*) m_engine);
+    if (!resourceManager)
+    {
+      return nullptr;
+    }
+
+    // First register the data with the resource manager
+    char uniqueName[256];
+    sprintf(uniqueName, "memory_sound_%p", buffer); // Create unique name based on buffer address
+
+    ma_resource_manager_register_encoded_data(resourceManager, uniqueName, buffer, bufferSize);
+
+    // Now create the sound using the registered data
+    ma_sound* sound  = new ma_sound();
+    ma_result result = ma_sound_init_from_file((ma_engine*) m_engine,
+                                               uniqueName,
+                                               MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION,
+                                               nullptr,
+                                               nullptr,
+                                               sound);
+
+    if (result != MA_SUCCESS)
+    {
+      TK_ERR("Sound can't be decoded from memory.");
+      SafeDel(sound);
+      return nullptr;
+    }
+
+    return (SoundBuffer) sound;
+  }
+
+  SoundBuffer AudioManager::DecodeFromFile(StringView file)
+  {
+    ma_sound* sound  = new ma_sound();
+    ma_result result = ma_sound_init_from_file((ma_engine*) m_engine,
+                                               file.data(),
+                                               MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION,
+                                               nullptr,
+                                               nullptr,
+                                               sound);
+
+    if (result != MA_SUCCESS)
+    {
+      TK_ERR("Sound %s can't be decoded.", file);
+      SafeDel(sound);
+      return nullptr;
+    }
+
+    return (SoundBuffer) sound;
+  }
+
   bool AudioManager::CanStore(ClassMeta* Class) { return Class == Audio::StaticClass(); }
 
   // AudioSource
@@ -94,22 +143,22 @@ namespace ToolKit
   {
     if (m_sound != nullptr)
     {
-      ma_sound* copySound = (ma_sound*) m_sound;
-      ma_sound_uninit(copySound);
-      SafeDel(copySound);
+      ma_sound_uninit((ma_sound*) m_sound);
+      SafeDel(m_sound);
     }
   }
 
   void AudioSource::AttachAudio(const AudioPtr& audio)
   {
-    m_audio                   = audio;
+    m_audio                     = audio;
 
-    ma_engine* engine         = (ma_engine*) GetAudioManager()->m_engine;
-    const ma_sound* thisSound = (const ma_sound*) audio->m_sound;
-    const ma_uint32 flag      = MA_SOUND_FLAG_NO_SPATIALIZATION;
-    ma_sound* copySound       = new ma_sound();
+    ma_engine* engine           = (ma_engine*) GetAudioManager()->m_engine;
+    const ma_sound* sourceSound = (const ma_sound*) audio->m_sound;
+
+    ma_sound* copySound         = new ma_sound();
     memset(copySound, 0, sizeof(ma_sound));
-    ma_sound_init_copy(engine, thisSound, flag, nullptr, copySound);
+
+    ma_sound_init_copy(engine, sourceSound, MA_SOUND_FLAG_NO_SPATIALIZATION, nullptr, copySound);
     m_sound = (void*) copySound;
   }
 

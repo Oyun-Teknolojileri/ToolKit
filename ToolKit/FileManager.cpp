@@ -7,6 +7,7 @@
 
 #include "FileManager.h"
 
+#include "Audio.h"
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
@@ -15,7 +16,7 @@
 #include "TKImage.h"
 #include "ToolKit.h"
 
-
+#include "DebugNew.h"
 
 namespace ToolKit
 {
@@ -94,6 +95,18 @@ namespace ToolKit
         ImageSetVerticalOnLoad(false);
         return img;
       }
+      else if (fileType == FileType::Audio)
+      {
+        uint bufferSize   = 0;
+        ubyte* fileBuffer = (ubyte*) ReadFileBufferFromZip(m_zfile, relativePath, bufferSize);
+        if (bufferSize > 0)
+        {
+          if (AudioManager* audioMan = GetAudioManager())
+          {
+            return audioMan->DecodeFromMemory(fileBuffer, bufferSize);
+          }
+        }
+      }
       else
       {
         assert(false && "Unimplemented file type.");
@@ -117,15 +130,30 @@ namespace ToolKit
         ImageSetVerticalOnLoad(false);
         return img;
       }
+      else if (fileType == FileType::Audio)
+      {
+        if (AudioManager* audioMan = GetAudioManager())
+        {
+          return audioMan->DecodeFromFile(fileInfo.filePath);
+        }
+      }
       else
       {
         assert(false && "Unimplemented file type.");
       }
     }
 
-    // Supress warning
-    uint8* temp = nullptr;
-    return temp;
+    // Suppress warning.
+    return (uint8*) nullptr;
+  }
+
+  SoundBuffer FileManager::GetAudioFile(const String& filePath)
+  {
+    String path            = filePath;
+    ImageFileInfo fileInfo = {path, nullptr, nullptr, nullptr, 0};
+    FileDataType data      = GetFile(FileType::Audio, fileInfo);
+
+    return std::get<SoundBuffer>(data);
   }
 
   int FileManager::PackResources(const String& sceneResourcesPath)
@@ -642,6 +670,48 @@ namespace ToolKit
     return ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
+  ubyte* FileManager::ReadFileBufferFromZip(zipFile zfile, const String& relativePath, uint& bufferSize)
+  {
+    // Check offset map of file
+    String unixifiedPath = relativePath;
+    UnixifyPath(unixifiedPath);
+    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath].first;
+
+    if (offset != 0)
+    {
+      if (unzSetOffset64(zfile, offset) == UNZ_OK)
+      {
+        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        {
+          unz_file_info unzFileInfo;
+          memset(&unzFileInfo, 0, sizeof(unz_file_info));
+
+          if (unzGetCurrentFileInfo(zfile, &unzFileInfo, NULL, 0, NULL, 0, NULL, 0) == UNZ_OK)
+          {
+            // Read file
+            bufferSize        = (uint64) unzFileInfo.uncompressed_size;
+            ubyte* fileBuffer = new ubyte[bufferSize]();
+            uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, bufferSize);
+
+            if (readBytes < 0)
+            {
+              GetLogger()->Log("Error reading compressed file: " + relativePath);
+              SafeDelArray(fileBuffer);
+
+              return nullptr;
+            }
+            else
+            {
+              return fileBuffer;
+            }
+          }
+        }
+      }
+    }
+
+    return nullptr;
+  }
+
   XmlFilePtr FileManager::CreateXmlFileFromZip(zipFile zfile, const String& filename, uint filesize)
   {
     // Read file
@@ -663,8 +733,8 @@ namespace ToolKit
 
   uint8* FileManager::CreateImageFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo)
   {
-    unsigned char* fileBuffer = new unsigned char[filesize]();
-    uint readBytes            = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    ubyte* fileBuffer = new ubyte[filesize]();
+    uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, filesize);
     if (readBytes < 0)
     {
       GetLogger()->Log("Error reading compressed file: " + fileInfo.filePath);
@@ -681,8 +751,8 @@ namespace ToolKit
 
   float* FileManager::CreateHdriFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo)
   {
-    unsigned char* fileBuffer = new unsigned char[filesize]();
-    uint readBytes            = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    ubyte* fileBuffer = new ubyte[filesize]();
+    uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, filesize);
     if (readBytes < 0)
     {
       GetLogger()->Log("Error reading compressed file: " + fileInfo.filePath);

@@ -30,6 +30,9 @@ namespace ToolKit
     uint8* GetImageFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
     float* GetHdriFile(const String& filePath, int* x, int* y, int* comp, int reqComp);
 
+    /** Returns a decoded audio file or null if no decoder found. Usually used in Audio::Load to create resource. */
+    SoundBuffer GetAudioFile(const String& filePath);
+
     int PackResources(const String& path);
     void CloseZipFile();
     bool CheckFileFromResources(const String& path);
@@ -39,13 +42,14 @@ namespace ToolKit
     void WriteAllText(const String& file, const String& text);
 
    private:
-    typedef std::variant<XmlFilePtr, uint8*, float*> FileDataType;
+    typedef std::variant<XmlFilePtr, uint8*, float*, SoundBuffer> FileDataType;
 
     enum class FileType
     {
       Xml,
       ImageUint8,
-      ImageFloat
+      ImageFloat,
+      Audio
     };
 
     struct ImageFileInfo
@@ -70,6 +74,10 @@ namespace ToolKit
     XmlFilePtr ReadXmlFileFromZip(zipFile zfile, const String& relativePath, const char* path);
     uint8* ReadImageFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo);
     float* ReadHdriFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo);
+
+    /** Reads the file from the zip and returns it as buffer pointer and set the buffer size. */
+    ubyte* ReadFileBufferFromZip(zipFile zfile, const String& relativePath, uint& bufferSize);
+
     XmlFilePtr CreateXmlFileFromZip(zipFile zfile, const String& filename, uint filesize);
     uint8* CreateImageFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo);
     float* CreateHdriFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo);

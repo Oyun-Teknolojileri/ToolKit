@@ -121,6 +121,7 @@ namespace ToolKit
   typedef std::vector<bool> BoolArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
   typedef std::vector<struct RenderJob> RenderJobArray;
+  typedef void* SoundBuffer; //!< Internal sound buffer object used for decoding / loading audio.
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;

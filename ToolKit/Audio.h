@@ -27,7 +27,7 @@ namespace ToolKit
     void UnInit() override;
 
    public:
-    void* m_sound = nullptr;
+    SoundBuffer m_sound = nullptr;
   };
 
   typedef std::shared_ptr<Audio> AudioPtr;
@@ -41,6 +41,12 @@ namespace ToolKit
     void Uninit() override;
     void Stop();
     void Start();
+
+    /** Decodes the given memory block as internal sound object. */
+    SoundBuffer DecodeFromMemory(ubyte* buffer, uint bufferSize);
+
+    /** Decodes the given file as internal sound object. */
+    SoundBuffer DecodeFromFile(StringView file);
 
     bool CanStore(ClassMeta* Class) override;
 
@@ -74,18 +80,13 @@ namespace ToolKit
 
     void Play();
     void Stop();
-    void Rewind();
 
    protected:
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
-   public:
-    // Audio engine reference.
-    void* m_sound = nullptr;
-
    private:
-    // Actual resource reference.
-    AudioPtr m_audio = nullptr;
+    SoundBuffer m_sound = nullptr; //!< Raw sound object.
+    AudioPtr m_audio    = nullptr; //!< Reference to audio resource that this entity represents.
   };
 
 } // namespace ToolKit
