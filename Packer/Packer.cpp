@@ -95,9 +95,7 @@ namespace ToolKit
       return -1;
     }
 
-    String sceneResourcesPath = ConcatPaths({ResourcePath(), "Scenes"});
-
-    int packResult            = GetFileManager()->PackResources(sceneResourcesPath);
+    int packResult = GetFileManager()->PackResources();
     if (packResult != 0)
     {
       return packResult;
