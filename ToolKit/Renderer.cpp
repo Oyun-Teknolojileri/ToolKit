@@ -51,7 +51,7 @@ namespace ToolKit
     glGenQueries(1, &m_gpuTimerQuery);
 
     const char* renderer = (const char*) glGetString(GL_RENDERER);
-    TK_LOG("Graphics Card: %s", renderer);
+    GetLogger()->Log(String("Graphics Card ") + renderer);
 
     // Default states.
     glEnable(GL_CULL_FACE);
