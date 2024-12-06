@@ -12,7 +12,7 @@
 #include "DebugNew.h"
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "mini_audio/miniaudio.h"
+#include "miniaudio/miniaudio.h"
 
 namespace ToolKit
 {
