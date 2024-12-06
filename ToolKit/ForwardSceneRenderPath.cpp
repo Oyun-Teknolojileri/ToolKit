@@ -164,7 +164,7 @@ namespace ToolKit
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;
-    m_shadowPass->m_params.lights     = m_params.Scene->GetLights();
+    m_shadowPass->m_params.lights     = lights;
 
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::SortByMaterial(m_renderData);
