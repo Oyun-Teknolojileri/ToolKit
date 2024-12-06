@@ -14,7 +14,11 @@
 
 namespace ToolKit
 {
-
+  /**
+   * This pass creates a frame buffer that contains normal of the scene, depth in the view space.
+   * If this pass exist, the depth of the scene is constructed and upcoming passes uses the existing
+   * depth buffer without write to enable early z kill in the fragment shader.
+   **/
   class TK_API ForwardPreProcessPass : public Pass
   {
    public:
@@ -24,15 +28,11 @@ namespace ToolKit
     void Render() override;
     void PreRender() override;
 
-   private:
-    void InitDefaultDepthTexture(int width, int height);
-
    public:
     ForwardRenderPassParams m_params;
     MaterialPtr m_linearMaterial    = nullptr;
     FramebufferPtr m_framebuffer    = nullptr;
 
-    DepthTexturePtr m_depthTexture  = nullptr; // This is used in case there is no gbuffer
     RenderTargetPtr m_normalRt      = nullptr;
     RenderTargetPtr m_linearDepthRt = nullptr;
   };

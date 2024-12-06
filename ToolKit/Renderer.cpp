@@ -49,6 +49,16 @@ namespace ToolKit
     m_lightDataBuffer.Init();
 
     glGenQueries(1, &m_gpuTimerQuery);
+
+    const char* renderer = (const char*) glGetString(GL_RENDERER);
+    TK_LOG("Graphics Card: %s", renderer);
+
+    // Default states.
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+    glClearDepthf(1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   }
 
   Renderer::~Renderer()

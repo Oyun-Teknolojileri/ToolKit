@@ -152,10 +152,6 @@ namespace ToolKit
 
     InitGLErrorReport(callback);
     TestSRGBBackBuffer();
-
-    // Default states.
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
   }
 
   void RenderSystem::ExecuteTaskImp(RenderTask& task)
