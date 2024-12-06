@@ -50,7 +50,7 @@ namespace ToolKit
     {
       // This is the optimal flag if the depth buffer is filled.
       // Only the visible fragments will pass the test.
-      renderer->SetDepthTestFunc(CompareFunctions::FuncEqual);
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
     }
     else
     {

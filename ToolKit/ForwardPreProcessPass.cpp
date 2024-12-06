@@ -99,9 +99,6 @@ namespace ToolKit
     Pass::PreRender();
 
     Renderer* renderer = GetRenderer();
-    renderer->EnableDepthTest(true);
-    renderer->EnableDepthWrite(true);
-
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Cam, true);
   }
