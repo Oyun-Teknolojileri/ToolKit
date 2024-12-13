@@ -143,9 +143,6 @@ namespace ToolKit
   {
     ClearComponents(); // Read from file.
     XmlNode* nttNode = Super::DeSerializeImp(info, parent);
-
-    ParameterEventConstructor();
-
     return nttNode->first_node(StaticClass()->Name.c_str());
   }
 

@@ -442,7 +442,7 @@ namespace ToolKit
       return Shader::StaticClass();
     }
 
-    if (ext == AUDIO)
+    if (SupportedAudioFormat(ext))
     {
       return Audio::StaticClass();
     }
@@ -565,6 +565,12 @@ namespace ToolKit
   bool SupportedMeshFormat(const String& ext)
   {
     static String supportedFormats(FBX + GLB + GLTF + OBJ);
+    return supportedFormats.find(ToLower(ext)) != String::npos;
+  }
+
+  bool SupportedAudioFormat(const String& ext)
+  {
+    static String supportedFormats(WAW + MP3);
     return supportedFormats.find(ToLower(ext)) != String::npos;
   }
 

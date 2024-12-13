@@ -7,6 +7,7 @@
 
 #include "FileManager.h"
 
+#include "Audio.h"
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
@@ -15,10 +16,11 @@
 #include "TKImage.h"
 #include "ToolKit.h"
 
-
+#include "DebugNew.h"
 
 namespace ToolKit
 {
+  FileManager::FileManager() {}
 
   FileManager::~FileManager()
   {
@@ -94,6 +96,18 @@ namespace ToolKit
         ImageSetVerticalOnLoad(false);
         return img;
       }
+      else if (fileType == FileType::Audio)
+      {
+        uint bufferSize   = 0;
+        ubyte* fileBuffer = (ubyte*) ReadFileBufferFromZip(m_zfile, relativePath, bufferSize);
+        if (bufferSize > 0)
+        {
+          if (AudioManager* audioMan = GetAudioManager())
+          {
+            return audioMan->DecodeFromMemory(fileBuffer, bufferSize);
+          }
+        }
+      }
       else
       {
         assert(false && "Unimplemented file type.");
@@ -117,22 +131,37 @@ namespace ToolKit
         ImageSetVerticalOnLoad(false);
         return img;
       }
+      else if (fileType == FileType::Audio)
+      {
+        if (AudioManager* audioMan = GetAudioManager())
+        {
+          return audioMan->DecodeFromFile(fileInfo.filePath);
+        }
+      }
       else
       {
         assert(false && "Unimplemented file type.");
       }
     }
 
-    // Supress warning
-    uint8* temp = nullptr;
-    return temp;
+    // Suppress warning.
+    return (uint8*) nullptr;
   }
 
-  int FileManager::PackResources(const String& sceneResourcesPath)
+  SoundBuffer FileManager::GetAudioFile(const String& filePath)
   {
-    String zipName = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+    String path            = filePath;
+    ImageFileInfo fileInfo = {path, nullptr, nullptr, nullptr, 0};
+    FileDataType data      = GetFile(FileType::Audio, fileInfo);
 
-    if (CheckSystemFile(zipName.c_str()))
+    return std::get<SoundBuffer>(data);
+  }
+
+  int FileManager::PackResources()
+  {
+    String zipFile = ConcatPaths({ResourcePath(), "..", "MinResources.pak"});
+
+    if (CheckSystemFile(zipFile.c_str()))
     {
       if (m_zfile)
       {
@@ -141,7 +170,7 @@ namespace ToolKit
       }
 
       std::error_code err;
-      if (!std::filesystem::remove(zipName, err))
+      if (!std::filesystem::remove(zipFile, err))
       {
         TK_LOG("cannot remove MinResources.pak! message: %s\n", err.message().c_str());
         return -1;
@@ -150,14 +179,17 @@ namespace ToolKit
 
     // Load all scenes once in order to fill resource managers
     TK_LOG("Packing Scenes\n");
-    LoadAllScenes(sceneResourcesPath);
+    LoadAllScenes(ScenePath(""));
+
+    TK_LOG("Packing Layers\n");
+    LoadAllScenes(LayerPath(""));
 
     // Get all paths of resources
     TK_LOG("Getting all used paths\n");
-    GetAllUsedResourcePaths(sceneResourcesPath);
+    GetAllUsedResourcePaths();
 
     // Zip used resources
-    if (!ZipPack(zipName))
+    if (!ZipPack(zipFile))
     {
       // Error
       TK_ERR("Error zipping.");
@@ -212,23 +244,21 @@ namespace ToolKit
       String pt = entry.path().string();
       String name;
       DecomposePath(pt, nullptr, &name, nullptr);
+
       TK_LOG("Packing Scene: %s\n", name.c_str());
+
       ScenePtr scene = GetSceneManager()->Create<Scene>(pt);
       scene->Load();
       scene->Init();
     }
   }
 
-  void FileManager::GetAllUsedResourcePaths(const String& sceneResourcesPath)
+  void FileManager::GetAllUsedResourcePaths()
   {
     std::unordered_map<String, ResourcePtr> mp;
 
     // Get all engine resources
     GetAllPaths(DefaultPath());
-
-    // No manager for fonts
-
-    // TODO audio
 
     // Material
     mp = GetMaterialManager()->m_storage;
@@ -354,14 +384,13 @@ namespace ToolKit
     }
 
     // Scenes
-    GetAllPaths(sceneResourcesPath);
+    GetAllPaths(ScenePath(""));
 
     // Layers
-    const String layerResourcesPath = ConcatPaths({sceneResourcesPath, "..", "Layers"});
-    GetAllPaths(layerResourcesPath);
+    GetAllPaths(LayerPath(""));
 
     // Extra files that the use provided
-    GetExtraFilePaths(sceneResourcesPath);
+    GetExtraFilePaths();
   }
 
   bool FileManager::CheckPakFile() { return m_zfile != nullptr; }
@@ -483,9 +512,9 @@ namespace ToolKit
     }
   }
 
-  void FileManager::GetExtraFilePaths(const String& path)
+  void FileManager::GetExtraFilePaths()
   {
-    String extrFilesPathStr   = ConcatPaths({path, "..", "ExtraFiles.txt"});
+    String extrFilesPathStr   = ConcatPaths({ResourcePath(), "ExtraFiles.txt"});
     const char* extrFilesPath = extrFilesPathStr.c_str();
     if (!CheckSystemFile(extrFilesPath))
     {
@@ -642,6 +671,48 @@ namespace ToolKit
     return ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
+  ubyte* FileManager::ReadFileBufferFromZip(zipFile zfile, const String& relativePath, uint& bufferSize)
+  {
+    // Check offset map of file
+    String unixifiedPath = relativePath;
+    UnixifyPath(unixifiedPath);
+    ZPOS64_T offset = m_zipFilesOffsetTable[unixifiedPath].first;
+
+    if (offset != 0)
+    {
+      if (unzSetOffset64(zfile, offset) == UNZ_OK)
+      {
+        if (unzOpenCurrentFile(zfile) == UNZ_OK)
+        {
+          unz_file_info unzFileInfo;
+          memset(&unzFileInfo, 0, sizeof(unz_file_info));
+
+          if (unzGetCurrentFileInfo(zfile, &unzFileInfo, NULL, 0, NULL, 0, NULL, 0) == UNZ_OK)
+          {
+            // Read file
+            bufferSize        = (uint64) unzFileInfo.uncompressed_size;
+            ubyte* fileBuffer = new ubyte[bufferSize]();
+            uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, bufferSize);
+
+            if (readBytes < 0)
+            {
+              GetLogger()->Log("Error reading compressed file: " + relativePath);
+              SafeDelArray(fileBuffer);
+
+              return nullptr;
+            }
+            else
+            {
+              return fileBuffer;
+            }
+          }
+        }
+      }
+    }
+
+    return nullptr;
+  }
+
   XmlFilePtr FileManager::CreateXmlFileFromZip(zipFile zfile, const String& filename, uint filesize)
   {
     // Read file
@@ -663,8 +734,8 @@ namespace ToolKit
 
   uint8* FileManager::CreateImageFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo)
   {
-    unsigned char* fileBuffer = new unsigned char[filesize]();
-    uint readBytes            = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    ubyte* fileBuffer = new ubyte[filesize]();
+    uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, filesize);
     if (readBytes < 0)
     {
       GetLogger()->Log("Error reading compressed file: " + fileInfo.filePath);
@@ -681,8 +752,8 @@ namespace ToolKit
 
   float* FileManager::CreateHdriFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo)
   {
-    unsigned char* fileBuffer = new unsigned char[filesize]();
-    uint readBytes            = unzReadCurrentFile(zfile, fileBuffer, filesize);
+    ubyte* fileBuffer = new ubyte[filesize]();
+    uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, filesize);
     if (readBytes < 0)
     {
       GetLogger()->Log("Error reading compressed file: " + fileInfo.filePath);

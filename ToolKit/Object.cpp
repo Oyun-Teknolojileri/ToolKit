@@ -6,10 +6,9 @@
  */
 
 #include "Object.h"
-#include "ToolKit.h"
+
 #include "Entity.h"
-
-
+#include "ToolKit.h"
 
 namespace ToolKit
 {
@@ -28,11 +27,14 @@ namespace ToolKit
 
   void Object::NativeConstruct()
   {
+    ComponentConstructor();
     ParameterConstructor();
     ParameterEventConstructor();
   }
 
   void Object::NativeDestruct() {}
+
+  void Object::ComponentConstructor() {}
 
   void Object::ParameterConstructor()
   {

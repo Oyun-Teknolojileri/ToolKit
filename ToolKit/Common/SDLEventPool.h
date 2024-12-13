@@ -255,6 +255,7 @@ namespace ToolKit
       m_mouseEventPoolCurrentIndex    = 0;
       m_keyboardEventPoolCurrentIndex = 0;
       m_gamepadEventPoolCurrentIndex  = 0;
+      m_touchEventPoolCurrentIndex = 0;
     }
 
    private:

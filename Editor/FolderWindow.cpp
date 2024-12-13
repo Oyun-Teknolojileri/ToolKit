@@ -393,6 +393,7 @@ namespace ToolKit
     {
       if (clear)
       {
+        m_activeFolder = 0;
         m_entries.clear();
         ReconstructFolderTree();
       }

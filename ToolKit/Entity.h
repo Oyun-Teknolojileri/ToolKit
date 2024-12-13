@@ -185,6 +185,10 @@ namespace ToolKit
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     void WeakCopy(Entity* other, bool copyComponents = true) const;
+
+    /** Default component deserializer, clears all default components and use serialized ones. */
+    virtual void DeserializeComponents(const SerializationFileInfo& info, XmlNode* entityNode);
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);

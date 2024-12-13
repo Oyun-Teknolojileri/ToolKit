@@ -275,10 +275,7 @@ namespace ToolKit
     {
       if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
-        if (CameraPtr cam = vp->GetCamera())
-        {
-          cam->m_node->SetTransform(Mat4());
-        }
+        vp->ResetCameraToDefault();
       }
     }
 

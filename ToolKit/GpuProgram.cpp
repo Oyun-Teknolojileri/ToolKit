@@ -150,6 +150,10 @@ namespace ToolKit
       program->m_handle     = glCreateProgram();
 
       LinkProgram(program->m_handle, vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle);
+
+      GLint currentProgram = 0;
+      glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+
       glUseProgram(program->m_handle);
       for (ubyte slotIndx = 0; slotIndx < RHIConstants::TextureSlotCount; slotIndx++)
       {
@@ -195,6 +199,8 @@ namespace ToolKit
       }
 
       m_programs[{vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle}] = program;
+
+      glUseProgram(currentProgram); // Restore current program.
 
       return m_programs[{vertexShader->m_shaderHandle, fragmentShader->m_shaderHandle}];
     }

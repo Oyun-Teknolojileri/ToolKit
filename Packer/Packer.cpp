@@ -95,9 +95,7 @@ namespace ToolKit
       return -1;
     }
 
-    String sceneResourcesPath = ConcatPaths({ResourcePath(), "Scenes"});
-
-    int packResult            = GetFileManager()->PackResources(sceneResourcesPath);
+    int packResult = GetFileManager()->PackResources();
     if (packResult != 0)
     {
       return packResult;
@@ -749,10 +747,7 @@ namespace ToolKit
     for (int i = 0; i < ArraySize(files); i++)
     {
       std::filesystem::copy(files[i].c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
-      if (returnLoggingError("Copy: " + files[i] + " to " + publishDirectory, false, __LINE__))
-      {
-        return -1;
-      }
+      returnLoggingError("Copy: " + files[i] + " to " + publishDirectory, false, __LINE__);
     }
 
     // Create run script

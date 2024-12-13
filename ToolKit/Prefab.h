@@ -30,7 +30,7 @@ namespace ToolKit
     bool IsDrawable() const override;
 
     /** Initiates prefab scene and link to the current scene. */
-    void Init(Scene* currentScene);
+    void Init(SceneWeakPtr currentScene);
 
     /** Destroys all prefab scene entities and unlink. */
     void UnInit();
@@ -76,13 +76,14 @@ namespace ToolKit
 
    private:
     ScenePtr m_prefabScene;
-    Scene* m_currentScene;
+    SceneWeakPtr m_currentScene;
     bool m_initiated = false;
     bool m_linked    = false;
 
-    // Used only in deserialization
-    std::unordered_map<String, ParameterVariantArray> m_childCustomDatas;
     EntityPtrArray m_instanceEntities;
+
+    /** Internally used to initialise custum data of the child entities. */
+    std::unordered_map<String, ParameterVariantArray> _childCustomDataMap;
   };
 
 } // namespace ToolKit

@@ -95,9 +95,8 @@ add_definitions(-DGLM_FORCE_INTRINSICS)
 
 set(
   PCH
- "${TOOLKIT_DIR}/Dependency/glm/glm/glm.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/glm/ext.hpp"
- "${TOOLKIT_DIR}/Dependency/glm/glm/gtx/scalar_relational.hpp"
+ "${TOOLKIT_DIR}/ToolKit/stdafx.h"
+ "${TOOLKIT_DIR}/ToolKit/Types.h"
  )
 
 set(OUTDIR "${CMAKE_SOURCE_DIR}/Bin")
@@ -127,12 +126,12 @@ if (WEB_BUILD)
 	target_link_libraries(${PROJECT_NAME} optimized "${TOOLKIT_DIR}/Bin/ToolKitStatic.a")
 	target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/libminizip.a")
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS} -s USE_SDL=2")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS} -sUSE_SDL=2")
 
 	if (EXISTS "../MinResources.pak")
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../MinResources.pak@/../MinResources.pak --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -sUSE_SDL=2")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../MinResources.pak@/../MinResources.pak --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -sUSE_ZLIB=1 -sUSE_SDL=2 -sSTACK_SIZE=131072")
 	else()
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../Resources@/../Resources --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -s USE_SDL=2")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -o ${PROJECT_NAME}.html --shell-file ../Codes/Bin/shell_minimal.html --preload-file ../Resources@/../Resources --preload-file ../Config@/../Config -sALLOW_MEMORY_GROWTH=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -s USE_ZLIB=1 -sUSE_SDL=2 -sSTACK_SIZE=131072")
 	endif()
 else() # Windows & Editor builds.
 

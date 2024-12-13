@@ -8,8 +8,8 @@
 #include "Anchor.h"
 
 #include "App.h"
-#include "EditorViewport.h"
 #include "EditorTypes.h"
+#include "EditorViewport.h"
 
 #include <Canvas.h>
 #include <Material.h>
@@ -22,7 +22,6 @@ namespace ToolKit
 {
   namespace Editor
   {
-    // Anchor::Anchor() {}
 
     Anchor::Anchor() : EditorBillboardBase({false, 0.0f, 0.0f})
     {
@@ -102,9 +101,9 @@ namespace ToolKit
       float w = 0, h = 0;
       {
         const BoundingBox& bb = canvasPanel->GetBoundingBox(true);
-        w                    = bb.GetWidth();
-        h                    = bb.GetHeight();
-        pos                  = Vec3(bb.min.x, bb.max.y, pos.z);
+        w                     = bb.GetWidth();
+        h                     = bb.GetHeight();
+        pos                   = Vec3(bb.min.x, bb.max.y, pos.z);
       }
 
       Surface* surface    = static_cast<Surface*>(m_entity.get());
@@ -290,7 +289,12 @@ namespace ToolKit
         }
       }
 
-      MeshPtr mesh = MakeNewPtr<Mesh>();
+      MeshPtr mesh               = MakeNewPtr<Mesh>();
+      // Dummy inverted triangle to by pass empty mesh.
+      mesh->m_clientSideVertices = {
+          Vertex {Vec3(glm::epsilon<float>(), 0.0f, 0.0f), Vec3(0.0f), Vec3(0.0f, glm::epsilon<float>(), 0.0f)}
+      };
+
       for (int i = 0; i < m_handles.size(); i++)
       {
         if (m_handles[i]->m_mesh)
@@ -332,12 +336,7 @@ namespace ToolKit
       m_params = params;
 
       MeshPtr meshPtr;
-      if (params.type == AnchorHandle::SolidType::Quad)
-      {
-        QuadPtr quad = MakeNewPtr<Quad>();
-        meshPtr      = quad->GetMeshComponent()->GetMeshVal();
-      }
-      else if (params.type == AnchorHandle::SolidType::Circle)
+      if (params.type == AnchorHandle::SolidType::Circle)
       {
         SpherePtr sphere = MakeNewPtr<Sphere>();
         sphere->SetRadiusVal(0.35f);
@@ -345,11 +344,12 @@ namespace ToolKit
       }
       else
       {
-        assert(false); // A new primitive type?
+        assert(params.type == AnchorHandle::SolidType::Quad); // A new primitive type?
+        QuadPtr quad = MakeNewPtr<Quad>();
+        meshPtr      = quad->GetMeshComponent()->GetMeshVal();
       }
 
       Mat4 mat(1.0f);
-
       mat = glm::translate(mat, params.worldLoc);
       mat = glm::rotate(mat, params.angle, Vec3(0.f, 0.f, 1.f));
       mat = glm::translate(mat, params.translate);
@@ -357,7 +357,7 @@ namespace ToolKit
       meshPtr->ApplyTransform(mat);
 
       m_mesh = MakeNewPtr<Mesh>();
-      m_mesh->m_subMeshes.push_back(meshPtr);
+      m_mesh.swap(meshPtr);
       m_mesh->Init(false);
 
       MaterialPtr matPtr = GetMaterialManager()->GetCopyOfUnlitColorMaterial();
@@ -365,7 +365,7 @@ namespace ToolKit
       matPtr->m_color                         = params.color;
       matPtr->GetRenderState()->blendFunction = BlendFunction::ONE_TO_ONE;
       matPtr->Init();
-      meshPtr->m_material = matPtr;
+      m_mesh->m_material = matPtr;
     }
 
     bool AnchorHandle::HitTest(const Ray& ray, float& t) const

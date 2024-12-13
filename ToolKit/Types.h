@@ -121,6 +121,7 @@ namespace ToolKit
   typedef std::vector<bool> BoolArray;
   typedef std::vector<struct VariantCategory> VariantCategoryArray;
   typedef std::vector<struct RenderJob> RenderJobArray;
+  typedef void* SoundBuffer; //!< Internal sound buffer object used for decoding / loading audio.
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
@@ -154,6 +155,7 @@ namespace ToolKit
   typedef std::vector<AnimRecordPtr> AnimRecordPtrArray;
 
   // Entity types.
+  typedef std::shared_ptr<class AudioSource> AudioSourcePtr;
   typedef std::shared_ptr<class Entity> EntityPtr;
   typedef std::weak_ptr<class Entity> EntityWeakPtr;
   typedef std::vector<EntityPtr> EntityPtrArray;
@@ -161,6 +163,8 @@ namespace ToolKit
   typedef std::vector<class Light*> LightRawPtrArray;
   typedef std::shared_ptr<class Light> LightPtr;
   typedef std::vector<LightPtr> LightPtrArray;
+  typedef std::weak_ptr<Light> LightWeakPtr;
+  typedef std::vector<LightWeakPtr> LightWeakPtrArray;
   typedef std::vector<class DirectionalLight*> DirectionalLightRawPtrArray;
   typedef std::vector<class SpotLight*> SpotLightRawPtrArray;
   typedef std::vector<class PointLight*> PointLightRawPtrArray;
@@ -235,6 +239,8 @@ namespace ToolKit
   static const String BMP(".bmp");
   static const String PSD(".psd");
   static const String HDR(".hdr");
+  static const String WAW(".waw");
+  static const String MP3(".mp3");
 
   // Local formats.
   static const String SCENE(".scene");

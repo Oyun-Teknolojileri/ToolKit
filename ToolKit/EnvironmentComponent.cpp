@@ -147,8 +147,6 @@ namespace ToolKit
   XmlNode* EnvironmentComponent::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* compNode = Super::DeSerializeImp(info, parent);
-    ParameterEventConstructor();
-
     return compNode->first_node(StaticClass()->Name.c_str());
   }
 

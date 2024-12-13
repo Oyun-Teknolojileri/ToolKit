@@ -391,7 +391,7 @@ namespace ToolKit
       AnimRecord::State state = record->m_state;
       if (state == AnimRecord::State::Play)
       {
-        record->m_currentTime += (deltaTimeSec * record->m_timeMultiplier);
+        record->m_currentTime += (deltaTimeSec * record->m_timeMultiplier * m_timeMultiplier);
         float duration         = record->m_animation->m_duration;
         if (record->m_loop)
         {
@@ -411,7 +411,9 @@ namespace ToolKit
 
         if (record->m_blendingData.recordToBeBlended != nullptr)
         {
-          record->m_blendingData.blendCurrentDurationInSec -= deltaTimeSec * record->m_timeMultiplier;
+          record->m_blendingData.blendCurrentDurationInSec -=
+              deltaTimeSec * record->m_timeMultiplier * m_timeMultiplier;
+
           if (record->m_blendingData.blendCurrentDurationInSec < 0.0)
           {
             return true;

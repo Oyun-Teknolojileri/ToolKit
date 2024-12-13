@@ -152,10 +152,6 @@ namespace ToolKit
 
     InitGLErrorReport(callback);
     TestSRGBBackBuffer();
-
-    // Default states.
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
   }
 
   void RenderSystem::ExecuteTaskImp(RenderTask& task)
@@ -206,22 +202,9 @@ namespace ToolKit
   {
     RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
 
-    GLint encoding = 0;
-    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_BACK, GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &encoding);
-
-    if (encoding == GL_LINEAR)
-    {
-      m_backbufferFormatIsSRGB = false;
-    }
-    else if (encoding == GL_SRGB || encoding == GL_SRGB8 || encoding == GL_SRGB8_ALPHA8)
-    {
-      m_backbufferFormatIsSRGB = true;
-    }
-    else
-    {
-      TK_ERR("Backbuffer color space can't be deceted. Assuming linear.");
-      m_backbufferFormatIsSRGB = false;
-    }
+    // Srgb back buffer is not set. Assuming lineer back buffer.
+    // To set and get the back buffer's format, use platform functions.
+    m_backbufferFormatIsSRGB = false;
   }
 
   bool RenderSystem::ConsumeGPULightCacheInvalidation()

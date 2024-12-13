@@ -41,6 +41,11 @@ namespace ToolKit
           MaterialPtr& mat = matList[i];
           String path, fileName, ext;
           DecomposePath(mat->GetFile(), &path, &fileName, &ext);
+          if (fileName.empty())
+          {
+            fileName = mat->m_name;
+          }
+
           String uniqueName = fileName + "##" + std::to_string(i);
           ImGui::PushID(i);
           // push red color for X

@@ -36,7 +36,8 @@ namespace ToolKit
 
       static std::unordered_map<String, GetterFunction> extToResource {
           {ANIM,     GetAnimationManager},
-          {AUDIO,    GetAudioManager    },
+          {WAW,      GetAudioManager    },
+          {MP3,      GetAudioManager    },
           {MATERIAL, GetMaterialManager },
           {MESH,     GetMeshManager     },
           {SKINMESH, GetMeshManager     },

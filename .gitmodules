@@ -15,3 +15,6 @@
 [submodule "Dependency/poolSTL"]
 	path = Dependency/poolSTL
 	url = https://github.com/alugowski/poolSTL.git
+[submodule "Dependency/miniaudio"]
+	path = Dependency/miniaudio
+	url = https://github.com/mackron/miniaudio.git

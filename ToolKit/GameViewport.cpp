@@ -19,12 +19,22 @@ namespace ToolKit
   {
     for (Event* e : Main::GetInstance()->m_eventPool)
     {
+      int coord[2] = {0};
       if (e->m_type == Event::EventType::Mouse)
       {
-        MouseEvent* me                 = static_cast<MouseEvent*>(e);
-        m_lastMousePosRelContentArea.x = me->absolute[0];
-        m_lastMousePosRelContentArea.y = me->absolute[1];
+        MouseEvent* me = static_cast<MouseEvent*>(e);
+        coord[0]       = me->absolute[0];
+        coord[1]       = me->absolute[1];
       }
+      else if (e->m_type == Event::EventType::Touch)
+      {
+        TouchEvent* te = static_cast<TouchEvent*>(e);
+        coord[0]       = glm::iround(te->absolute[0] * m_wndContentAreaSize.x);
+        coord[1]       = glm::iround(te->absolute[1] * m_wndContentAreaSize.y);
+      }
+
+      m_lastMousePosRelContentArea.x = coord[0];
+      m_lastMousePosRelContentArea.y = coord[1];
     }
   }
 } // namespace ToolKit

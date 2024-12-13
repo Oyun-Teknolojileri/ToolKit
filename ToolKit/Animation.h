@@ -274,6 +274,10 @@ namespace ToolKit
      */
     DataTexturePtr CreateAnimationDataTexture(SkeletonPtr skeleton, AnimationPtr anim);
 
+   public:
+    /** Global time multiplier for all track in the player. */
+    float m_timeMultiplier = 1.0f;
+
    private:
     // Storage for the AnimRecord objects.
     AnimRecordPtrArray m_records;

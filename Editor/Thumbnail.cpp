@@ -145,7 +145,7 @@ namespace ToolKit
         float h      = (texture->m_height / maxDim) * m_maxThumbSize;
 
         m_surface->InvalidateSpatialCaches();
-        m_surface->Update(Vec2(w, h));
+        m_surface->Update(Vec2(w, h), Vec2(-0.5f));
         m_surface->UpdateGeometry(false);
 
         MaterialPtr unlitMaterial       = GetMaterialManager()->GetCopyOfUIMaterial();
