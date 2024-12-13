@@ -42,7 +42,13 @@ namespace ToolKit
       static void EndShowVariants();
 
       static void ShowVariant(ParameterVariant* var, ComponentPtr comp);
-      static ValueUpdateFn MultiUpdate(ParameterVariant* var);
+
+      /**
+       * If multiple entities are selected, the variant with the name will be updated in all of the selection.
+       * If a component class is provided, all selected entities' given component will be the target to update variant
+       * for.
+       */
+      static ValueUpdateFn MultiUpdate(ParameterVariant* var, ClassMeta* componentClass = nullptr);
     };
 
   } // namespace Editor

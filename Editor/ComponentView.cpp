@@ -341,7 +341,10 @@ namespace ToolKit
               {
                 var->m_editable = false;
               }
+              ValueUpdateFn multiUpdate = CustomDataView::MultiUpdate(var, comp->Class());
+              var->m_onValueChangedFn.push_back(multiUpdate);
               CustomDataView::ShowVariant(var, comp);
+              var->m_onValueChangedFn.pop_back();
               if (!modifiableComp)
               {
                 var->m_editable = true;

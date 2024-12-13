@@ -65,7 +65,7 @@ namespace ToolKit
           var->m_editable);
     }
 
-    ValueUpdateFn CustomDataView::MultiUpdate(ParameterVariant* var)
+    ValueUpdateFn CustomDataView::MultiUpdate(ParameterVariant* var, ClassMeta* componentClass)
     {
       EntityPtrArray entities;
       g_app->GetCurrentScene()->GetSelectedEntities(entities);
@@ -73,7 +73,7 @@ namespace ToolKit
       // Remove current selected because its already updated.
       entities.pop_back();
 
-      ValueUpdateFn multiUpdate = [var, entities](Value& oldVal, Value& newVal) -> void
+      ValueUpdateFn multiUpdate = [var, entities, componentClass](Value& oldVal, Value& newVal) -> void
       {
         for (EntityPtr ntt : entities)
         {
@@ -84,8 +84,23 @@ namespace ToolKit
             continue;
           }
 
+          ParameterBlock* paramBlock = nullptr;
+          if (componentClass)
+          {
+            // Perform on the component.
+            if (ComponentPtr com = ntt->GetComponent(componentClass))
+            {
+              paramBlock = &com->m_localData;
+            }
+          }
+          else
+          {
+            paramBlock = &ntt->m_localData;
+          }
+
+          // Perform on the entity.
           ParameterVariant* vLookUp = nullptr;
-          if (ntt->m_localData.LookUp(var->m_category.Name, var->m_name, &vLookUp))
+          if (paramBlock->LookUp(var->m_category.Name, var->m_name, &vLookUp))
           {
             vLookUp->SetValue(newVal);
           }
