@@ -1193,7 +1193,6 @@ namespace ToolKit
     // Make sure the cache has the lights that is going to rendered
     for (uint i = 0; i < job.lights.size(); ++i)
     {
-      bool foundInCache        = false;
       Light* light             = job.lights[i];
       light->m_drawCallVersion = m_drawCallVersion;
 
@@ -1221,8 +1220,12 @@ namespace ToolKit
     {
       // Update the cache.
       program->m_lightCacheVersion = m_lightCache.GetVersion();
-      m_lightDataBuffer.Update(m_lightCache.GetLights(), RHIConstants::LightCacheSize, job.lights);
+      m_lightDataBuffer.UpdateLightCache(m_lightCache.GetLights(), RHIConstants::LightCacheSize);
+      m_lightDataBuffer.UpdateActiveLights(job.lights, true);
     }
+
+    // Checks the current active light indexes, perform the update only if necessary.
+    m_lightDataBuffer.UpdateActiveLights(job.lights);
 
     // Bind shadow map if activated
     if (m_shadowAtlas != nullptr)

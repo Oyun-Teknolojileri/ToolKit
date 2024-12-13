@@ -14,9 +14,9 @@ namespace ToolKit
 
     ~LightCache() { Reset(); }
 
-    inline void SetDrawCallVersion(uint16 version) { m_drawCallVersion = version; }
+    void SetDrawCallVersion(uint16 version) { m_drawCallVersion = version; }
 
-    inline int Add(Light* light)
+    int Add(Light* light)
     {
       int index = m_nextIndex;
 

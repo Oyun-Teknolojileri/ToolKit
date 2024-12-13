@@ -43,13 +43,7 @@ namespace ToolKit
     }
   }
 
-  void LightDataBuffer::Update(LightPtr* cachedLights, int size, const LightRawPtrArray& lightsToRender)
-  {
-    UpdateLightIndexes(lightsToRender);
-    UpdateLightData(cachedLights, size);
-  }
-
-  void LightDataBuffer::UpdateLightData(LightPtr* cachedLights, int size)
+  void LightDataBuffer::UpdateLightCache(LightPtr* cachedLights, int size)
   {
     const EngineSettings::GraphicSettings& graphicSettings = GetEngineSettings().Graphics;
     m_lightData.cascadeDistances.x                         = graphicSettings.cascadeDistances[0];
@@ -154,17 +148,34 @@ namespace ToolKit
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData), &m_lightData);
   }
 
-  void LightDataBuffer::UpdateLightIndexes(const LightRawPtrArray& lightsToRender)
+  void LightDataBuffer::UpdateActiveLights(const LightRawPtrArray& lightsToRender, bool force)
   {
-    uint loopLimit = glm::min((uint) lightsToRender.size(), RHIConstants::LightCacheSize);
-    for (uint i = 0; i < loopLimit; i++)
+    bool updateRequired = force;
+    uint loopLimit      = glm::min((uint) lightsToRender.size(), RHIConstants::LightCacheSize);
+
+    if (!force)
     {
-      m_activeLightIndices.activeLightIndices[i] = lightsToRender[i]->m_lightCacheIndex;
+      for (uint i = 0; i < loopLimit; i++)
+      {
+        if (m_activeLightIndices.activeLightIndices[i] != lightsToRender[i]->m_lightCacheIndex)
+        {
+          updateRequired = true;
+          break;
+        }
+      }
     }
 
-    RHI::BindUniformBuffer(m_lightIndicesBufferId);
-    RHI::BindUniformBufferBase(m_lightIndicesBufferId, 1);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ActiveLightIndices), &m_activeLightIndices);
+    if (updateRequired)
+    {
+      for (uint i = 0; i < loopLimit; i++)
+      {
+        m_activeLightIndices.activeLightIndices[i] = lightsToRender[i]->m_lightCacheIndex;
+      }
+
+      RHI::BindUniformBuffer(m_lightIndicesBufferId);
+      RHI::BindUniformBufferBase(m_lightIndicesBufferId, 1);
+      glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ActiveLightIndices), &m_activeLightIndices);
+    }
   }
 
 } // namespace ToolKit

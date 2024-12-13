@@ -14,6 +14,18 @@ namespace ToolKit
 {
 
   /**
+   * NOTES FOR A GENERIC AND BETTER GPU CACHE
+   * The gpu cache can be generalized and every value that we write to gpu preferably should use
+   * Uniform Buffer Objects as much as possible including but not limited to Animation data, Material Data, Light data
+   * etc ... This approach minimizes the calls to gl... functions which reduces the driver over head significantly. The
+   * best way to achieve caching is, creating a template class that stores the data in the required form. This cache
+   * must have a version, when its data invalidated it must be updated for the current gpu program. Gpu program must
+   * store versions for each cache that they maintain. Invalidated caches will have a different version and gpu programs
+   * will be forced to update their version. Generally, LightDataBuffer class fallows the explained approach but it can
+   * be generalized and make better in the fallowing updates.
+   */
+
+  /**
    * A gpu memory aligned buffer representing a single light.
    *
    * The buffer in the gpu is using layout std140.
@@ -72,19 +84,25 @@ namespace ToolKit
     void Init();
     void Destroy();
 
-    void Update(LightPtr* cachedLights, int size, const LightRawPtrArray& lightsToRender);
+    /** Updates the light data in the gpu. */
+    void UpdateLightCache(LightPtr* cachedLights, int size);
 
-   private:
-    void UpdateLightData(LightPtr* cachedLights, int size);
-    void UpdateLightIndexes(const LightRawPtrArray& lightsToRender);
+    /**
+     * Update active light indexes in the gpu.
+     * Checks the active light indexes with lightsToRender, update the gpu data if a it doesn't match perfectly.
+     * if force set to true, it always update active lights.
+     * Cache must be up to date, otherwise indexes points to invalidated lights.
+     */
+    void UpdateActiveLights(const LightRawPtrArray& lightsToRender, bool force = false);
 
    public:
     uint m_lightDataBufferId    = 0;
     uint m_lightIndicesBufferId = 0;
+
+   private:
     LightData m_lightData;
     ActiveLightIndices m_activeLightIndices;
 
-   private:
     bool m_initialized = false;
   };
 
