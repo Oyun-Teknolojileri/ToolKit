@@ -228,6 +228,7 @@ namespace ToolKit
     const Mesh* mesh = job.Mesh;
     activateSkinning(mesh);
 
+    FeedAnimationUniforms(m_currentProgram, job);
     FeedLightUniforms(m_currentProgram, job);
     FeedUniforms(m_currentProgram, job);
 
@@ -1126,71 +1127,6 @@ namespace ToolKit
         bool aoEnabled = m_aoTexture != nullptr;
         glUniform1i(uniformLoc, aoEnabled);
       }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.firstKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_2);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.secondKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_INT_TIME);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.keyFrameInterpolationTime);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_COUNT);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.keyFrameCount);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IS_ANIMATED);
-      if (uniformLoc != -1)
-      {
-        glUniform1ui(uniformLoc, job.animData.currentAnimation != nullptr);
-      }
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_ANIMATION);
-      if (uniformLoc != -1)
-      {
-        glUniform1i(uniformLoc, job.animData.blendAnimation != nullptr);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_FACTOR);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.animationBlendFactor);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_1);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendFirstKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_2);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendSecondKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_INT_TIME);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendKeyFrameInterpolationTime);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_COUNT);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendKeyFrameCount);
-      }
     }
 
     for (auto& uniform : program->m_customUniforms)
@@ -1300,6 +1236,90 @@ namespace ToolKit
     if (m_shadowAtlas != nullptr)
     {
       SetTexture(8, m_shadowAtlas->m_textureId);
+    }
+  }
+
+  void Renderer::FeedAnimationUniforms(const GpuProgramPtr& program, const RenderJob& job)
+  {
+    // Send if its animated or not.
+    int uniformLoc = program->GetDefaultUniformLocation(Uniform::IS_ANIMATED);
+    if (uniformLoc != -1)
+    {
+      glUniform1ui(uniformLoc, job.animData.currentAnimation != nullptr);
+    }
+
+    if (job.animData.currentAnimation == nullptr)
+    {
+      // If not animated, just skip the rest.
+      return;
+    }
+
+    // Send key frames.
+    uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_COUNT);
+    if (uniformLoc != -1)
+    {
+      glUniform1f(uniformLoc, job.animData.keyFrameCount);
+    }
+
+    if (job.animData.keyFrameCount > 0)
+    {
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.firstKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_2);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.secondKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_INT_TIME);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.keyFrameInterpolationTime);
+      }
+    }
+
+    // Send blend data.
+    uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_ANIMATION);
+    if (uniformLoc != -1)
+    {
+      glUniform1i(uniformLoc, job.animData.blendAnimation != nullptr);
+    }
+
+    if (job.animData.blendAnimation != nullptr)
+    {
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_FACTOR);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.animationBlendFactor);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_1);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendFirstKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_2);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendSecondKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_INT_TIME);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendKeyFrameInterpolationTime);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_COUNT);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendKeyFrameCount);
+      }
     }
   }
 
