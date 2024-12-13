@@ -136,6 +136,8 @@ namespace ToolKit
       }
     }
 
+    TK_LOG("Mouse: x:%d y:%d", vp->m_lastMousePosRelContentArea.x, vp->m_lastMousePosRelContentArea.y);
+
     const EntityPtrArray& entities = layer->m_scene->GetEntities();
     for (EntityPtr ntt : entities)
     {
@@ -146,8 +148,16 @@ namespace ToolKit
         {
           continue;
         }
-        Surface* surface        = ntt->As<Surface>();
-        bool mouseOverPrev      = surface->m_mouseOver;
+
+        Surface* surface   = ntt->As<Surface>();
+        bool mouseOverPrev = surface->m_mouseOver;
+
+        BoundingBox box    = surface->GetBoundingBox(true);
+
+        TK_LOG("Item: %s min: %s max: %s",
+               surface->GetNameVal().c_str(),
+               glm::to_string(box.min).c_str(),
+               glm::to_string(box.max).c_str());
 
         surface->m_mouseOver    = CheckMouseOver(surface, e, vp.get());
         surface->m_mouseClicked = CheckMouseClick(surface, e, vp.get());
