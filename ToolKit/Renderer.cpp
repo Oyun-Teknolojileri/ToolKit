@@ -1187,7 +1187,7 @@ namespace ToolKit
 
     if (GetRenderSystem()->ConsumeGPULightCacheInvalidation())
     {
-      m_lightCache.UpdateVersion();
+      m_lightCache.UpdateVersion(); // This will cause an update of the cache.
     }
 
     // Make sure the cache has the lights that is going to rendered
@@ -1196,19 +1196,21 @@ namespace ToolKit
       bool foundInCache        = false;
       Light* light             = job.lights[i];
       light->m_drawCallVersion = m_drawCallVersion;
+
       int indexInCache         = m_lightCache.Contains(light);
       if (indexInCache != -1)
       {
-        if (light->m_invalidatedForLightCache)
+        // If light is invalidated or cache index has changed, invalidate the light cache.
+        if (light->m_invalidatedForLightCache || light->m_lightCacheIndex != indexInCache)
         {
-          m_lightCache.UpdateVersion();
+          light->m_lightCacheIndex          = indexInCache;
           light->m_invalidatedForLightCache = false;
+          m_lightCache.UpdateVersion(); // Light needs to be updated, invalidate the cache.
         }
-        light->m_lightCacheIndex = indexInCache;
       }
       else
       {
-        light->m_lightCacheIndex = m_lightCache.Add(light);
+        light->m_lightCacheIndex = m_lightCache.Add(light); // Add will cause a cache invalidation.
       }
     }
 
@@ -1217,20 +1219,10 @@ namespace ToolKit
     // When cache is invalidated, update the cache for this program
     if (program->m_lightCacheVersion != m_lightCache.GetVersion())
     {
+      // Update the cache.
       program->m_lightCacheVersion = m_lightCache.GetVersion();
       m_lightDataBuffer.Update(m_lightCache.GetLights(), RHIConstants::LightCacheSize, job.lights);
-
-      RHI::BindUniformBuffer(m_lightDataBuffer.m_lightDataBufferId);
-      RHI::BindUniformBufferBase(m_lightDataBuffer.m_lightDataBufferId, 0);
-      glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData), &m_lightDataBuffer.m_lightData);
     }
-
-    // Update light index array
-    m_lightDataBuffer.UpdateLightIndices(job.lights);
-
-    RHI::BindUniformBuffer(m_lightDataBuffer.m_lightIndicesBufferId);
-    RHI::BindUniformBufferBase(m_lightDataBuffer.m_lightIndicesBufferId, 1);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ActiveLightIndices), &m_lightDataBuffer.m_activeLightIndices);
 
     // Bind shadow map if activated
     if (m_shadowAtlas != nullptr)

@@ -73,8 +73,10 @@ namespace ToolKit
     void Destroy();
 
     void Update(LightPtr* cachedLights, int size, const LightRawPtrArray& lightsToRender);
+
+   private:
     void UpdateLightData(LightPtr* cachedLights, int size);
-    void UpdateLightIndices(const LightRawPtrArray& lightsToRender);
+    void UpdateLightIndexes(const LightRawPtrArray& lightsToRender);
 
    public:
     uint m_lightDataBufferId    = 0;
@@ -85,4 +87,5 @@ namespace ToolKit
    private:
     bool m_initialized = false;
   };
+
 } // namespace ToolKit

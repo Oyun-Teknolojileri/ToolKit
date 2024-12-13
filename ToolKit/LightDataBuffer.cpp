@@ -45,8 +45,8 @@ namespace ToolKit
 
   void LightDataBuffer::Update(LightPtr* cachedLights, int size, const LightRawPtrArray& lightsToRender)
   {
+    UpdateLightIndexes(lightsToRender);
     UpdateLightData(cachedLights, size);
-    UpdateLightIndices(lightsToRender);
   }
 
   void LightDataBuffer::UpdateLightData(LightPtr* cachedLights, int size)
@@ -148,15 +148,23 @@ namespace ToolKit
 
       m_lightData.perLightData[i].castShadow = (int) isShadowCaster;
     }
+
+    RHI::BindUniformBuffer(m_lightDataBufferId);
+    RHI::BindUniformBufferBase(m_lightDataBufferId, 0);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData), &m_lightData);
   }
 
-  void LightDataBuffer::UpdateLightIndices(const LightRawPtrArray& lightsToRender)
+  void LightDataBuffer::UpdateLightIndexes(const LightRawPtrArray& lightsToRender)
   {
     uint loopLimit = glm::min((uint) lightsToRender.size(), RHIConstants::LightCacheSize);
     for (uint i = 0; i < loopLimit; i++)
     {
       m_activeLightIndices.activeLightIndices[i] = lightsToRender[i]->m_lightCacheIndex;
     }
+
+    RHI::BindUniformBuffer(m_lightIndicesBufferId);
+    RHI::BindUniformBufferBase(m_lightIndicesBufferId, 1);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ActiveLightIndices), &m_activeLightIndices);
   }
 
 } // namespace ToolKit
