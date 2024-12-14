@@ -286,7 +286,10 @@ namespace ToolKit
 
   void Main::Frame(float deltaTime)
   {
-    // Update animations.
+    // Update external logic.
+    GetPluginManager()->Update(deltaTime);
+
+    // Update engine.
     GetAnimationPlayer()->Update(MillisecToSec(deltaTime));
     GetUIManager()->Update(deltaTime);
 
@@ -294,8 +297,6 @@ namespace ToolKit
     {
       scene->Update(deltaTime);
     }
-
-    GetPluginManager()->Update(deltaTime);
 
     GetRenderSystem()->DecrementSkipFrame();
     GetRenderSystem()->ExecuteRenderTasks();
