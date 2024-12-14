@@ -1129,7 +1129,7 @@ namespace ToolKit
 
     void App::OpenScene(const String& fullPath)
     {
-      GetRenderSystem()->FlushRenderTasks();
+      ClearSession();
 
       GetCurrentScene()->Destroy(false);
       GetSceneManager()->Remove(GetCurrentScene()->GetFile());
