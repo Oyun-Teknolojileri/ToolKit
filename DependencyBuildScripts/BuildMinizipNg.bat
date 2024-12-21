@@ -18,3 +18,11 @@ copy "ioapi.h" "../dist/include/ioapi.h"
 :: copy libraries to dist/library
 copy "Release\minizip.lib" "../dist/lib/minizip.lib"
 copy "_deps\zstd-build\lib\Release\zstd_static.lib" "../dist/lib/zstd_static.lib"
+
+:: build minizip with emscripten
+cd ../
+if not exist "webbuild" (
+	mkdir "webbuild"
+)
+cd webbuild
+emcmake cmake -DCMAKE_BUILD_TYPE=Release -S ".." -G Ninja -D MZ_COMPAT=ON -D ZSTD_BUILD_STATIC=ON -D ZSTD_BUILD_SHARED=OFF -D MZ_ZLIB=OFF  -D MZ_BZIP2=OFF -D MZ_LZMA=OFF -D MZ_FETCH_LIBS=ON -D MZ_FORCE_FETCH_LIBS=ON -D MZ_PKCRYPT=OFF -D MZ_WZAES=OFF -D MZ_ICONV=OFF && (ninja && copy "libminizip.a" "../dist/lib/libminizip.a" && copy "_deps\zstd-build\lib\libzstd.a" "../dist/lib/libzstd.a")
