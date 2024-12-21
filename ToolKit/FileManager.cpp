@@ -462,7 +462,9 @@ namespace ToolKit
     }
 
     // Compression level is -1 which is default, use 0 for no compression, 1 for best speed.
-    ret = zipOpenNewFileInZip64(zfile, filenameStr.c_str(), NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, -1, 0);
+    ret =
+        zipOpenNewFileInZip64(zfile, filenameStr.c_str(), NULL, NULL, 0, NULL, 0, NULL, MZ_COMPRESS_METHOD_ZSTD, -1, 0);
+
     if (ret != ZIP_OK)
     {
       fclose(f);
