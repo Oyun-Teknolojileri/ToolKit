@@ -9,8 +9,6 @@
 
 #include "Types.h"
 
-#include <zlib.h>
-
 #ifdef TK_ANDROID
   #include <Android/minizip/unzip.h>
   #include <Android/minizip/zip.h>
