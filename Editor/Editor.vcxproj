@@ -50,7 +50,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\tkimgui;$(SolutionDir)Dependency\tkimgui\imgui;$(SolutionDir)Dependency\poolSTL\include;$(SolutionDir)Dependency\NVTX-3.1.0\c\include\nvtx3;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\tkimgui;$(SolutionDir)Dependency\tkimgui\imgui;$(SolutionDir)Dependency\poolSTL\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\tkimgui\lib;$(SolutionDir)Bin;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -90,7 +90,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>zlibstatic.lib;minizip.lib;SDL2main.lib;SDL2.lib;OpenGL32.lib;ToolKit.lib;imgui.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;OpenGL32.lib;ToolKit.lib;imgui.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
