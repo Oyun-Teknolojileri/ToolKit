@@ -63,7 +63,7 @@ include_directories(
 	"${TOOLKIT_DIR}/Dependency/SDL2/include"
 	"${TOOLKIT_DIR}/Dependency/RapidXml"
 	"${TOOLKIT_DIR}/Dependency/stb"
-	"${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/include"
+	"${TOOLKIT_DIR}/Dependency/minizip-ng/dist/include"
 	"${CMAKE_SOURCE_DIR}"
 	"${CMAKE_SOURCE_DIR}/../Windows"
 	"${CMAKE_SOURCE_DIR}/../Web"
@@ -124,7 +124,8 @@ if (WEB_BUILD)
 	add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
 	target_link_libraries(${PROJECT_NAME} debug "${TOOLKIT_DIR}/Bin/ToolKitStatic_d.a")
 	target_link_libraries(${PROJECT_NAME} optimized "${TOOLKIT_DIR}/Bin/ToolKitStatic.a")
-	target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/libminizip.a")
+	target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/minizip-ng/dist/lib/libminizip.a")
+	target_link_libraries(${PROJECT_NAME} "${TOOLKIT_DIR}/Dependency/minizip-ng/dist/lib/libzstd.a")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS} -sUSE_SDL=2")
 
@@ -136,7 +137,7 @@ if (WEB_BUILD)
 else() # Windows & Editor builds.
 
 	link_directories("${TOOLKIT_DIR}/Bin")
-	link_directories("${TOOLKIT_DIR}/Dependency/zlib-1.2.12/dist/lib")
+	link_directories("${TOOLKIT_DIR}/Dependency/minizip-ng/dist/lib")
 	link_directories("${TOOLKIT_DIR}/Dependency/SDL2/lib")
 	
 	if (${EDITOR_BUILD})
@@ -160,7 +161,7 @@ else() # Windows & Editor builds.
 
 	target_link_libraries(${PROJECT_NAME} PRIVATE debug ${TKDebugLibName})
 	target_link_libraries(${PROJECT_NAME} PRIVATE optimized ${TKLibName})
-	target_link_libraries(${PROJECT_NAME} PRIVATE zlibstatic minizip)
+	target_link_libraries(${PROJECT_NAME} PRIVATE zstd_static minizip)
 	target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 SDL2main)
 endif()
 

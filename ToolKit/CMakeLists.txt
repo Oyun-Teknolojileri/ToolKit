@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 if (CLANG_COMPILER)
 	add_definitions(-include stdafx.h)
 
-	SET(TK_CXX_FLAGS " -std=c++17")
+	SET(TK_CXX_FLAGS " -std=c++17 -w")
 	if (NOT TK_CXX_EXTRA STREQUAL "")
 		SET(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 	endif()
@@ -24,13 +24,14 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}/Dependency/mini_audio"
 	"${CMAKE_SOURCE_DIR}/Dependency/RapidXml"
 	"${CMAKE_SOURCE_DIR}/Dependency/stb"
-	"${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/include"
+	"${CMAKE_SOURCE_DIR}/Dependency/minizip-ng"
+	"${CMAKE_SOURCE_DIR}/Dependency/minizip-ng/dist/include"
 	"${CMAKE_SOURCE_DIR}/Dependency/poolSTL/include"
 )
 
 file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/ToolKit/*.cpp")
 
-link_directories("${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/lib")
+link_directories("${CMAKE_SOURCE_DIR}/Dependency/minizip-ng/dist/lib")
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS}")
@@ -44,7 +45,7 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 
 if (NOT WEB_BUILD)
-	set(TK_LINK_LIB zlibstatic minizip OpenGL32)
+	set(TK_LINK_LIB zstd_static minizip OpenGL32)
 endif()
 
 add_library(ToolKitStatic STATIC ${SOURCES})
