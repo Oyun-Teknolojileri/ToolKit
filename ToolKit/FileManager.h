@@ -9,11 +9,6 @@
 
 #include "Types.h"
 
-#ifdef TK_ANDROID
-  #include <Android/minizip/unzip.h>
-  #include <Android/minizip/zip.h>
-#endif
-
 namespace ToolKit
 {
 

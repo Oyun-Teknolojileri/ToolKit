@@ -22,12 +22,22 @@ endif()
 
 # SDL sources are in a subfolder named "SDL"
 set(SDL_DIRECTORY_PATH ${TOOLKIT_DIR}/Dependency/SDL2)
-add_subdirectory(${SDL_DIRECTORY_PATH} ${SDL_DIRECTORY_PATH}/../build)
+add_subdirectory(${SDL_DIRECTORY_PATH} ${SDL_DIRECTORY_PATH}/TkAndriodBuild)
 
-# Compilation of companion libraries
-#add_subdirectory(SDL_image)
-#add_subdirectory(SDL_mixer)
-#add_subdirectory(SDL_ttf)
+# Set the options for minizip
+set(MZ_COMPAT ON)
+set(ZSTD_BUILD_STATIC ON)
+set(ZSTD_BUILD_SHARED OFF)
+set(MZ_ZLIB OFF)
+set(MZ_BZIP2 OFF)
+set(MZ_LZMA OFF)
+set(MZ_FETCH_LIBS ON)
+set(MZ_FORCE_FETCH_LIBS ON)
+set(MZ_PKCRYPT OFF)
+set(MZ_WZAES OFF)
+set(MZ_ICONV OFF)
+set(MINIZIP_DIRECTORY_PATH ${TOOLKIT_DIR}/Dependency/minizip-ng)
+add_subdirectory(${MINIZIP_DIRECTORY_PATH} ${MINIZIP_DIRECTORY_PATH}/TkAndriodBuild)
 
 # Your game and its CMakeLists.txt are in a subfolder named "src"
 add_subdirectory(src)
