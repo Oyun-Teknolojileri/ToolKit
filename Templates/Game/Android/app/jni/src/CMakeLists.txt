@@ -6,13 +6,9 @@ cmake_minimum_required(VERSION 3.6)
 project("ToolKit")
 
 # Use file(GLOB ...) to collect all .cpp files in the ToolKit directory.
-file(GLOB TOOLKIT_SOURCES ${TOOLKIT_DIR}/ToolKit/*.cpp)
-file(GLOB GAME_SOURCES ${CMAKE_SOURCE_DIR}/../../../Codes/*.cpp)
+file(GLOB GAME_MAIN_SOURCES ${CMAKE_SOURCE_DIR}/../../../Codes/*.cpp)
 
-# Define TK_GL_ES_3_0 globally
-add_definitions(-DTK_GL_ES_3_0)
-# Define TK_DLL_EXPORT globally
-add_definitions(-DTK_DLL_EXPORT)
+set(GAME_SOURCES ${GAME_MAIN_SOURCES})
 
 include_directories(
         ${TOOLKIT_DIR}/ToolKit
@@ -27,16 +23,13 @@ include_directories(
 
 find_library(SDL2 SDL2)
 find_library(SDL2main SDL2main)
-find_library(minizip libzstd_static)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-parentheses -Wno-switch")
 
 # Creates your game shared library. The name must be the same as the
 # one used for loading in your Kotlin/Java or AndroidManifest.txt files.
-add_library(main SHARED
-        ${GAME_SOURCES}
-        ${TOOLKIT_SOURCES}) # Include the list of Toolkit sources here
+add_library(main SHARED ${GAME_SOURCES}) # Include the list of Toolkit sources here
 
 # if(ANDROID_ABI STREQUAL armeabi-v7a)
 #   set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS -mfpu=neon)
@@ -44,11 +37,9 @@ add_library(main SHARED
 
 # Configure libraries CMake uses to link your target library.
 target_link_libraries(main
-        GLESv3
+        ToolKitStatic
         jnigraphics
         android
         log
         SDL2main
-        SDL2
-        minizip
-        libzstd_static)
+        SDL2)

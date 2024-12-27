@@ -20,9 +20,11 @@ if(NOT EXISTS ${TOOLKIT_DIR}/ToolKit/ToolKit.h)
 	message(SEND_ERROR "Please use Forward slashes instead of backslashes. Can't find ToolKit.h in ${TOOLKIT_DIR}")
 endif()
 
+set(ANDROID_BUILD TRUE)
+
 # SDL sources are in a subfolder named "SDL"
 set(SDL_DIRECTORY_PATH ${TOOLKIT_DIR}/Dependency/SDL2)
-add_subdirectory(${SDL_DIRECTORY_PATH} ${SDL_DIRECTORY_PATH}/TkAndriodBuild)
+add_subdirectory(${SDL_DIRECTORY_PATH} ${SDL_DIRECTORY_PATH}/TkAndroidBuild)
 
 # Set the options for minizip
 set(MZ_COMPAT ON)
@@ -37,7 +39,10 @@ set(MZ_PKCRYPT OFF)
 set(MZ_WZAES OFF)
 set(MZ_ICONV OFF)
 set(MINIZIP_DIRECTORY_PATH ${TOOLKIT_DIR}/Dependency/minizip-ng)
-add_subdirectory(${MINIZIP_DIRECTORY_PATH} ${MINIZIP_DIRECTORY_PATH}/TkAndriodBuild)
+add_subdirectory(${MINIZIP_DIRECTORY_PATH} ${MINIZIP_DIRECTORY_PATH}/TkAndroidBuild)
+
+# ToolKit Engine
+add_subdirectory(${TOOLKIT_DIR} ${TOOLKIT_DIR}/TkAndroidBuild)
 
 # Your game and its CMakeLists.txt are in a subfolder named "src"
 add_subdirectory(src)
