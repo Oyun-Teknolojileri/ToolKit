@@ -31,10 +31,6 @@ include_directories(
 
 file(GLOB SOURCES "${TOOLKIT_DIR}/ToolKit/*.cpp")
 
-link_directories("${TOOLKIT_DIR}/Dependency/minizip-ng/dist/lib")
-
-find_library(minizip libzstd_static ToolKitStatic)
-
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS}")
 set(CMAKE_DEBUG_POSTFIX _d)
@@ -46,17 +42,7 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DTK_DEBUG)
 endif ()
 
-if (NOT WEB_BUILD)
-	set(TK_LINK_LIB libzstd_static minizip)
-	if (NOT ANDROID_BUILD)
-		set(TK_LINK_LIB ${TK_LINK_LIB} OpenGL32)
-	else()
-		set(TK_LINK_LIB ${TK_LINK_LIB} GLESv3)
-	endif()
-endif()
-
 add_library(ToolKitStatic STATIC ${SOURCES})
-target_link_libraries(ToolKitStatic PRIVATE ${TK_LINK_LIB})
 
 set_target_properties(ToolKitStatic PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${TOOLKIT_DIR}/Bin$<0:>
