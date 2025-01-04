@@ -16,7 +16,7 @@ public class ToolKitActivity extends SDLActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super::onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
         loadAssetManagerToCpp(getResources().getAssets());
     }
 }

@@ -91,7 +91,7 @@ namespace ToolKit
 
 extern "C"
 {
-  JNIEXPORT void JNICALL Java_com_otyazilim_toolkit_ToolKitAndroid_load(JNIEnv* env, jclass clazz, jobject mgr)
+  JNIEXPORT void JNICALL Java_com_otyazilim_toolkit_ToolKitActivity_load(JNIEnv* env, jclass clazz, jobject mgr)
   {
     ToolKit::assetManager = AAssetManager_fromJava(env, mgr);
     if (ToolKit::assetManager == nullptr)
