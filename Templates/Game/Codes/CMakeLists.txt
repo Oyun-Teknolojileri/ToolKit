@@ -48,8 +48,6 @@ if(NOT EXISTS ${TOOLKIT_DIR}/ToolKit/ToolKit.h)
 	message(SEND_ERROR "Can't find ToolKit.h in ${TOOLKIT_DIR}")
 endif()
 
-set(CMAKE_DEBUG_POSTFIX _d)
-
 include_directories(
 	"${TOOLKIT_DIR}"
 	"${TOOLKIT_DIR}/ToolKit"
@@ -142,13 +140,17 @@ else() # Windows & Editor builds.
 	find_library(ToolKitStatic ToolKitStatic)
 
 	if (${EDITOR_BUILD})
+		set(CMAKE_DEBUG_POSTFIX _d) # Only editor needs to know the postfix for loading correct version of the plugin.
+		set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin$<0:>")
 		add_library(${GAME_PROJECT_NAME} SHARED ${SOURCE} ${HEADERS})
+
 		target_link_libraries(${GAME_PROJECT_NAME} PRIVATE debug Editor_d)
 		target_link_libraries(${GAME_PROJECT_NAME} PRIVATE optimized Editor)
 		target_link_libraries(${GAME_PROJECT_NAME} PRIVATE debug ToolKit_d)
 		target_link_libraries(${GAME_PROJECT_NAME} PRIVATE optimized ToolKit)
 		target_compile_definitions(${GAME_PROJECT_NAME} PRIVATE TK_WITH_EDITOR TK_DLL_IMPORT)
 	elseif(DEFINED WIN_BUILD)
+		set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Bin$<0:>")
 		add_executable(${GAME_PROJECT_NAME} WIN32 ${SOURCE})
 
 		find_library(OpenGL32 OpenGL32)
@@ -172,8 +174,6 @@ else() # Windows & Editor builds.
 endif()
 
 target_precompile_headers(${GAME_PROJECT_NAME} PRIVATE ${PCH})
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>)
 
 #For hot reload rename the previous output
 if (${EDITOR_BUILD})

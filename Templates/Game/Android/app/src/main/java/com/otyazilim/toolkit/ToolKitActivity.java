@@ -7,8 +7,7 @@ import org.libsdl.app.SDLActivity;
 
 public class ToolKitActivity extends SDLActivity
 {
-    // this function is implemented in cpp
-    private static native void load(AssetManager mgr);
+    private static native void load(AssetManager mgr); // Implemented in android_main.h
 
     public void loadAssetManagerToCpp(AssetManager mgr) {
         load(mgr);
