@@ -415,12 +415,22 @@ namespace ToolKit
     String applicationName = m_appName;
     String mainPath        = NormalizePath("Android/app/src/main");
 
+    // Update java and cpp Codes for project.
+    String tkActivityPath  = ConcatPaths({mainPath, "java", "com", "otyazilim", "toolkit"});
+    String activityContent = GetFileManager()->ReadAllText(
+        std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, tkActivityPath, "__APP_ACTIVITY__.java"}))
+            .string());
+
+    ReplaceFirstStringInPlace(activityContent, "__APP_ACTIVITY__", projectName);
+
+    String projectActivity = ConcatPaths({workspacePath, projectName, tkActivityPath, projectName + ".java"});
+    GetFileManager()->WriteAllText(projectActivity, activityContent);
+
     // get manifest file from template
     String androidManifest = GetFileManager()->ReadAllText(
         std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, mainPath, "AndroidManifest.xml"})).string());
 
     // replace template values with our settings
-    ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
 
     // 0 undefined 1 landscape 2 Portrait
     String oriantationNames[3] {"fullSensor", "landscape", "portrait"};
@@ -428,9 +438,13 @@ namespace ToolKit
                               "screenOrientation=\"landscape\"",
                               "screenOrientation=\"" + oriantationNames[(int) m_oriantation] + "\"");
 
+    String activity    = "com.otyazilim.toolkit.ToolKitActivity";
+    String newActivity = "com.otyazilim.toolkit." + projectName;
+
+    ReplaceFirstStringInPlace(androidManifest, activity, newActivity);
+
     String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
     String manifestLoc  = ConcatPaths({mainLocation, "AndroidManifest.xml"});
-
     GetFileManager()->WriteAllText(manifestLoc, androidManifest);
   }
 
