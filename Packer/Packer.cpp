@@ -384,7 +384,7 @@ namespace ToolKit
 
     String projectName = activeProjectName;
     String apkLocation = ConcatPaths({workspacePath, projectName, apkPath});
-    String packageName = "com.otyazilim.toolkit." + projectName + "/com.otyazilim.toolkit.ToolKitAcivity";
+    String packageName = "com.otyazilim.toolkit." + projectName + "/com.otyazilim.toolkit.ToolKitActivity";
 
     int execResult;
     execResult = PlatformHelpers::SysComExec("adb install " + apkLocation, false, true, nullptr);
