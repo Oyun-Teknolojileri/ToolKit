@@ -9,16 +9,6 @@
 
 #include "Types.h"
 
-#include <zlib.h>
-
-#ifdef TK_ANDROID
-  #include <Android/minizip/unzip.h>
-  #include <Android/minizip/zip.h>
-#else
-  #include <unzip.h>
-  #include <zip.h>
-#endif
-
 namespace ToolKit
 {
 
@@ -90,30 +80,30 @@ namespace ToolKit
     void GetAllUsedResourcePaths();
 
     bool ZipPack(const String& zipName);
-    bool AddFileToZip(zipFile zfile, const char* filename);
+    bool AddFileToZip(ZipFile zfile, const char* filename);
 
     void GetAllPaths(const String& path);
     void GetExtraFilePaths();
 
-    XmlFilePtr ReadXmlFileFromZip(zipFile zfile, const String& relativePath, const char* path);
-    uint8* ReadImageFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo);
-    float* ReadHdriFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo);
+    XmlFilePtr ReadXmlFileFromZip(ZipFile zfile, const String& relativePath, const char* path);
+    uint8* ReadImageFileFromZip(ZipFile zfile, const String& relativePath, ImageFileInfo& fileInfo);
+    float* ReadHdriFileFromZip(ZipFile zfile, const String& relativePath, ImageFileInfo& fileInfo);
 
     /** Reads the file from the zip and returns it as buffer pointer and set the buffer size. */
-    ubyte* ReadFileBufferFromZip(zipFile zfile, const String& relativePath, uint& bufferSize);
+    ubyte* ReadFileBufferFromZip(ZipFile zfile, const String& relativePath, uint& bufferSize);
 
-    XmlFilePtr CreateXmlFileFromZip(zipFile zfile, const String& filename, uint filesize);
-    uint8* CreateImageFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo);
-    float* CreateHdriFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo);
+    XmlFilePtr CreateXmlFileFromZip(ZipFile zfile, const String& filename, uint filesize);
+    uint8* CreateImageFileFromZip(ZipFile zfile, uint filesize, ImageFileInfo& fileInfo);
+    float* CreateHdriFileFromZip(ZipFile zfile, uint filesize, ImageFileInfo& fileInfo);
 
     void GenerateOffsetTableForPakFiles();
     bool IsFileInPak(const String& filename);
 
    private:
     StringSet m_allPaths;
-    std::unordered_map<String, std::pair<ZPOS64_T, uint>> m_zipFilesOffsetTable;
+    std::unordered_map<String, std::pair<uint64, uint>> m_zipFilesOffsetTable;
     bool m_offsetTableCreated = false;
-    zipFile m_zfile           = nullptr;
+    ZipFile m_zfile           = nullptr;
 
    public:
     bool m_ignorePakFile = false;

@@ -54,14 +54,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Packer\</OutDir>
-    <LibraryPath>$(SolutionDir)Utils\Packer;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\SDL2\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Utils\Packer;$(SolutionDir)Dependency\SDL2\lib;$(VC_LibraryPath_x64);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Packer\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Utils\Packer;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\SDL2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Utils\Packer;$(SolutionDir)Dependency\SDL2\lib;$(VC_LibraryPath_x64);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -75,7 +75,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKit_d.lib;zlibstatic.lib;minizip.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKit_d.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
@@ -101,7 +101,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKit.lib;zlibstatic.lib;minizip.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKit.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />

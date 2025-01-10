@@ -16,6 +16,9 @@
 #include "TKImage.h"
 #include "ToolKit.h"
 
+#include <unzip.h>
+#include <zip.h>
+
 #include "DebugNew.h"
 
 namespace ToolKit
@@ -420,7 +423,7 @@ namespace ToolKit
     return true;
   }
 
-  bool FileManager::AddFileToZip(zipFile zfile, const char* filename)
+  bool FileManager::AddFileToZip(ZipFile zfile, const char* filename)
   {
     FILE* f;
     int ret;
@@ -461,17 +464,10 @@ namespace ToolKit
       return false;
     }
 
-    ret = zipOpenNewFileInZip64(zfile,
-                                filenameStr.c_str(),
-                                NULL,
-                                NULL,
-                                0,
-                                NULL,
-                                0,
-                                NULL,
-                                Z_DEFLATED,
-                                Z_DEFAULT_COMPRESSION,
-                                0);
+    // Compression level is -1 which is default, use 0 for no compression, 1 for best speed.
+    ret =
+        zipOpenNewFileInZip64(zfile, filenameStr.c_str(), NULL, NULL, 0, NULL, 0, NULL, MZ_COMPRESS_METHOD_ZSTD, -1, 0);
+
     if (ret != ZIP_OK)
     {
       fclose(f);
@@ -585,7 +581,7 @@ namespace ToolKit
     }
   }
 
-  XmlFilePtr FileManager::ReadXmlFileFromZip(zipFile zfile, const String& relativePath, const char* path)
+  XmlFilePtr FileManager::ReadXmlFileFromZip(ZipFile zfile, const String& relativePath, const char* path)
   {
     // Check offset map of file
     String unixifiedPath = relativePath;
@@ -613,7 +609,7 @@ namespace ToolKit
     return MakeNewPtr<XmlFile>(path);
   }
 
-  uint8* FileManager::ReadImageFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
+  uint8* FileManager::ReadImageFileFromZip(ZipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
   {
     // Check offset map of file
     String unixifiedPath = relativePath;
@@ -642,7 +638,7 @@ namespace ToolKit
     return ImageLoad(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
-  float* FileManager::ReadHdriFileFromZip(zipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
+  float* FileManager::ReadHdriFileFromZip(ZipFile zfile, const String& relativePath, ImageFileInfo& fileInfo)
   {
     // Check offset map of file
     String unixifiedPath = relativePath;
@@ -671,7 +667,7 @@ namespace ToolKit
     return ImageLoadF(fileInfo.filePath.c_str(), fileInfo.x, fileInfo.y, fileInfo.comp, fileInfo.reqComp);
   }
 
-  ubyte* FileManager::ReadFileBufferFromZip(zipFile zfile, const String& relativePath, uint& bufferSize)
+  ubyte* FileManager::ReadFileBufferFromZip(ZipFile zfile, const String& relativePath, uint& bufferSize)
   {
     // Check offset map of file
     String unixifiedPath = relativePath;
@@ -713,7 +709,7 @@ namespace ToolKit
     return nullptr;
   }
 
-  XmlFilePtr FileManager::CreateXmlFileFromZip(zipFile zfile, const String& filename, uint filesize)
+  XmlFilePtr FileManager::CreateXmlFileFromZip(ZipFile zfile, const String& filename, uint filesize)
   {
     // Read file
     char* fileBuffer = new char[filesize]();
@@ -732,7 +728,7 @@ namespace ToolKit
     return file;
   }
 
-  uint8* FileManager::CreateImageFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo)
+  uint8* FileManager::CreateImageFileFromZip(ZipFile zfile, uint filesize, ImageFileInfo& fileInfo)
   {
     ubyte* fileBuffer = new ubyte[filesize]();
     uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, filesize);
@@ -750,7 +746,7 @@ namespace ToolKit
     return img;
   }
 
-  float* FileManager::CreateHdriFileFromZip(zipFile zfile, uint filesize, ImageFileInfo& fileInfo)
+  float* FileManager::CreateHdriFileFromZip(ZipFile zfile, uint filesize, ImageFileInfo& fileInfo)
   {
     ubyte* fileBuffer = new ubyte[filesize]();
     uint readBytes    = unzReadCurrentFile(zfile, fileBuffer, filesize);

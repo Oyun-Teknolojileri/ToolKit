@@ -33,22 +33,40 @@ namespace ToolKit
 
   inline void CopyFileToDataPath(String& internalDataPath, const char* file)
   {
+    String destinationPath = ConcatPaths({internalDataPath, file});
+
+    // Check if the file already exists
+    if (access(destinationPath.c_str(), F_OK) != -1)
+    {
+      ANDROID_LOG("File %s already exists, skipping copy.\n", file);
+      return;
+    }
+
     AAsset* asset = AAssetManager_open(assetManager, file, 0);
 
     if (!asset)
     {
-      ANDROID_LOG("cannot open MinResources.pak!\n");
+      ANDROID_LOG("Cannot open %s!\n", file);
       return;
     }
-    FILE* fileHandle = fopen(ConcatPaths({internalDataPath, file}).c_str(), "wb");
-    off_t size       = AAsset_getLength(asset);
-    std::vector<char> buffer;
-    buffer.resize(size + 1, '\0');
+
+    FILE* fileHandle = fopen(destinationPath.c_str(), "wb");
+    if (!fileHandle)
+    {
+      ANDROID_LOG("Cannot create file %s!\n", destinationPath.c_str());
+      AAsset_close(asset);
+      return;
+    }
+
+    off_t size = AAsset_getLength(asset);
+    std::vector<char> buffer(size);
     AAsset_read(asset, buffer.data(), size);
-    fwrite(buffer.data(), 1, size + 1, fileHandle);
-    memset(buffer.data(), 0, buffer.capacity());
+    fwrite(buffer.data(), 1, size, fileHandle);
+
     fclose(fileHandle);
     AAsset_close(asset);
+
+    ANDROID_LOG("File %s copied successfully.\n", file);
   }
 
   // copies all of the engine assets to internal data folder if already not copied
@@ -91,7 +109,7 @@ namespace ToolKit
 
 extern "C"
 {
-  JNIEXPORT void JNICALL Java_com_otyazilim_toolkit_ToolKitAndroid_load(JNIEnv* env, jclass clazz, jobject mgr)
+  JNIEXPORT void JNICALL Java_com_otyazilim_toolkit_ToolKitActivity_load(JNIEnv* env, jclass clazz, jobject mgr)
   {
     ToolKit::assetManager = AAssetManager_fromJava(env, mgr);
     if (ToolKit::assetManager == nullptr)

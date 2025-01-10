@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 if (CLANG_COMPILER)
 	add_definitions(-include stdafx.h)
 
-	SET(TK_CXX_FLAGS " -std=c++17")
+	SET(TK_CXX_FLAGS " -std=c++17 -w")
 	if (NOT TK_CXX_EXTRA STREQUAL "")
 		SET(TK_CXX_FLAGS "${TK_CXX_FLAGS} ${TK_CXX_EXTRA}")
 	endif()
@@ -17,20 +17,19 @@ if(MSVC_COMPILER)
 endif()
 
 include_directories(
-	"${CMAKE_SOURCE_DIR}/ToolKit"
-	"${CMAKE_SOURCE_DIR}/Dependency"
-	"${CMAKE_SOURCE_DIR}/Dependency/glm"
-	"${CMAKE_SOURCE_DIR}/Dependency/glad"
-	"${CMAKE_SOURCE_DIR}/Dependency/mini_audio"
-	"${CMAKE_SOURCE_DIR}/Dependency/RapidXml"
-	"${CMAKE_SOURCE_DIR}/Dependency/stb"
-	"${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/include"
-	"${CMAKE_SOURCE_DIR}/Dependency/poolSTL/include"
+	"${TOOLKIT_DIR}/ToolKit"
+	"${TOOLKIT_DIR}/Dependency"
+	"${TOOLKIT_DIR}/Dependency/glm"
+	"${TOOLKIT_DIR}/Dependency/glad"
+	"${TOOLKIT_DIR}/Dependency/mini_audio"
+	"${TOOLKIT_DIR}/Dependency/RapidXml"
+	"${TOOLKIT_DIR}/Dependency/stb"
+	"${TOOLKIT_DIR}/Dependency/minizip-ng"
+	"${TOOLKIT_DIR}/Dependency/minizip-ng/dist/include"
+	"${TOOLKIT_DIR}/Dependency/poolSTL/include"
 )
 
-file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/ToolKit/*.cpp")
-
-link_directories("${CMAKE_SOURCE_DIR}/Dependency/zlib-1.2.12/dist/lib")
+file(GLOB SOURCES "${TOOLKIT_DIR}/ToolKit/*.cpp")
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TK_CXX_FLAGS}")
@@ -43,17 +42,12 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DTK_DEBUG)
 endif ()
 
-if (NOT WEB_BUILD)
-	set(TK_LINK_LIB zlibstatic minizip OpenGL32)
-endif()
-
 add_library(ToolKitStatic STATIC ${SOURCES})
-target_link_libraries(ToolKitStatic PRIVATE ${TK_LINK_LIB})
 
 set_target_properties(ToolKitStatic PROPERTIES
-		ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
-		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
-		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Bin$<0:>
+		ARCHIVE_OUTPUT_DIRECTORY ${TOOLKIT_DIR}/Bin$<0:>
+		LIBRARY_OUTPUT_DIRECTORY ${TOOLKIT_DIR}/Bin$<0:>
+		RUNTIME_OUTPUT_DIRECTORY ${TOOLKIT_DIR}/Bin$<0:>
 )
 
 if (MSVC_COMPILER)
