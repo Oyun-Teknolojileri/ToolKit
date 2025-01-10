@@ -495,7 +495,7 @@ namespace ToolKit
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
-            Cast<Sky>(ntt)->ReInit();
+            Cast<SkyBase>(ntt)->ReInit();
           }
           UI::EndCenteredTextButton();
         }
