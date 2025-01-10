@@ -384,7 +384,7 @@ namespace ToolKit
 
     String projectName = activeProjectName;
     String apkLocation = ConcatPaths({workspacePath, projectName, apkPath});
-    String packageName = "org.libsdl.app/org.libsdl.app.SDLActivity"; // adb uses forward slash
+    String packageName = "com.otyazilim.toolkit." + projectName + "/com.otyazilim.toolkit.ToolKitAcivity";
 
     int execResult;
     execResult = PlatformHelpers::SysComExec("adb install " + apkLocation, false, true, nullptr);
@@ -415,17 +415,6 @@ namespace ToolKit
     String applicationName = m_appName;
     String mainPath        = NormalizePath("Android/app/src/main");
 
-    // Update java and cpp Codes for project.
-    String tkActivityPath  = ConcatPaths({mainPath, "java", "com", "otyazilim", "toolkit"});
-    String activityContent = GetFileManager()->ReadAllText(
-        std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, tkActivityPath, "__APP_ACTIVITY__.java"}))
-            .string());
-
-    ReplaceFirstStringInPlace(activityContent, "__APP_ACTIVITY__", projectName);
-
-    String projectActivity = ConcatPaths({workspacePath, projectName, tkActivityPath, projectName + ".java"});
-    GetFileManager()->WriteAllText(projectActivity, activityContent);
-
     // get manifest file from template
     String androidManifest = GetFileManager()->ReadAllText(
         std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, mainPath, "AndroidManifest.xml"})).string());
@@ -437,11 +426,6 @@ namespace ToolKit
     ReplaceFirstStringInPlace(androidManifest,
                               "screenOrientation=\"landscape\"",
                               "screenOrientation=\"" + oriantationNames[(int) m_oriantation] + "\"");
-
-    String activity    = "com.otyazilim.toolkit.ToolKitActivity";
-    String newActivity = "com.otyazilim.toolkit." + projectName;
-
-    ReplaceFirstStringInPlace(androidManifest, activity, newActivity);
 
     String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
     String manifestLoc  = ConcatPaths({mainLocation, "AndroidManifest.xml"});
@@ -463,6 +447,7 @@ namespace ToolKit
     ReplaceFirstStringInPlace(gradleFileText, "minSdkVersion 19", "minSdkVersion " + std::to_string(m_minSdk));
     ReplaceFirstStringInPlace(gradleFileText, "maxSdkVersion 34", "maxSdkVersion " + std::to_string(m_maxSdk));
     ReplaceFirstStringInPlace(gradleFileText, "compileSdkVersion 33", "compileSdkVersion " + std::to_string(m_maxSdk));
+    ReplaceFirstStringInPlace(gradleFileText, "__TK_NAMESPACE__", "com.otyazilim.toolkit." + projectName);
 
     String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
     String gradleLoc    = ConcatPaths({mainLocation, "build.gradle"});
