@@ -10,8 +10,6 @@
 #include "Material.h"
 #include "MathUtil.h"
 
-
-
 namespace ToolKit
 {
 
@@ -24,7 +22,6 @@ namespace ToolKit
   void Dpad::ParameterConstructor()
   {
     Super::ParameterConstructor();
-
     DpadRadius_Define(100.0f, DpadCategory.Name, DpadCategory.Priority, true, true);
   }
 
@@ -58,6 +55,20 @@ namespace ToolKit
     }
   }
 
+  void Dpad::Start() { m_active = true; }
+
+  void Dpad::Stop()
+  {
+    m_deltaXY = Vec2(0.0f);
+    m_active  = false;
+  }
+
+  float Dpad::GetDeltaX() { return m_deltaXY.x; }
+
+  float Dpad::GetDeltaY() { return m_deltaXY.y; }
+
+  float Dpad::GetRadius() { return m_activeDpadRadius; }
+
   void Dpad::ComponentConstructor()
   {
     MaterialComponentPtr matCom = GetComponent<MaterialComponent>();
@@ -79,15 +90,9 @@ namespace ToolKit
     }
   }
 
-  void Dpad::SetDefaultMaterialIfMaterialIsNotOverriden()
+  void Dpad::DeserializeComponents(const SerializationFileInfo& info, XmlNode* entityNode)
   {
-    // Re assign default material.
-    MaterialComponentPtr matCom = GetMaterialComponent();
-    MaterialPtr mat             = matCom->GetFirstMaterial();
-    if (mat->IsDynamic() || !mat->_missingFile.empty())
-    {
-      matCom->SetFirstMaterial(GetMaterialManager()->Create<Material>(MaterialPath("dpad.material", true)));
-    }
+    // Keep using default components.
   }
 
 } // namespace ToolKit

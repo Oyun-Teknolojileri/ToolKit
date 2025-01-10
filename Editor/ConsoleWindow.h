@@ -99,6 +99,9 @@ namespace ToolKit
     const String g_showProfileTimer("ShowProfileTimer");
     void ShowProfileTimer(TagArgArray tagArgs);
 
+    const String g_selectSimilar("SelectSimilar");
+    void SelectSimilar(TagArgArray tagArgs);
+
     // Command errors
     const String g_noValidEntity("No valid entity");
 

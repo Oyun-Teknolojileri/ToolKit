@@ -29,7 +29,7 @@ namespace ToolKit
     void Update(TexturePtr texture, const Vec2& pivotOffset);
     void Update(TexturePtr texture, const SpriteEntry& entry);
     void Update(const String& textureFile, const Vec2& pivotOffset);
-    void Update(const Vec2& size, const Vec2& offset = Vec2(0.5f));
+    void Update(const Vec2& size, const Vec2& offset = Vec2(0.0f));
 
     void CalculateAnchorOffsets(Vec3 canvas[4], Vec3 surface[4]);
     virtual void ResetCallbacks();
@@ -41,16 +41,17 @@ namespace ToolKit
     virtual void UpdateGeometry(bool byTexture);
 
    protected:
-    virtual void ComponentConstructor();
+    void ComponentConstructor() override;
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     Entity* CopyTo(Entity* other) const override;
 
+    /** Calculate local surface boundary with size and pivot offset in mind. */
+    void UpdateLocalBoundingBox() override;
+
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
-
-    virtual void SetDefaultMaterialIfMaterialIsNotOverriden();
 
    private:
     void CreateQuat();
@@ -67,13 +68,11 @@ namespace ToolKit
     bool m_mouseOver    = false;
     bool m_mouseClicked = false;
 
-    struct ANCHOR_PARAMS
+    struct AnchorParams
     {
       float m_anchorRatios[4] = {0.f, 1.f, 0.f, 1.f};
       float m_offsets[4]      = {0.f};
-    };
-
-    ANCHOR_PARAMS m_anchorParams;
+    } m_anchorParams;
 
     // Event Callbacks.
     SurfaceEventCallback m_onMouseEnter = nullptr;

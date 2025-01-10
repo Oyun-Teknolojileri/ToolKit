@@ -49,6 +49,7 @@ namespace ToolKit
       // Editor functions
       void GetContentAreaScreenCoordinates(Vec2* min, Vec2* max) const;
       void SetCamera(CameraPtr cam) override;
+      virtual void ResetCameraToDefault(); //!< Reset camera settings to default.
 
      protected:
       XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;

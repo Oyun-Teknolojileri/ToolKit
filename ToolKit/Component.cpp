@@ -11,6 +11,7 @@
 #include "AnimationControllerComponent.h"
 #include "Component.h"
 #include "DirectionComponent.h"
+#include "Entity.h"
 #include "EnvironmentComponent.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"

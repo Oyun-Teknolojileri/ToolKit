@@ -54,14 +54,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Packer\</OutDir>
-    <LibraryPath>$(SolutionDir)Bin;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\SDL2\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Utils\Packer;$(SolutionDir)Dependency\SDL2\lib;$(VC_LibraryPath_x64);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Utils\Packer\</OutDir>
-    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Bin;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(VC_LibraryPath_x64);$(SolutionDir)Dependency\SDL2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)ToolKit;$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\RapidXml;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Utils\Packer;$(SolutionDir)Dependency\SDL2\lib;$(VC_LibraryPath_x64);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -75,13 +75,14 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKitStatic_d.lib;zlibstatic.lib;minizip.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKit_d.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
     <PreBuildEvent />
     <PreBuildEvent>
-      <Command>$(SolutionDir)BuildScripts\Build.bat Debug ../../</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -90,7 +91,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;TK_DLL_IMPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -100,13 +101,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKitStatic.lib;zlibstatic.lib;minizip.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;ToolKit.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
     <PreBuildEvent />
     <PreBuildEvent>
-      <Command>$(SolutionDir)BuildScripts\Build.bat RelWithDebInfo ../../</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

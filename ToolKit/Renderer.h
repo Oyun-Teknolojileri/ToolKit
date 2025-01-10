@@ -132,6 +132,7 @@ namespace ToolKit
    private:
     void FeedUniforms(const GpuProgramPtr& program, const RenderJob& job);
     void FeedLightUniforms(const GpuProgramPtr& program, const RenderJob& job);
+    void FeedAnimationUniforms(const GpuProgramPtr& program, const RenderJob& job);
 
    public:
     uint m_frameCount = 0;

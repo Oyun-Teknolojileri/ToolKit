@@ -30,6 +30,8 @@ namespace ToolKit
     void ParameterConstructor() override;
     void ParameterEventConstructor() override;
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
+    virtual void DeserializeComponents(const SerializationFileInfo& info, XmlNode* entityNode);
     XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
     XmlNode* DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent);
 
@@ -37,10 +39,11 @@ namespace ToolKit
     void CreateQuadLines();
 
    public:
-    TKDeclareParam(MaterialPtr, CanvasPanelMaterial);
-
     // Local events.
     SurfaceEventCallback m_onMouseEnterLocal;
     SurfaceEventCallback m_onMouseExitLocal;
+
+   private:
+    MaterialPtr m_canvasMaterial;
   };
 } //  namespace ToolKit

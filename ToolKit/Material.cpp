@@ -153,7 +153,6 @@ namespace ToolKit
     cpy->m_emissiveColor            = m_emissiveColor;
     cpy->m_metallicRoughnessTexture = m_metallicRoughnessTexture;
     cpy->m_normalMap                = m_normalMap;
-    cpy->m_isShaderMaterial         = m_isShaderMaterial;
   }
 
   RenderState* Material::GetRenderState() { return &m_renderState; }
@@ -207,6 +206,13 @@ namespace ToolKit
   {
     const String& file = m_fragmentShader->GetFile();
     return file == GetShaderManager()->PbrForwardShaderFile();
+  }
+
+  bool Material::IsShaderMaterial()
+  {
+    ShaderManager* shaderMan = GetShaderManager();
+    return m_vertexShader != shaderMan->GetDefaultVertexShader() ||
+           m_fragmentShader != shaderMan->GetPbrForwardShader();
   }
 
   void Material::UpdateRuntimeVersion()
@@ -287,9 +293,6 @@ namespace ToolKit
 
     node = CreateXmlNode(doc, "roughness", container);
     WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_roughness));
-
-    node = CreateXmlNode(doc, "isShaderMaterial", container);
-    WriteAttr(node, doc, XmlNodeName.data(), std::to_string(m_isShaderMaterial));
 
     m_renderState.Serialize(doc, container);
     return container;
@@ -381,10 +384,7 @@ namespace ToolKit
         ReadAttr(node, XmlNodeName.data(), m_roughness);
       }
       else if (strcmp("materialType", node->name()) == 0) {}
-      else if (strcmp("isShaderMaterial", node->name()) == 0)
-      {
-        ReadAttr(node, XmlNodeName.data(), m_isShaderMaterial);
-      }
+      else if (strcmp("isShaderMaterial", node->name()) == 0) {}
       else
       {
         assert(false);
@@ -438,7 +438,6 @@ namespace ToolKit
     material->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("unlitFrag.shader", true));
     material->m_diffuseTexture = GetTextureManager()->Create<Texture>(TexturePath("default.png", true));
     material->Init();
-    material->m_isShaderMaterial                    = true;
     m_storage[MaterialPath("unlit.material", true)] = material;
   }
 

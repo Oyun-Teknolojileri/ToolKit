@@ -26,6 +26,14 @@ namespace ToolKit
   void Canvas::NativeConstruct()
   {
     Super::NativeConstruct();
+
+    // TODO: Quad lines are not needed for the game engine. This can be moved to EditorCanvas.
+    m_canvasMaterial                              = GetMaterialManager()->GetCopyOfUnlitMaterial();
+    m_canvasMaterial->m_name                      = "CavasBorder";
+    m_canvasMaterial->GetRenderState()->drawType  = DrawType::Line;
+    m_canvasMaterial->GetRenderState()->lineWidth = 3.0f;
+    GetMaterialComponent()->SetFirstMaterial(m_canvasMaterial);
+
     CreateQuadLines();
   }
 
@@ -53,6 +61,11 @@ namespace ToolKit
     return canvasNode;
   }
 
+  void Canvas::DeserializeComponents(const SerializationFileInfo& info, XmlNode* entityNode)
+  {
+    // Just keep using defaults.
+  }
+
   XmlNode* Canvas::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     if (m_version >= TKV045)
@@ -62,7 +75,6 @@ namespace ToolKit
 
     // Old file, keep parsing.
     XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
-    ParameterEventConstructor();
     CreateQuadLines();
 
     return surfaceNode;
@@ -71,13 +83,16 @@ namespace ToolKit
   XmlNode* Canvas::DeSerializeImpV045(const SerializationFileInfo& info, XmlNode* parent)
   {
     XmlNode* surfaceNode = Surface::DeSerializeImp(info, parent);
-    ParameterEventConstructor();
     CreateQuadLines();
 
     return surfaceNode->first_node(StaticClass()->Name.c_str());
   }
 
-  void Canvas::UpdateGeometry(bool byTexture) { CreateQuadLines(); }
+  void Canvas::UpdateGeometry(bool byTexture)
+  {
+    InvalidateSpatialCaches();
+    CreateQuadLines();
+  }
 
   void Canvas::ApplyRecursiveResizePolicy(float width, float height)
   {
@@ -170,33 +185,29 @@ namespace ToolKit
 
   void Canvas::CreateQuadLines()
   {
-    float width    = GetSizeVal().x;
-    float height   = GetSizeVal().y;
-    float depth    = 0;
-    Vec2 absOffset = Vec2(GetPivotOffsetVal().x * width, GetPivotOffsetVal().y * height);
+    BoundingBox box = GetBoundingBox();
+    Vec3 min        = box.min;
+    Vec3 max        = box.max;
+    float depth     = min.z;
 
+    // Lines of the boundary.
     VertexArray vertices;
     vertices.resize(8);
-    vertices[0].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
-    vertices[1].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[2].pos            = Vec3(width - absOffset.x, -absOffset.y, depth);
-    vertices[3].pos            = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[4].pos            = Vec3(width - absOffset.x, height - absOffset.y, depth);
-    vertices[5].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[6].pos            = Vec3(-absOffset.x, height - absOffset.y, depth);
-    vertices[7].pos            = Vec3(-absOffset.x, -absOffset.y, depth);
+
+    vertices[0].pos            = min;
+    vertices[1].pos            = Vec3(max.x, min.y, depth);
+    vertices[2].pos            = Vec3(max.x, min.y, depth);
+    vertices[3].pos            = Vec3(max.x, max.y, depth);
+    vertices[4].pos            = Vec3(max.x, max.y, depth);
+    vertices[5].pos            = Vec3(min.x, max.y, depth);
+    vertices[6].pos            = Vec3(min.x, max.y, depth);
+    vertices[7].pos            = min;
 
     MeshPtr mesh               = MakeNewPtr<Mesh>();
     mesh->m_clientSideVertices = vertices;
     mesh->CalculateAABB();
     mesh->Init();
     GetMeshComponent()->SetMeshVal(mesh);
-
-    MaterialPtr material = GetMaterialComponent()->GetFirstMaterial();
-    material->UnInit();
-    material->GetRenderState()->drawType  = DrawType::Line;
-    material->GetRenderState()->lineWidth = 3.f;
-    material->Init();
   }
 
 } // namespace ToolKit

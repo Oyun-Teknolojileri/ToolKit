@@ -49,6 +49,16 @@ namespace ToolKit
     m_lightDataBuffer.Init();
 
     glGenQueries(1, &m_gpuTimerQuery);
+
+    const char* renderer = (const char*) glGetString(GL_RENDERER);
+    GetLogger()->Log(String("Graphics Card ") + renderer);
+
+    // Default states.
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+    glClearDepthf(1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   }
 
   Renderer::~Renderer()
@@ -158,18 +168,21 @@ namespace ToolKit
 
       if (job.animData.currentAnimation != nullptr)
       {
-        // animation
+        // animation.
         AnimationPlayer* animPlayer = GetAnimationPlayer();
-        SetTexture(3,
-                   animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal())
-                       ->m_textureId);
+        DataTexturePtr animTexture =
+            animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.currentAnimation->GetIdVal());
 
-        // animation to blend
+        if (animTexture != nullptr)
+        {
+          SetTexture(3, animTexture->m_textureId);
+        }
+
+        // animation to blend.
         if (job.animData.blendAnimation != nullptr)
         {
-          SetTexture(2,
-                     animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal())
-                         ->m_textureId);
+          animTexture = animPlayer->GetAnimationDataTexture(skel->GetIdVal(), job.animData.blendAnimation->GetIdVal());
+          SetTexture(2, animTexture->m_textureId);
         }
       }
       else
@@ -215,6 +228,7 @@ namespace ToolKit
     const Mesh* mesh = job.Mesh;
     activateSkinning(mesh);
 
+    FeedAnimationUniforms(m_currentProgram, job);
     FeedLightUniforms(m_currentProgram, job);
     FeedUniforms(m_currentProgram, job);
 
@@ -416,7 +430,7 @@ namespace ToolKit
     m_cpuTime = GetElapsedMilliSeconds();
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
-#ifndef TK_ANDROID
+#ifdef TK_WIN
       glBeginQuery(GL_TIME_ELAPSED_EXT, m_gpuTimerQuery);
 #endif
     }
@@ -428,7 +442,7 @@ namespace ToolKit
     m_cpuTime     = cpuTime - m_cpuTime;
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
-#ifndef TK_ANDROID
+#ifdef TK_WIN
       glEndQuery(GL_TIME_ELAPSED_EXT);
 #endif
     }
@@ -438,7 +452,7 @@ namespace ToolKit
   {
     cpu = m_cpuTime;
     gpu = 1.0f;
-#ifndef TK_ANDROID
+#ifdef TK_WIN
     if (GetEngineSettings().Graphics.enableGpuTimer)
     {
       GLuint elapsedTime;
@@ -707,10 +721,9 @@ namespace ToolKit
       ShaderPtr frag         = GetShaderManager()->Create<Shader>(ShaderPath("gausBlur7x1Frag.shader", true));
 
       m_gaussianBlurMaterial = MakeNewPtr<Material>();
-      m_gaussianBlurMaterial->m_isShaderMaterial = true;
-      m_gaussianBlurMaterial->m_vertexShader     = vert;
-      m_gaussianBlurMaterial->m_fragmentShader   = frag;
-      m_gaussianBlurMaterial->m_diffuseTexture   = nullptr;
+      m_gaussianBlurMaterial->m_vertexShader   = vert;
+      m_gaussianBlurMaterial->m_fragmentShader = frag;
+      m_gaussianBlurMaterial->m_diffuseTexture = nullptr;
       m_gaussianBlurMaterial->Init();
     }
 
@@ -733,10 +746,9 @@ namespace ToolKit
       ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("avgBlurFrag.shader", true));
 
       m_averageBlurMaterial = MakeNewPtr<Material>();
-      m_averageBlurMaterial->m_isShaderMaterial = true;
-      m_averageBlurMaterial->m_vertexShader     = vert;
-      m_averageBlurMaterial->m_fragmentShader   = frag;
-      m_averageBlurMaterial->m_diffuseTexture   = nullptr;
+      m_averageBlurMaterial->m_vertexShader   = vert;
+      m_averageBlurMaterial->m_fragmentShader = frag;
+      m_averageBlurMaterial->m_diffuseTexture = nullptr;
       m_averageBlurMaterial->Init();
     }
 
@@ -1115,71 +1127,6 @@ namespace ToolKit
         bool aoEnabled = m_aoTexture != nullptr;
         glUniform1i(uniformLoc, aoEnabled);
       }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.firstKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_2);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.secondKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_INT_TIME);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.keyFrameInterpolationTime);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_COUNT);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.keyFrameCount);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::IS_ANIMATED);
-      if (uniformLoc != -1)
-      {
-        glUniform1ui(uniformLoc, job.animData.currentAnimation != nullptr);
-      }
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_ANIMATION);
-      if (uniformLoc != -1)
-      {
-        glUniform1i(uniformLoc, job.animData.blendAnimation != nullptr);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_FACTOR);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.animationBlendFactor);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_1);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendFirstKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_2);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendSecondKeyFrame);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_INT_TIME);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendKeyFrameInterpolationTime);
-      }
-
-      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_COUNT);
-      if (uniformLoc != -1)
-      {
-        glUniform1f(uniformLoc, job.animData.blendKeyFrameCount);
-      }
     }
 
     for (auto& uniform : program->m_customUniforms)
@@ -1240,28 +1187,29 @@ namespace ToolKit
 
     if (GetRenderSystem()->ConsumeGPULightCacheInvalidation())
     {
-      m_lightCache.UpdateVersion();
+      m_lightCache.UpdateVersion(); // This will cause an update of the cache.
     }
 
     // Make sure the cache has the lights that is going to rendered
     for (uint i = 0; i < job.lights.size(); ++i)
     {
-      bool foundInCache        = false;
       Light* light             = job.lights[i];
       light->m_drawCallVersion = m_drawCallVersion;
+
       int indexInCache         = m_lightCache.Contains(light);
       if (indexInCache != -1)
       {
-        if (light->m_invalidatedForLightCache)
+        // If light is invalidated or cache index has changed, invalidate the light cache.
+        if (light->m_invalidatedForLightCache || light->m_lightCacheIndex != indexInCache)
         {
-          m_lightCache.UpdateVersion();
+          light->m_lightCacheIndex          = indexInCache;
           light->m_invalidatedForLightCache = false;
+          m_lightCache.UpdateVersion(); // Light needs to be updated, invalidate the cache.
         }
-        light->m_lightCacheIndex = indexInCache;
       }
       else
       {
-        light->m_lightCacheIndex = m_lightCache.Add(light);
+        light->m_lightCacheIndex = m_lightCache.Add(light); // Add will cause a cache invalidation.
       }
     }
 
@@ -1270,25 +1218,103 @@ namespace ToolKit
     // When cache is invalidated, update the cache for this program
     if (program->m_lightCacheVersion != m_lightCache.GetVersion())
     {
+      // Update the cache.
       program->m_lightCacheVersion = m_lightCache.GetVersion();
-      m_lightDataBuffer.Update(m_lightCache.GetLights(), RHIConstants::LightCacheSize, job.lights);
-
-      RHI::BindUniformBuffer(m_lightDataBuffer.m_lightDataBufferId);
-      RHI::BindUniformBufferBase(m_lightDataBuffer.m_lightDataBufferId, 0);
-      glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightData), &m_lightDataBuffer.m_lightData);
+      m_lightDataBuffer.UpdateLightCache(m_lightCache.GetLights(), RHIConstants::LightCacheSize);
+      m_lightDataBuffer.UpdateActiveLights(job.lights, true);
     }
 
-    // Update light index array
-    m_lightDataBuffer.UpdateLightIndices(job.lights);
-
-    RHI::BindUniformBuffer(m_lightDataBuffer.m_lightIndicesBufferId);
-    RHI::BindUniformBufferBase(m_lightDataBuffer.m_lightIndicesBufferId, 1);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ActiveLightIndices), &m_lightDataBuffer.m_activeLightIndices);
+    // Checks the current active light indexes, perform the update only if necessary.
+    m_lightDataBuffer.UpdateActiveLights(job.lights);
 
     // Bind shadow map if activated
     if (m_shadowAtlas != nullptr)
     {
       SetTexture(8, m_shadowAtlas->m_textureId);
+    }
+  }
+
+  void Renderer::FeedAnimationUniforms(const GpuProgramPtr& program, const RenderJob& job)
+  {
+    // Send if its animated or not.
+    int uniformLoc = program->GetDefaultUniformLocation(Uniform::IS_ANIMATED);
+    if (uniformLoc != -1)
+    {
+      glUniform1ui(uniformLoc, job.animData.currentAnimation != nullptr);
+    }
+
+    if (job.animData.currentAnimation == nullptr)
+    {
+      // If not animated, just skip the rest.
+      return;
+    }
+
+    // Send key frames.
+    uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_COUNT);
+    if (uniformLoc != -1)
+    {
+      glUniform1f(uniformLoc, job.animData.keyFrameCount);
+    }
+
+    if (job.animData.keyFrameCount > 0)
+    {
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_1);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.firstKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_2);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.secondKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::KEY_FRAME_INT_TIME);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.keyFrameInterpolationTime);
+      }
+    }
+
+    // Send blend data.
+    uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_ANIMATION);
+    if (uniformLoc != -1)
+    {
+      glUniform1i(uniformLoc, job.animData.blendAnimation != nullptr);
+    }
+
+    if (job.animData.blendAnimation != nullptr)
+    {
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_FACTOR);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.animationBlendFactor);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_1);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendFirstKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_2);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendSecondKeyFrame);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_INT_TIME);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendKeyFrameInterpolationTime);
+      }
+
+      uniformLoc = program->GetDefaultUniformLocation(Uniform::BLEND_KEY_FRAME_COUNT);
+      if (uniformLoc != -1)
+      {
+        glUniform1f(uniformLoc, job.animData.blendKeyFrameCount);
+      }
     }
   }
 
@@ -1340,7 +1366,6 @@ namespace ToolKit
 
     // Create material
     MaterialPtr mat                 = MakeNewPtr<Material>();
-    mat->m_isShaderMaterial         = true;
     ShaderPtr vert                  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeVert.shader", true));
     ShaderPtr frag                  = GetShaderManager()->Create<Shader>(ShaderPath("equirectToCubeFrag.shader", true));
 
@@ -1485,23 +1510,21 @@ namespace ToolKit
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
     cam->SetLens(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    Mat4 views[]            = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                               glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
-                               glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
+    Mat4 views[]          = {glm::lookAt(ZERO, Vec3(1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(-1.0f, 0.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, -1.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 1.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, 1.0f), Vec3(0.0f, -1.0f, 0.0f)),
+                             glm::lookAt(ZERO, Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, -1.0f, 0.0f))};
 
     // Create material
-    MaterialPtr mat         = MakeNewPtr<Material>();
-    mat->m_isShaderMaterial = true;
+    MaterialPtr mat       = MakeNewPtr<Material>();
+    ShaderPtr vert        = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
+    ShaderPtr frag        = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
 
-    ShaderPtr vert          = GetShaderManager()->Create<Shader>(ShaderPath("positionVert.shader", true));
-    ShaderPtr frag          = GetShaderManager()->Create<Shader>(ShaderPath("preFilterEnvMapFrag.shader", true));
-
-    mat->m_cubeMap          = cubemap;
-    mat->m_vertexShader     = vert;
-    mat->m_fragmentShader   = frag;
+    mat->m_cubeMap        = cubemap;
+    mat->m_vertexShader   = vert;
+    mat->m_fragmentShader = frag;
     mat->GetRenderState()->cullMode = CullingType::TwoSided;
     mat->Init();
 

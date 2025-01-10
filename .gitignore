@@ -49,6 +49,7 @@ Resources/Engine/workspace.settings
 /Dependency/zlib-1.2.12/contrib/minizip/webbuild
 /BuildScripts/build
 /BuildScripts/ninjaBuild
+/TkAndroidBuild
 
 *.iml
 .gradle

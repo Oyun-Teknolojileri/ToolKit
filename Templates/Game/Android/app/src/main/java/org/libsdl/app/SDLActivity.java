@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -54,21 +53,11 @@ import android.widget.Toast;
 import java.util.Hashtable;
 import java.util.Locale;
 
-import com.otyazilim.toolkit.ToolKitAndroid;
 
 /**
     SDL Activity
 */
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
-
-    /*
-        SDL gives support for reading files with some functions but ToolKit needs to open and read from
-        a pak file. We need AssetManager for this. We pass AssetManager via a native function that is
-        implemented in Cpp.
-        AssetManager is a member variable so the garbage collector does not clean it.
-     */
-    AssetManager mgr;
-
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 2;
     private static final int SDL_MINOR_VERSION = 28;
@@ -438,10 +427,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 SDLActivity.onNativeDropFile(filename);
             }
         }
-
-        // Load Asset Manager to ToolKit Android
-        ToolKitAndroid tkAndroid = new ToolKitAndroid();
-        tkAndroid.LoadAssetManagerToCpp(getResources().getAssets());
     }
 
     protected void pauseNativeThread() {

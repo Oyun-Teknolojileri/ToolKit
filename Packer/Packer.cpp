@@ -95,9 +95,7 @@ namespace ToolKit
       return -1;
     }
 
-    String sceneResourcesPath = ConcatPaths({ResourcePath(), "Scenes"});
-
-    int packResult            = GetFileManager()->PackResources(sceneResourcesPath);
+    int packResult = GetFileManager()->PackResources();
     if (packResult != 0)
     {
       return packResult;
@@ -386,7 +384,7 @@ namespace ToolKit
 
     String projectName = activeProjectName;
     String apkLocation = ConcatPaths({workspacePath, projectName, apkPath});
-    String packageName = "org.libsdl.app/org.libsdl.app.SDLActivity"; // adb uses forward slash
+    String packageName = "com.otyazilim.toolkit." + projectName + "/com.otyazilim.toolkit.ToolKitActivity";
 
     int execResult;
     execResult = PlatformHelpers::SysComExec("adb install " + apkLocation, false, true, nullptr);
@@ -422,7 +420,6 @@ namespace ToolKit
         std::filesystem::absolute(ConcatPaths({m_templateGameFolderPath, mainPath, "AndroidManifest.xml"})).string());
 
     // replace template values with our settings
-    ReplaceFirstStringInPlace(androidManifest, "@string/app_name", applicationName);
 
     // 0 undefined 1 landscape 2 Portrait
     String oriantationNames[3] {"fullSensor", "landscape", "portrait"};
@@ -432,7 +429,6 @@ namespace ToolKit
 
     String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
     String manifestLoc  = ConcatPaths({mainLocation, "AndroidManifest.xml"});
-
     GetFileManager()->WriteAllText(manifestLoc, androidManifest);
   }
 
@@ -451,6 +447,7 @@ namespace ToolKit
     ReplaceFirstStringInPlace(gradleFileText, "minSdkVersion 19", "minSdkVersion " + std::to_string(m_minSdk));
     ReplaceFirstStringInPlace(gradleFileText, "maxSdkVersion 34", "maxSdkVersion " + std::to_string(m_maxSdk));
     ReplaceFirstStringInPlace(gradleFileText, "compileSdkVersion 33", "compileSdkVersion " + std::to_string(m_maxSdk));
+    ReplaceFirstStringInPlace(gradleFileText, "__TK_NAMESPACE__", "com.otyazilim.toolkit." + projectName);
 
     String mainLocation = ConcatPaths({workspacePath, projectName, mainPath});
     String gradleLoc    = ConcatPaths({mainLocation, "build.gradle"});
@@ -749,10 +746,7 @@ namespace ToolKit
     for (int i = 0; i < ArraySize(files); i++)
     {
       std::filesystem::copy(files[i].c_str(), publishDirectory, std::filesystem::copy_options::overwrite_existing, ec);
-      if (returnLoggingError("Copy: " + files[i] + " to " + publishDirectory, false, __LINE__))
-      {
-        return -1;
-      }
+      returnLoggingError("Copy: " + files[i] + " to " + publishDirectory, false, __LINE__);
     }
 
     // Create run script

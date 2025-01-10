@@ -205,10 +205,9 @@ namespace ToolKit
       // Create grid material.
       if (!GetMaterialManager()->Exist(g_gridMaterialName))
       {
-        MaterialPtr unlitMaterial          = GetMaterialManager()->GetCopyOfUnlitMaterial();
+        MaterialPtr unlitMaterial  = GetMaterialManager()->GetCopyOfUnlitMaterial();
 
-        MaterialPtr shaderMaterial         = MakeNewPtr<Material>();
-        shaderMaterial->m_isShaderMaterial = true;
+        MaterialPtr shaderMaterial = MakeNewPtr<Material>();
         shaderMaterial->SetRenderState(unlitMaterial->GetRenderState());
 
         shaderMaterial->GetRenderState()->blendFunction = BlendFunction::SRC_ALPHA_ONE_MINUS_SRC_ALPHA;
@@ -233,8 +232,6 @@ namespace ToolKit
 
     void Grid::UpdateShaderParams()
     {
-      GridFragmentShader* gfs = static_cast<GridFragmentShader*>(m_material->m_fragmentShader.get());
-
       m_material->UpdateProgramUniform("GridData.cellSize", m_gridCellSize);
       m_material->UpdateProgramUniform("GridData.lineMaxPixelCount", m_maxLinePixelCount);
       m_material->UpdateProgramUniform("GridData.horizontalAxisColor", m_horizontalAxisColor);

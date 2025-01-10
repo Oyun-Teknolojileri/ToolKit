@@ -275,10 +275,7 @@ namespace ToolKit
     {
       if (EditorViewportPtr vp = g_app->GetActiveViewport())
       {
-        if (CameraPtr cam = vp->GetCamera())
-        {
-          cam->m_node->SetTransform(Mat4());
-        }
+        vp->ResetCameraToDefault();
       }
     }
 
@@ -657,6 +654,90 @@ namespace ToolKit
       }
     }
 
+    void SelectSimilar(TagArgArray tagArgs)
+    {
+      auto showUsage = []() { TK_WRN("call command with arg: --by <material, mesh>"); };
+      if (tagArgs.empty())
+      {
+        showUsage();
+        return;
+      }
+
+      TagArg arg = tagArgs.front();
+      if (arg.first != "by")
+      {
+        showUsage();
+        return;
+      }
+
+      if (arg.second.empty())
+      {
+        showUsage();
+        return;
+      }
+
+      String searchBy = arg.second.front();
+
+      if (EditorScenePtr currScene = g_app->GetCurrentScene())
+      {
+        if (EntityPtr currNtt = currScene->GetCurrentSelection())
+        {
+          // For now select all similar meshes.
+          if (searchBy == "mesh")
+          {
+            if (MeshComponentPtr com = currNtt->GetMeshComponent())
+            {
+              if (MeshPtr mesh = com->GetMeshVal())
+              {
+                EntityPtrArray sameEntities = currScene->Filter(
+                    [&mesh](EntityPtr ntt) -> bool
+                    {
+                      if (MeshComponentPtr com2 = ntt->GetMeshComponent())
+                      {
+                        if (mesh == com2->GetMeshVal())
+                        {
+                          return true;
+                        }
+                      }
+                      return false;
+                    });
+
+                currScene->AddToSelection(sameEntities, false);
+              }
+            }
+          }
+          else if (searchBy == "material")
+          {
+            if (MaterialComponentPtr com = currNtt->GetMaterialComponent())
+            {
+              if (MaterialPtr mat = com->GetFirstMaterial())
+              {
+                EntityPtrArray sameEntities = currScene->Filter(
+                    [&mat](EntityPtr ntt) -> bool
+                    {
+                      if (MaterialComponentPtr com2 = ntt->GetMaterialComponent())
+                      {
+                        if (mat == com2->GetFirstMaterial())
+                        {
+                          return true;
+                        }
+                      }
+                      return false;
+                    });
+
+                currScene->AddToSelection(sameEntities, false);
+              }
+            }
+          }
+          else
+          {
+            showUsage();
+            return;
+          }
+        }
+      }
+    }
+
     // ImGui ripoff. Portable helpers.
     static int Stricmp(const char* str1, const char* str2)
     {
@@ -721,6 +802,7 @@ namespace ToolKit
       CreateCommand(g_showBVHNodes, ShowBVHNodes);
       CreateCommand(g_deleteSelection, DeleteSelection);
       CreateCommand(g_showProfileTimer, ShowProfileTimer);
+      CreateCommand(g_selectSimilar, SelectSimilar);
     }
 
     ConsoleWindow::~ConsoleWindow() {}

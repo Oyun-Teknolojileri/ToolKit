@@ -93,7 +93,7 @@ namespace ToolKit
 
     {
       const BoundingBox& box = surface->GetBoundingBox(true);
-      Ray ray                = vp->RayFromMousePosition();
+      Ray ray                = vp->RayFromMousePosition(); // Game viewport sets the mouse location at its update.
 
       float t                = 0.0f;
       if (RayBoxIntersection(ray, box, t))

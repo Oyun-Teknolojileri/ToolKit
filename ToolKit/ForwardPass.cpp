@@ -50,7 +50,7 @@ namespace ToolKit
     {
       // This is the optimal flag if the depth buffer is filled.
       // Only the visible fragments will pass the test.
-      renderer->SetDepthTestFunc(CompareFunctions::FuncEqual);
+      renderer->SetDepthTestFunc(CompareFunctions::FuncLequal);
     }
     else
     {
@@ -113,25 +113,29 @@ namespace ToolKit
       renderer->EnableDepthWrite(false);
       for (RenderJobArray::iterator job = begin; job != end; job++)
       {
-        if (job->Material->m_isShaderMaterial)
+        if (job->Material->IsShaderMaterial())
         {
-          renderer->BindProgramOfMaterial(job->Material);
-        }
-
-        Material* mat = job->Material;
-        if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
-        {
-          mat->GetRenderState()->cullMode = CullingType::Front;
-          renderer->Render(*job);
-
-          mat->GetRenderState()->cullMode = CullingType::Back;
-          renderer->Render(*job);
-
-          mat->GetRenderState()->cullMode = CullingType::TwoSided;
+          renderer->RenderWithProgramFromMaterial(*job);
         }
         else
         {
-          renderer->Render(*job);
+          renderer->BindProgram(program);
+
+          Material* mat = job->Material;
+          if (mat->GetRenderState()->cullMode == CullingType::TwoSided)
+          {
+            mat->GetRenderState()->cullMode = CullingType::Front;
+            renderer->Render(*job);
+
+            mat->GetRenderState()->cullMode = CullingType::Back;
+            renderer->Render(*job);
+
+            mat->GetRenderState()->cullMode = CullingType::TwoSided;
+          }
+          else
+          {
+            renderer->Render(*job);
+          }
         }
       }
       renderer->EnableDepthWrite(true);
@@ -148,7 +152,7 @@ namespace ToolKit
 
     for (RenderJobItr job = begin; job != end; job++)
     {
-      if (job->Material->m_isShaderMaterial)
+      if (job->Material->IsShaderMaterial())
       {
         renderer->RenderWithProgramFromMaterial(*job);
       }

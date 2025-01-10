@@ -229,6 +229,28 @@ namespace ToolKit
     return nullptr;
   }
 
+  void Entity::DeserializeComponents(const SerializationFileInfo& info, XmlNode* entityNode)
+  {
+    ClearComponents();
+
+    if (XmlNode* comArray = entityNode->first_node(XmlComponentArrayElement.data()))
+    {
+      XmlNode* comNode = comArray->first_node(Object::StaticClass()->Name.c_str());
+      while (comNode != nullptr)
+      {
+        String cls;
+        ReadAttr(comNode, XmlObjectClassAttr.data(), cls);
+        ComponentPtr com = MakeNewPtrCasted<Component>(cls);
+        com->m_version   = m_version;
+        com->DeSerialize(info, comNode);
+
+        AddComponent(com);
+
+        comNode = comNode->next_sibling();
+      }
+    }
+  }
+
   XmlNode* Entity::SerializeImp(XmlDocument* doc, XmlNode* parent) const
   {
     XmlNode* objNode = Super::SerializeImp(doc, parent);
@@ -320,24 +342,7 @@ namespace ToolKit
       m_node->DeSerialize(info, transformNode);
     }
 
-    ClearComponents();
-
-    if (XmlNode* comArray = nttNode->first_node(XmlComponentArrayElement.data()))
-    {
-      XmlNode* comNode = comArray->first_node(Object::StaticClass()->Name.c_str());
-      while (comNode != nullptr)
-      {
-        String cls;
-        ReadAttr(comNode, XmlObjectClassAttr.data(), cls);
-        ComponentPtr com = MakeNewPtrCasted<Component>(cls);
-        com->m_version   = m_version;
-        com->DeSerialize(info, comNode);
-
-        AddComponent(com);
-
-        comNode = comNode->next_sibling();
-      }
-    }
+    DeserializeComponents(info, nttNode);
 
     return nttNode;
   }

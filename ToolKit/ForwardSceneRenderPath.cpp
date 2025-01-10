@@ -122,6 +122,11 @@ namespace ToolKit
     Frustum frustum            = ExtractFrustum(m_params.Cam->GetProjectViewMatrix(), false);
     EntityRawPtrArray entities = m_params.Scene->m_aabbTree.VolumeQuery(frustum);
 
+    if (m_params.grid != nullptr)
+    {
+      entities.push_back(m_params.grid.get());
+    }
+
     LightRawPtrArray lights;
     if (m_params.overrideLights.empty())
     {
@@ -159,7 +164,7 @@ namespace ToolKit
 
     m_shadowPass->m_params.scene      = m_params.Scene;
     m_shadowPass->m_params.viewCamera = m_params.Cam;
-    m_shadowPass->m_params.lights     = m_params.Scene->GetLights();
+    m_shadowPass->m_params.lights     = lights;
 
     RenderJobProcessor::SeperateRenderData(m_renderData, true);
     RenderJobProcessor::SortByMaterial(m_renderData);

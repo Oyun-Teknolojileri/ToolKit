@@ -339,14 +339,15 @@ namespace ToolKit
               {SCENE,    UI::m_worldIcon->m_textureId},
               {LAYER,    UI::m_worldIcon->m_textureId},
               {ANIM,     UI::m_clipIcon->m_textureId },
-              {AUDIO,    UI::m_audioIcon->m_textureId},
+              {WAW,      UI::m_audioIcon->m_textureId},
+              {MP3,      UI::m_audioIcon->m_textureId},
               {SHADER,   UI::m_codeIcon->m_textureId },
               {LAYER,    UI::m_worldIcon->m_textureId},
               {SKELETON, UI::m_boneIcon->m_textureId }
           };
 
           static std::unordered_set<String>
-              thumbExtensions {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL};
+              thumbExtensions {PNG, JPG, JPEG, TGA, BMP, PSD, HDR, MESH, SKINMESH, MATERIAL, WAW, MP3};
 
           if (dirEnt.m_isDirectory)
           {

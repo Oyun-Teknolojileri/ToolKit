@@ -275,14 +275,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\poolSTL\include</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\minizip-ng;$(SolutionDir)Dependency\minizip-ng\dist\include;$(SolutionDir)Dependency\poolSTL\include</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\minizip-ng\dist\lib;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\Bin\</OutDir>
-    <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\zlib-1.2.12\dist\include;$(SolutionDir)Dependency\mini_audio\;$(SolutionDir)Dependency\poolSTL\include</IncludePath>
-    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\zlib-1.2.12\dist\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)Dependency;$(SolutionDir)Dependency\glm;$(SolutionDir)Dependency\glad;$(SolutionDir)Dependency\RapidXml;$(SolutionDir)Dependency\SDL2\include;$(SolutionDir)Dependency\Stb;$(SolutionDir)Dependency\minizip-ng;$(SolutionDir)Dependency\minizip-ng\dist\include;$(SolutionDir)Dependency\poolSTL\include</IncludePath>
+    <LibraryPath>$(SolutionDir)Dependency\SDL2\lib;$(SolutionDir)Dependency\minizip-ng\dist\lib;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -300,12 +300,11 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>OpenGL32.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;zstd_static.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent />
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>$(SolutionDir)BuildScripts/UtilArtifacts.bat debug</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -328,12 +327,11 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>OpenGL32.lib;zlibstatic.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;zstd_static.lib;minizip.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib />
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>$(SolutionDir)BuildScripts/UtilArtifacts.bat</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

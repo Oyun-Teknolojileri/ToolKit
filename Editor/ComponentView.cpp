@@ -41,6 +41,11 @@ namespace ToolKit
           MaterialPtr& mat = matList[i];
           String path, fileName, ext;
           DecomposePath(mat->GetFile(), &path, &fileName, &ext);
+          if (fileName.empty())
+          {
+            fileName = mat->m_name;
+          }
+
           String uniqueName = fileName + "##" + std::to_string(i);
           ImGui::PushID(i);
           // push red color for X
@@ -336,7 +341,10 @@ namespace ToolKit
               {
                 var->m_editable = false;
               }
+              ValueUpdateFn multiUpdate = CustomDataView::MultiUpdate(var, comp->Class());
+              var->m_onValueChangedFn.push_back(multiUpdate);
               CustomDataView::ShowVariant(var, comp);
+              var->m_onValueChangedFn.pop_back();
               if (!modifiableComp)
               {
                 var->m_editable = true;

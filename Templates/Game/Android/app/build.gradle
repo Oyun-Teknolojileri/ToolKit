@@ -9,7 +9,7 @@ else {
 
 android {
     if (buildAsApplication) {
-        namespace "org.libsdl.app"
+        namespace "__TK_NAMESPACE__"
     }
     compileSdkVersion 33
     defaultConfig {

@@ -53,6 +53,7 @@ namespace ToolKit
       m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, m_linearDepthRt);
       m_framebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment1, m_normalRt);
 
+      // Pass incoming depth buffer to create z buffer for early z test.
       if (DepthTexturePtr depth = m_params.FrameBuffer->GetDepthTexture())
       {
         m_framebuffer->AttachDepthTexture(depth);
@@ -100,15 +101,6 @@ namespace ToolKit
     Renderer* renderer = GetRenderer();
     renderer->SetFramebuffer(m_framebuffer, GraphicBitFields::AllBits);
     renderer->SetCamera(m_params.Cam, true);
-  }
-
-  void ForwardPreProcessPass::InitDefaultDepthTexture(int width, int height)
-  {
-    if (m_depthTexture == nullptr)
-    {
-      m_depthTexture = MakeNewPtr<DepthTexture>();
-      m_depthTexture->Init(width, height, false);
-    }
   }
 
 } // namespace ToolKit

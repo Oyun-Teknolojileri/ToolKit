@@ -5,9 +5,9 @@ project (ToolKit)
 # Check if the compiler is Clang
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(CLANG_COMPILER TRUE)
-else ()
+else()
     set(CLANG_COMPILER FALSE)
-endif ()
+endif()
 
 # Check if the compiler is MSVC
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
@@ -15,6 +15,16 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 else ()
     set(MSVC_COMPILER FALSE)
 endif ()
+
+if (NOT DEFINED TOOLKIT_DIR)
+    set(TOOLKIT_DIR ${CMAKE_SOURCE_DIR})
+endif()
+
+# Define TK_GL_ES_3_0 globally
+add_definitions(-DTK_GL_ES_3_0)
+
+# Define TK_DLL_EXPORT globally
+add_definitions(-DTK_DLL_EXPORT)
 
 add_subdirectory(ToolKit)
 #add_subdirectory(Editor)

@@ -479,7 +479,7 @@ namespace ToolKit
     }
     PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
-    prefab->Init(this);
+    prefab->Init(Self<Scene>());
     AddEntity(prefab);
   }
 
@@ -513,6 +513,11 @@ namespace ToolKit
 
     m_entities.clear();
     m_aabbTree.Reset();
+
+    m_lightCache.clear();
+    m_directionalLightCache.clear();
+    m_environmentVolumeCache.clear();
+    m_skyCache  = nullptr;
 
     m_loaded    = false;
     m_initiated = false;
@@ -725,7 +730,7 @@ namespace ToolKit
     for (EntityPtr ntt : prefabList)
     {
       Prefab* prefab = static_cast<Prefab*>(ntt.get());
-      prefab->Init(this);
+      prefab->Init(Self<Scene>());
       prefab->Link();
     }
 
@@ -752,7 +757,7 @@ namespace ToolKit
 
       if (Prefab* prefab = ntt->As<Prefab>())
       {
-        prefab->Init(this);
+        prefab->Init(Self<Scene>());
         prefabList.push_back(ntt);
       }
 

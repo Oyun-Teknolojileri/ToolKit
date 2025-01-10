@@ -48,9 +48,7 @@ namespace ToolKit
       m_anchorMode->Init();
 
       ResetViewportImage(GetRenderTargetSettings());
-      CameraPtr cam            = GetCamera();
-      cam->m_orthographicScale = 1.0f;
-      cam->m_node->SetTranslation(Z_AXIS * 10.0f);
+      ResetCameraToDefault();
 
       AdjustZoom(TK_FLT_MIN);
 
@@ -64,6 +62,12 @@ namespace ToolKit
 
     void EditorViewport2d::Update(float deltaTime)
     {
+      // Resize Grid
+      if (IsShown())
+      {
+        g_app->m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, (float) (m_gridCellSizeByPixel), 2.0f);
+      }
+
       if (!IsActive())
       {
         // Always update the anchor.
@@ -71,9 +75,6 @@ namespace ToolKit
         SDL_GetGlobalMouseState(&m_mousePosBegin.x, &m_mousePosBegin.y);
         return;
       }
-
-      // Resize Grid
-      g_app->m_2dGrid->Resize(g_max2dGridSize, AxisLabel::XY, (float) (m_gridCellSizeByPixel), 2.0f);
 
       PanZoom(deltaTime);
       m_anchorMode->Update(deltaTime);
@@ -121,6 +122,23 @@ namespace ToolKit
       }
 
       EditorViewport::DispatchSignals();
+    }
+
+    void EditorViewport2d::ResetCameraToDefault()
+    {
+      Vec2 vpSize              = m_wndContentAreaSize;
+
+      CameraPtr cam            = MakeNewPtr<Camera>();
+      cam->m_orthographicScale = 1.0f;
+      cam->SetLens(vpSize.x * -0.5f, vpSize.x * 0.5f, vpSize.y * -0.5f, vpSize.y * 0.5f, -100.0f, 100.0f);
+
+      // Adjust camera location to match lower left corners.
+      float offset = -100.0f; // Slightly offset for editor view. Unit is in pixel.
+      cam->m_node->SetTranslation(Vec3(vpSize.x * 0.5f + offset, vpSize.y * 0.5f + offset, 10.0f));
+
+      m_zoomPercentage = 100.0f;
+
+      SetCamera(cam);
     }
 
     void EditorViewport2d::HandleDrop()
