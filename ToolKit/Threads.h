@@ -108,9 +108,10 @@ namespace ToolKit
   poolstl::par_if((Condition) && Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
 /** Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on. */
-#define TKExecBy(Target)         poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
+#define TKExecBy(Target) poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
 /** Insert an async task to given target. */
-#define TKAsyncTask(Target, ...) GetWorkerManager()->AsyncTask(Target, __VA_ARGS__);
+#define TKAsyncTask(Target, ...)                                                                                       \
+  GetWorkerManager()->AsyncTask(Main::GetInstance()->m_threaded ? Target : WorkerManager::MainThread, __VA_ARGS__);
 
 } // namespace ToolKit
