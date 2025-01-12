@@ -21,6 +21,7 @@ namespace ToolKit
       ThumbnailRenderer();
       virtual ~ThumbnailRenderer();
 
+      /** Renders a thumbnail for given directory entry. Works synchronously. */
       RenderTargetPtr RenderThumbnail(Renderer* renderer, const DirectoryEntry& dirEnt);
 
      private:
@@ -74,6 +75,7 @@ namespace ToolKit
       RenderTargetPtr GetDefaultThumbnail();
 
      private:
+      void LoadAsset(const DirectoryEntry& dirEnt);
       void CreateRenderTask(const DirectoryEntry& dirEnt);
 
      private:
