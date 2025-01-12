@@ -34,6 +34,26 @@ namespace ToolKit
     return false;
   }
 
+  void Prefab::Load()
+  {
+    if (m_loaded)
+    {
+      return;
+    }
+
+    String prefabPath = GetPrefabPathVal();
+    prefabPath        = PrefabPath(prefabPath);
+    m_prefabScene     = GetSceneManager()->Create<Scene>(prefabPath);
+
+    if (m_prefabScene == nullptr)
+    {
+      TK_ERR("Prefab scene isn't found.");
+      return;
+    }
+
+    m_loaded = true;
+  }
+
   void Prefab::UnInit()
   {
     Unlink();
@@ -67,7 +87,8 @@ namespace ToolKit
 
   void Prefab::Link()
   {
-    assert(!m_linked);
+    assert(!m_linked && "Don't relink the same prefab. Create a new one.");
+
     if (!m_linked)
     {
       m_linked = true;
@@ -162,16 +183,13 @@ namespace ToolKit
       return;
     }
 
-    m_currentScene    = curScene;
-    String prefabPath = GetPrefabPathVal();
-    prefabPath        = PrefabPath(prefabPath);
-    m_prefabScene     = GetSceneManager()->Create<Scene>(prefabPath);
-    if (m_prefabScene == nullptr)
+    if (!m_loaded)
     {
-      TK_ERR("Prefab scene isn't found.");
-      return;
+      TK_WRN("Trying to initiate a prefab before loading. Risk of runtime stall.");
+      Load();
     }
 
+    m_currentScene = curScene;
     m_prefabScene->Init();
     m_instanceEntities.clear();
 

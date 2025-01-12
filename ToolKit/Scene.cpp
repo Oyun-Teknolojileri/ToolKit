@@ -98,12 +98,18 @@ namespace ToolKit
       return;
     }
 
+    PrefabRawPtrArray prefabs;
     const EntityPtrArray& ntties = GetEntities();
     for (EntityPtr ntt : ntties)
     {
       if (SkyBase* sky = ntt->As<SkyBase>())
       {
         sky->Init();
+      }
+      else if (Prefab* prefab = ntt->As<Prefab>())
+      {
+        prefab->Init(Self<Scene>());
+        prefabs.push_back(prefab);
       }
       else if (ntt->IsDrawable())
       {
@@ -135,6 +141,12 @@ namespace ToolKit
           envCom->Init(true);
         }
       }
+    }
+
+    // Link all prefabs.
+    for (Prefab* prefab : prefabs)
+    {
+      prefab->Link();
     }
 
     m_initiated = true;
@@ -477,9 +489,12 @@ namespace ToolKit
         return;
       }
     }
+
     PrefabPtr prefab = MakeNewPtr<Prefab>();
     prefab->SetPrefabPathVal(path);
+    prefab->Load();
     prefab->Init(Self<Scene>());
+
     AddEntity(prefab);
   }
 
@@ -578,7 +593,6 @@ namespace ToolKit
     {
       if (add)
       {
-        sky->Init();
         m_skyCache = sky;
       }
       else
@@ -612,7 +626,6 @@ namespace ToolKit
       {
         if (add)
         {
-          envComp->Init(true);
           m_environmentVolumeCache.push_back(envComp);
         }
         else
@@ -757,7 +770,7 @@ namespace ToolKit
 
       if (Prefab* prefab = ntt->As<Prefab>())
       {
-        prefab->Init(Self<Scene>());
+        prefab->Load();
         prefabList.push_back(ntt);
       }
 
@@ -794,12 +807,6 @@ namespace ToolKit
     }
 
     m_postProcessSettings.DeSerialize(info.Document, parent);
-
-    for (EntityPtr ntt : prefabList)
-    {
-      PrefabPtr prefab = Cast<Prefab>(ntt);
-      prefab->Link();
-    }
   }
 
   ULongID Scene::GetBiggestEntityId()
