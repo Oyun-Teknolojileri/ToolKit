@@ -1168,7 +1168,7 @@ namespace ToolKit
 
     void UI::ShowBlocker()
     {
-      if (!BlockerData.Show)
+      if (!BlockerData.show)
       {
         return;
       }
@@ -1187,14 +1187,10 @@ namespace ToolKit
                                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground |
                                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize))
       {
-        CenteredText(BlockerData.Message);
+        CenteredText(BlockerData.message);
 
-        if (BlockerData.ShowStatusMessages)
-        {
-          CenteredText(g_app->m_statusMsg);
-        }
-
-        if (BlockerData.ShowWaitingDots)
+        // Show waiting dots.
+        if (BlockerData.showWaitingDots)
         {
           static int dotCnt   = 0;
           static float lastEp = GetElapsedMilliSeconds();
@@ -1203,6 +1199,7 @@ namespace ToolKit
           String dots[4]      = {"   .   ", "   ..   ", "   ...   ", " "};
           CenteredText(dots[dotCnt]);
 
+          // Add one more dot every 500ms.
           if (elp - lastEp > 500.0f)
           {
             lastEp = elp;

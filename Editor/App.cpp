@@ -555,7 +555,7 @@ namespace ToolKit
 #endif
 
       String cmd    = "call " + ConcatPaths({path, "Build.bat "}) + "\"" + buildConfig.data() + "\"";
-      m_statusMsg   = "Compiling ..." + g_statusNoTerminate;
+      m_statusMsg   = "Compiling" + g_statusNoTerminate;
       m_isCompiling = true;
 
       ExecSysCommand(cmd,
@@ -1127,30 +1127,47 @@ namespace ToolKit
                   });
     }
 
-    void App::OpenScene(const String& fullPath)
+    void App::OpenSceneAsync(const String& fullPath)
     {
-      ClearSession();
+      // Start progress in loading bar.
+      m_statusMsg = "Loading" + g_statusNoTerminate;
 
-      GetCurrentScene()->Destroy(false);
-      GetSceneManager()->Remove(GetCurrentScene()->GetFile());
-      EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+      TKAsyncTask(WorkerManager::BackgroundPool,
+                  [this, fullPath]() -> void
+                  {
+                    // Load scene in background.
+                    EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
 
-      if (IsLayer(fullPath))
-      {
-        if (EditorViewport2dPtr viewport = GetWindow<EditorViewport2d>(g_2dViewport))
-        {
-          UILayerPtr layer = MakeNewPtr<UILayer>(scene);
-          GetUIManager()->AddLayer(viewport->m_viewportId, layer);
-        }
-        else
-        {
-          g_app->m_statusMsg = "Layer creation failed. No 2d viewport.";
-        }
-      }
+                    // Initiate and set the scene in the main thread.
+                    TKAsyncTask(WorkerManager::MainThread,
+                                [this, fullPath]() -> void
+                                {
+                                  ClearSession();
+                                  GetCurrentScene()->Destroy(false);
+                                  GetSceneManager()->Remove(GetCurrentScene()->GetFile());
 
-      SetCurrentScene(scene);
-      scene->Init();
-      m_workspace.SetScene(scene->m_name);
+                                  // Get the loaded scene.
+                                  EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+                                  if (IsLayer(fullPath))
+                                  {
+                                    if (EditorViewport2dPtr viewport = GetWindow<EditorViewport2d>(g_2dViewport))
+                                    {
+                                      UILayerPtr layer = MakeNewPtr<UILayer>(scene);
+                                      GetUIManager()->AddLayer(viewport->m_viewportId, layer);
+                                    }
+                                    else
+                                    {
+                                      m_statusMsg = "Layer creation failed. No 2d viewport.";
+                                    }
+                                  }
+
+                                  SetCurrentScene(scene);
+                                  scene->Init();
+                                  m_workspace.SetScene(scene->m_name);
+
+                                  m_statusMsg = "Loaded";
+                                });
+                  });
     }
 
     void App::MergeScene(const String& fullPath)
@@ -1471,7 +1488,7 @@ namespace ToolKit
       if (!scene.empty())
       {
         String fullPath = ScenePath(scene);
-        OpenScene(fullPath);
+        OpenSceneAsync(fullPath);
       }
 
       return nullptr;

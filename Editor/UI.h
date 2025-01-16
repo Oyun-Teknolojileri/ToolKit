@@ -98,10 +98,9 @@ namespace ToolKit
 
       static struct Blocker
       {
-        bool Show               = false;
-        bool ShowStatusMessages = false;
-        bool ShowWaitingDots    = false;
-        String Message          = "Working";
+        bool show            = false;
+        bool showWaitingDots = false;
+        String message       = "Working";
       } BlockerData;
 
       static struct Import

@@ -33,7 +33,7 @@ namespace ToolKit
       String publishArguments = ConstructPublishArgs(platform, publishConfig, false);
 
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
-      g_app->m_statusMsg = "Publishing..." + g_statusNoTerminate;
+      g_app->m_statusMsg = "Publishing" + g_statusNoTerminate;
 
       String packerPath  = NormalizePath("Utils/Packer/Packer.exe");
 
@@ -87,7 +87,7 @@ namespace ToolKit
       String publishArguments = ConstructPublishArgs(PublishPlatform::Windows, PublishConfig::Debug, true);
 
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
-      g_app->m_statusMsg = "Packing..." + g_statusNoTerminate;
+      g_app->m_statusMsg = "Packing" + g_statusNoTerminate;
 
       String packerPath  = NormalizePath("Utils/Packer/Packer.exe");
 

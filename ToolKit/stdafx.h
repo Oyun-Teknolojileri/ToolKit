@@ -17,6 +17,7 @@
 #include <future>
 #include <limits>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <random>
 #include <set>

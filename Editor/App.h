@@ -99,7 +99,10 @@ namespace ToolKit
       void ManageDropfile(const StringView& fileName);
 
       // Workspace.
-      void OpenScene(const String& fullPath);
+      //////////////////////////////////////////
+
+      /** Open the given scene without blocking the editor. */
+      void OpenSceneAsync(const String& fullPath);
       void MergeScene(const String& fullPath);
       void LinkScene(const String& fullPath);
       void ApplyProjectSettings(bool setDefaults);
@@ -107,7 +110,9 @@ namespace ToolKit
       void PackResources();
       void SaveAllResources();
 
-      // UI
+      // UI.
+      //////////////////////////////////////////
+
       WindowPtr GetActiveWindow();
       EditorViewportPtr GetActiveViewport();
       EditorViewportPtr GetViewport(const String& name);

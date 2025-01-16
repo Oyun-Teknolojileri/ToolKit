@@ -39,6 +39,7 @@
 #include <future>
 #include <limits>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <random>
 #include <set>
@@ -123,6 +124,8 @@ namespace ToolKit
   typedef std::vector<struct RenderJob> RenderJobArray;
   typedef void* SoundBuffer; //!< Internal sound buffer object used for decoding / loading audio.
   typedef void* ZipFile;
+  typedef std::mutex Mutex;
+  typedef std::lock_guard<std::mutex> LockGuard;
 
   // Resource types.
   typedef std::shared_ptr<class Animation> AnimationPtr;
