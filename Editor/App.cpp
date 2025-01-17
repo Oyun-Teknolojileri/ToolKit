@@ -617,7 +617,6 @@ namespace ToolKit
       ClearSession();
 
       EditorScenePtr currentScene = GetCurrentScene();
-      currentScene->Save(true);
       currentScene->UnInit();
 
       if (PluginManager* pluginMan = GetPluginManager())

@@ -188,13 +188,6 @@ namespace ToolKit
       }
     }
 
-    // TODO: This data does not need to be read, write always. It can be disabled enabled based on a config.
-    XmlNode* profileTimerNode = CreateXmlNode(doc, "ProfileTimer", settingsNode);
-    for (const auto& timer : TKStatTimerMap)
-    {
-      WriteAttr(profileTimerNode, doc, timer.first, std::to_string(timer.second.enabled));
-    }
-
     return settingsNode;
   }
 
@@ -205,16 +198,6 @@ namespace ToolKit
 
     Window.DeSerialize(doc, settingsNode);
     Graphics.DeSerialize(doc, settingsNode);
-
-    if (XmlNode* timerNode = settingsNode->first_node("ProfileTimer"))
-    {
-      XmlAttribute* timer = timerNode->first_attribute();
-      while (timer)
-      {
-        TKStatTimerMap[timer->name()].enabled = (bool) std::atoi(timer->value());
-        timer                                 = timer->next_attribute();
-      }
-    }
 
     if (XmlNode* pluginNode = settingsNode->first_node("Plugins"))
     {
