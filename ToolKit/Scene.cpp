@@ -669,6 +669,24 @@ namespace ToolKit
     return scene;
   }
 
+  void Scene::PreDeserializeImp(const SerializationFileInfo& info, XmlNode* parent)
+  {
+    Super::PreDeserializeImp(info, parent);
+
+    // Count all Object nodes in the xml document
+    int objectCount          = 0;
+    const char* objClassName = Object::StaticClass()->Name.c_str();
+    for (XmlNode* child = parent->first_node(); child; child = child->next_sibling())
+    {
+      if (strcmp(child->name(), objClassName) == 0)
+      {
+        objectCount++;
+      }
+    }
+
+    m_numberOfThingsToLoad = glm::max(1, objectCount);
+  }
+
   XmlNode* Scene::DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
     // Match scene name with file name.

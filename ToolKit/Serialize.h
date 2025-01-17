@@ -36,6 +36,12 @@ namespace ToolKit
       PostDeSerializeImp(info, parent);
     }
 
+    /** Returns loaded percent of the serializable object. */
+    float GetLoadedPercent() { return 100.0f * m_numberOfThingsLoaded / m_numberOfThingsToLoad; }
+
+    /** Returns if loading of the serializable object is completed. */
+    bool IsLoadingComplated() { return glm::greaterThanEqual(GetLoadedPercent(), 100.0f); }
+
    protected:
     virtual void PreSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
 
@@ -51,14 +57,25 @@ namespace ToolKit
 
     virtual void PostSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
 
-    virtual void PreDeserializeImp(const SerializationFileInfo& info, XmlNode* parent) {}
+    virtual void PreDeserializeImp(const SerializationFileInfo& info, XmlNode* parent) { m_numberOfThingsLoaded = 0; }
 
     virtual XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) = 0;
 
-    virtual void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) {}
+    virtual void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+    {
+      // At this point all loading must be complete.
+      m_numberOfThingsLoaded = m_numberOfThingsToLoad;
+    }
 
    public:
     String m_version = TKVersionStr;
+
+   protected:
+    /** Total number of things that will be loading. Used in completed percent calculation. */
+    int m_numberOfThingsToLoad = 1;
+
+    /** Total number of things got loaded. Used in completed percent calculation. */
+    int m_numberOfThingsLoaded = 0;
   };
 
 } // namespace ToolKit
