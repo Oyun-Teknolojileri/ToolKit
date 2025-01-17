@@ -201,10 +201,10 @@ namespace ToolKit
     {
       String fullPath = dirEnt.GetFullPath();
 
-      if (!Exist(fullPath))
+      if (!Exist(fullPath)) // If not a thumbnail found,
       {
-        CreateRenderTask(dirEnt);
-        m_thumbnailCache[fullPath] = m_defaultThumbnail;
+        CreateRenderTask(dirEnt);                        // Create a render task for it.
+        m_thumbnailCache[fullPath] = m_defaultThumbnail; // Return default path.
       }
 
       return m_thumbnailCache[fullPath];
@@ -228,16 +228,59 @@ namespace ToolKit
 
     void ThumbnailManager::UpdateThumbnail(const DirectoryEntry& dirEnt) { CreateRenderTask(dirEnt); }
 
+    void ThumbnailManager::LoadAsset(const DirectoryEntry& dirEnt)
+    {
+      String fullpath = dirEnt.GetFullPath();
+
+      if (dirEnt.m_ext == MESH || dirEnt.m_ext == SKINMESH)
+      {
+        if (dirEnt.m_ext == MESH)
+        {
+          GetMeshManager()->Create<Mesh>(fullpath);
+        }
+        else
+        {
+          GetMeshManager()->Create<SkinMesh>(fullpath);
+        }
+      }
+      else if (dirEnt.m_ext == MATERIAL)
+      {
+        GetMaterialManager()->Create<Material>(fullpath);
+      }
+      else if (SupportedImageFormat(dirEnt.m_ext))
+      {
+        if (dirEnt.m_ext == HDR)
+        {
+          GetTextureManager()->Create<Hdri>(fullpath);
+        }
+        else
+        {
+          GetTextureManager()->Create<Texture>(fullpath);
+        }
+      }
+    }
+
     void ToolKit::Editor::ThumbnailManager::CreateRenderTask(const DirectoryEntry& dirEnt)
     {
-      String fullPath = dirEnt.GetFullPath();
-      GetRenderSystem()->AddRenderTask({[this, fullPath, dirEnt](Renderer* renderer) -> void
-                                        {
-                                          RenderTargetPtr rt         = m_renderer.RenderThumbnail(renderer, dirEnt);
-                                          m_thumbnailCache[fullPath] = rt;
-                                        },
-                                        nullptr,
-                                        RenderTaskPriority::Low});
+      // Perform loading in the background thread.
+      TKAsyncTask(WorkerManager::BackgroundPool,
+                  [this, dirEnt]() -> void
+                  {
+                    LoadAsset(dirEnt);
+                    // After loading complete, create a render task in the main thread.
+                    TKAsyncTask(WorkerManager::MainThread,
+                                [this, dirEnt]() -> void
+                                {
+                                  GetRenderSystem()->AddRenderTask({[=](Renderer* renderer) -> void
+                                                                    {
+                                                                      RenderTargetPtr rt =
+                                                                          m_renderer.RenderThumbnail(renderer, dirEnt);
+                                                                      m_thumbnailCache[dirEnt.GetFullPath()] = rt;
+                                                                    },
+                                                                    nullptr,
+                                                                    RenderTaskPriority::Low});
+                                });
+                  });
     }
 
   } // namespace Editor

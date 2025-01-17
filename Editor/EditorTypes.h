@@ -55,7 +55,7 @@ namespace ToolKit
     const String g_workspaceFile("Workspace.settings");
     const String g_uiLayoutFile("UILayout.ini");
     const String g_editorSettingsFile("Editor.settings");
-    const String g_statusNoTerminate("#nte");
+    const String g_statusNoTerminate("#nte"); //!< Keep the status message with progress indicator.
     static const StringView XmlNodePath("path");
 
     // Colors and materials.

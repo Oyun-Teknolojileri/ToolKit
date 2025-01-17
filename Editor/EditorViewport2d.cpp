@@ -158,7 +158,7 @@ namespace ToolKit
             openButton.m_callback = [entry]() -> void
             {
               String fullPath = entry->GetFullPath();
-              g_app->OpenScene(fullPath);
+              g_app->OpenSceneAsync(fullPath);
             };
 
             MultiChoiceButtonInfo linkButton;

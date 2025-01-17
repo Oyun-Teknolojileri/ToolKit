@@ -68,7 +68,19 @@ namespace ToolKit
 
         if (noTerminate)
         {
-          String trimmed = Trim(g_app->m_statusMsg.c_str(), g_statusNoTerminate);
+          // Count 3 sec. to alternate between dots.
+          static float elapsedTime    = 0.0f;
+          elapsedTime                += ImGui::GetIO().DeltaTime;
+
+          static const char* dots[4]  = {" ", " .", " ..", " ..."};
+          String trimmed              = Trim(g_app->m_statusMsg.c_str(), g_statusNoTerminate);
+          trimmed                    += dots[glm::clamp((int) glm::floor(elapsedTime), 0, 3)];
+
+          if (elapsedTime > 4)
+          {
+            elapsedTime = 0.0f;
+          }
+
           ImGui::Text(trimmed.c_str());
         }
         else

@@ -22,23 +22,31 @@ namespace ToolKit
     uint coreCount = std::thread::hardware_concurrency();
     if constexpr (TK_PLATFORM == PLATFORM::TKWeb)
     {
-      m_frameWorkers = new ThreadPool(glm::min(coreCount, 4u));
+      m_frameWorkers      = new ThreadPool(glm::min(coreCount, 2u));
+      m_backgroundWorkers = new ThreadPool(glm::min(coreCount, 2u));
     }
     else
     {
-      m_frameWorkers = new ThreadPool(glm::min(coreCount, 8u));
+      m_frameWorkers      = new ThreadPool(glm::min(coreCount, 4u));
+      m_backgroundWorkers = new ThreadPool(glm::min(coreCount, 2u));
     }
 
     Main::GetInstance()->RegisterPostUpdateFunction([this](float deltaTime) -> void
                                                     { ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex); });
   }
 
-  void WorkerManager::UnInit() { SafeDel(m_frameWorkers); }
+  void WorkerManager::UnInit()
+  {
+    SafeDel(m_frameWorkers);
+    SafeDel(m_backgroundWorkers);
+  }
 
   ThreadPool& WorkerManager::GetPool(Executor executor)
   {
     switch (executor)
     {
+    case WorkerManager::Executor::BackgroundPool:
+      return *m_backgroundWorkers;
     case WorkerManager::Executor::FramePool:
     default:
       return *m_frameWorkers;
@@ -53,9 +61,15 @@ namespace ToolKit
 
   void WorkerManager::Flush()
   {
-    m_frameWorkers->pause();
-    m_frameWorkers->wait_for_tasks();
-    m_frameWorkers->unpause();
+    auto flushPoolFn = [](ThreadPool* pool) -> void
+    {
+      pool->pause();
+      pool->wait_for_tasks();
+      pool->unpause();
+    };
+
+    flushPoolFn(m_frameWorkers);
+    flushPoolFn(m_backgroundWorkers);
 
     ExecuteTasks(m_mainThreadTasks, m_mainTaskMutex);
   }

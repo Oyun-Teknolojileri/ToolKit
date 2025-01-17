@@ -30,8 +30,9 @@ namespace ToolKit
     /** Predefined thread pools for specific jobs. */
     enum Executor
     {
-      MainThread, //!< Tasks in this executor runs in sync with main thread at the end of the current frame.
-      FramePool   //!< Tasks that need to be completed within the frame should use this pool.
+      MainThread,     //!< Tasks in this executor runs in sync with main thread at the end of the current frame.
+      FramePool,      //!< Tasks that need to be completed within the frame should use this pool.
+      BackgroundPool, //!< Tasks that needs to be completed in the background should be performed using this pool.
     };
 
    public:
@@ -63,6 +64,10 @@ namespace ToolKit
       {
         return m_frameWorkers->submit(func, std::forward<A>(args)...);
       }
+      else if (exec == BackgroundPool)
+      {
+        return m_backgroundWorkers->submit(func, std::forward<A>(args)...);
+      }
       else if (exec == MainThread)
       {
         std::shared_ptr<std::packaged_task<R()>> ptask =
@@ -82,7 +87,10 @@ namespace ToolKit
 
    public:
     /** Task that suppose to complete in a frame should be using this pool. */
-    ThreadPool* m_frameWorkers = nullptr;
+    ThreadPool* m_frameWorkers      = nullptr;
+
+    /** Tasks that needs to be run in the background should be performed using this pool. */
+    ThreadPool* m_backgroundWorkers = nullptr;
 
     /** Tasks that will be executed at the main thread frame end is stored here. */
     TaskQueue m_mainThreadTasks;
@@ -100,9 +108,10 @@ namespace ToolKit
   poolstl::par_if((Condition) && Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
 /** Parallel loop execution target which lets the programmer to choose the thread pool to execute for loop on. */
-#define TKExecBy(Target)         poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
+#define TKExecBy(Target) poolstl::par_if(Main::GetInstance()->m_threaded, GetWorkerManager()->GetPool(Target))
 
 /** Insert an async task to given target. */
-#define TKAsyncTask(Target, ...) GetWorkerManager()->AsyncTask(Target, __VA_ARGS__);
+#define TKAsyncTask(Target, ...)                                                                                       \
+  GetWorkerManager()->AsyncTask(Main::GetInstance()->m_threaded ? Target : WorkerManager::MainThread, __VA_ARGS__);
 
 } // namespace ToolKit

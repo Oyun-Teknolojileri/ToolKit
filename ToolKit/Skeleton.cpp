@@ -169,7 +169,22 @@ namespace ToolKit
 
   Skeleton::~Skeleton() { UnInit(); }
 
-  void Skeleton::Init(bool flushClientSideArray) {}
+  void Skeleton::Init(bool flushClientSideArray)
+  {
+    if (m_initiated)
+    {
+      return;
+    }
+
+    m_bindPoseTexture = CreateBoneTransformTexture(this);
+    for (uint boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
+    {
+      Mat4 transform = m_Tpose.m_boneMap[m_bones[boneIndx]->m_name].node->GetTransform();
+      uploadBoneMatrix(transform * m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, (uint) boneIndx);
+    }
+
+    m_initiated = true;
+  }
 
   void Skeleton::UnInit()
   {
@@ -335,15 +350,6 @@ namespace ToolKit
     {
       Traverse(node, nullptr, this);
     }
-
-    m_bindPoseTexture = CreateBoneTransformTexture(this);
-    for (uint boneIndx = 0; boneIndx < m_bones.size(); boneIndx++)
-    {
-      Mat4 transform = m_Tpose.m_boneMap[m_bones[boneIndx]->m_name].node->GetTransform();
-      uploadBoneMatrix(transform * m_bones[boneIndx]->m_inverseWorldMatrix, m_bindPoseTexture, (uint) boneIndx);
-    }
-
-    m_initiated = true;
 
     return nullptr;
   }
