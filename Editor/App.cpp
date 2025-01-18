@@ -1129,13 +1129,20 @@ namespace ToolKit
     void App::OpenSceneAsync(const String& fullPath)
     {
       // Start progress in loading bar.
-      m_statusMsg = "Loading" + g_statusNoTerminate;
+      m_statusMsg           = "Loading: 0.00%%";
+      auto progressReportFn = [](float progress) -> void
+      {
+        char buffer[10];
+        snprintf(buffer, sizeof(buffer), "%.2f", progress);
+        g_app->m_statusMsg = "Loading: " + std::string(buffer) + "%%";
+      };
 
       TKAsyncTask(WorkerManager::BackgroundPool,
-                  [this, fullPath]() -> void
+                  [this, fullPath, progressReportFn]() -> void
                   {
                     // Load scene in background.
-                    EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+                    EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath, progressReportFn);
+                    m_statusMsg          = "Complate.";
 
                     // Initiate and set the scene in the main thread.
                     TKAsyncTask(WorkerManager::MainThread,
@@ -1163,8 +1170,6 @@ namespace ToolKit
                                   SetCurrentScene(scene);
                                   scene->Init();
                                   m_workspace.SetScene(scene->m_name);
-
-                                  m_statusMsg = "Loaded";
                                 });
                   });
     }
