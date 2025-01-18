@@ -714,6 +714,7 @@ namespace ToolKit
       ntt->m_version              = m_version;
 
       ntt->DeSerialize(info, node);
+      m_numberOfThingsLoaded++;
 
       if (ntt->IsA<Prefab>())
       {
@@ -785,6 +786,7 @@ namespace ToolKit
       EntityPtr ntt          = MakeNewPtrCasted<Entity>(typeAttr->value());
 
       ntt->DeSerialize(info, node);
+      m_numberOfThingsLoaded++;
 
       if (Prefab* prefab = ntt->As<Prefab>())
       {
