@@ -189,6 +189,8 @@ namespace ToolKit
 
       void HideGizmos();
       void ShowGizmos();
+      void SetStatusMsg(const String& msg);
+      String GetStatusMsg();
 
       // Simulation
       EditorViewportPtr GetSimulationViewport();
@@ -215,7 +217,6 @@ namespace ToolKit
      public:
       // UI elements.
       WindowPtrArray m_windows; //!< Persistent windows that get serialized with editor.
-      String m_statusMsg;
 
       // Editor variables.
       float m_camSpeed         = 8.0; // Meters per sec.
@@ -281,6 +282,9 @@ namespace ToolKit
       String m_newSceneName;
       float m_deltaTime  = 0.0f;
       bool m_isCompiling = false;
+
+      String m_statusMsg;
+      Mutex m_statusMsgMutex;
     };
 
   } // namespace Editor

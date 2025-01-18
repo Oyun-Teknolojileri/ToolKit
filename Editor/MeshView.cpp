@@ -94,9 +94,8 @@ namespace ToolKit
                    submesh->m_material->GetFile(),
                    [this](const DirectoryEntry& entry)
                    {
-                     g_app->m_statusMsg = "Failed.";
-
-                     TK_WRN("You can't change mesh's default material.");
+                     g_app->SetStatusMsg(g_statusFailed);
+                     TK_ERR("You can't change mesh's default material.");
                    });
           if (i < submeshes.size() - 1)
           {

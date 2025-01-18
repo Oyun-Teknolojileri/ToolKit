@@ -33,9 +33,9 @@ namespace ToolKit
       String publishArguments = ConstructPublishArgs(platform, publishConfig, false);
 
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
-      g_app->m_statusMsg = "Publishing" + g_statusNoTerminate;
+      g_app->SetStatusMsg(g_statusPublishing + g_statusNoTerminate);
 
-      String packerPath  = NormalizePath("Utils/Packer/Packer.exe");
+      String packerPath = NormalizePath("Utils/Packer/Packer.exe");
 
       // Close zip file before running packer, because packer will use this file as well,
       // this will cause errors otherwise.
@@ -61,13 +61,13 @@ namespace ToolKit
       {
         if (res != 0)
         {
-          TK_WRN("Publish Failed.");
-          g_app->m_statusMsg = "Failed.";
+          TK_ERR("Publish Failed.");
+          g_app->SetStatusMsg(g_statusFailed);
         }
         else
         {
           TK_LOG("Publish Ended.");
-          g_app->m_statusMsg = "Success.";
+          g_app->SetStatusMsg(g_statusSucceeded);
         }
         m_isBuilding = false;
       };
@@ -87,9 +87,9 @@ namespace ToolKit
       String publishArguments = ConstructPublishArgs(PublishPlatform::Windows, PublishConfig::Debug, true);
 
       GetFileManager()->WriteAllText("PublishArguments.txt", publishArguments);
-      g_app->m_statusMsg = "Packing" + g_statusNoTerminate;
+      g_app->SetStatusMsg(g_statusPacking + g_statusNoTerminate);
 
-      String packerPath  = NormalizePath("Utils/Packer/Packer.exe");
+      String packerPath = NormalizePath("Utils/Packer/Packer.exe");
 
       // Close zip file before running packer, because packer will use this file as well,
       // this will cause errors otherwise.
@@ -102,13 +102,13 @@ namespace ToolKit
       {
         if (res != 0)
         {
-          TK_WRN("Packing Failed.");
-          g_app->m_statusMsg = "Failed.";
+          TK_ERR("Packing Failed.");
+          g_app->SetStatusMsg(g_statusFailed);
         }
         else
         {
           TK_LOG("Packing Ended.");
-          g_app->m_statusMsg = "Success.";
+          g_app->SetStatusMsg(g_statusSucceeded);
         }
         m_isBuilding = false;
       };

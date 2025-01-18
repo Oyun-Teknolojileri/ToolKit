@@ -531,7 +531,8 @@ namespace ToolKit
       else
       {
         // Warn user
-        g_app->m_statusMsg = "Falied. Transform locked.";
+        g_app->SetStatusMsg(g_statusFailed);
+        TK_ERR("Transform failed. Transform locked.");
       }
 
       // Set original parents back.

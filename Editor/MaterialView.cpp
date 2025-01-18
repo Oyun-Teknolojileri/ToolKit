@@ -188,9 +188,11 @@ namespace ToolKit
                  {
                    if (strcmp(dirEnt.m_ext.c_str(), ".shader") != 0)
                    {
-                     g_app->m_statusMsg = "Failed. Shader expected.";
+                     g_app->SetStatusMsg(g_statusFailed);
+                     TK_ERR("Failed. Shader expected.");
                      return;
                    }
+
                    mat->m_vertexShader = GetShaderManager()->Create<Shader>(dirEnt.GetFullPath());
                    mat->m_vertexShader->Init();
                    updateThumbFn();

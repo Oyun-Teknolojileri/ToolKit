@@ -411,7 +411,8 @@ namespace ToolKit
         {
           mesh->ApplyTransform(ts);
         }
-        g_app->m_statusMsg = "Transforms applied to " + ntt->GetNameVal();
+
+        TK_LOG("Transforms applied to %s", ntt->GetNameVal().c_str());
       }
       else
       {

@@ -434,8 +434,8 @@ namespace ToolKit
           if (noCamera)
           {
             m_owner->m_cameraAlignment = rollBack;
-            g_app->m_statusMsg         = "Operation Failed !";
-            g_app->GetConsole()->AddLog("No camera selected.\nSelect a camera from the scene.", LogType::Error);
+            g_app->SetStatusMsg(g_statusFailed);
+            TK_ERR("No camera selected.\nSelect a camera from the scene.");
           }
         }
         else

@@ -58,6 +58,34 @@ namespace ToolKit
     const String g_statusNoTerminate("#nte"); //!< Keep the status message with progress indicator.
     static const StringView XmlNodePath("path");
 
+    // Status messages.
+    const String g_statusOk("OK");
+    const String g_statusSceneSaved("Scene saved");
+    const String g_statusGameIsPlaying("Game is playing");
+    const String g_statusGameIsResumed("Game is resumed");
+    const String g_statusGameIsPaused("Game is paused");
+    const String g_statusGameIsStopped("Game is stopped");
+    const String g_statusCompiling("Compiling");
+    const String g_statusCompileFailed("Compile failed");
+    const String g_statusCmakeBuildFailed("CMake build failed");
+    const String g_statusCmakeGenerateFailed("CMake generate failed");
+    const String g_statusCompiled("Compiled");
+    const String g_statusNo3dViewports("No 3D viewports !");
+    const String g_statusNo2dViewports("No 2D viewports !");
+    const String g_statusDropDiscarded("Drop discarded");
+    const String g_statusLoading("Loading");
+    const String g_statusComplate("Complate");
+    const String g_statusRemoved("Removed");
+    const String g_statusFailed("Failed");
+    const String g_statusSucceeded("Succeeded");
+    const String g_statusMaterialComponentAdded("MaterialComponent added.");
+    const String g_statusMaxZoom("Max zoom");
+    const String g_statusMinZoom("Min zoom");
+    const String g_statusEntitiesCopied("Entities copied");
+    const String g_statusInvalidCharater("Invalid character");
+    const String g_statusPublishing("Publishing");
+    const String g_statusPacking("Packing");
+
     // Colors and materials.
     // Reversed gamma correction for all colors
     const String g_gridMaterialName("TK_EDITOR_GRID");
