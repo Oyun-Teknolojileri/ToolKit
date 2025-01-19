@@ -166,6 +166,7 @@
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="SkeletonComponent.h" />
     <ClInclude Include="Sky.h" />
+    <ClInclude Include="SplashScreenRenderPath.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="SsaoPass.h" />
     <ClInclude Include="StateMachine.h" />
