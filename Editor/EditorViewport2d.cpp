@@ -233,7 +233,7 @@ namespace ToolKit
         {
           if (m_zoomPercentage == 800)
           {
-            g_app->m_statusMsg = "Max zoom";
+            g_app->SetStatusMsg(g_statusMaxZoom);
             return;
           }
           m_zoomPercentage += 10;
@@ -242,7 +242,7 @@ namespace ToolKit
         {
           if (m_zoomPercentage < 20)
           {
-            g_app->m_statusMsg = "Min zoom";
+            g_app->SetStatusMsg(g_statusMinZoom);
             return;
           }
           m_zoomPercentage -= 10;

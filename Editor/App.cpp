@@ -38,7 +38,7 @@ namespace ToolKit
       m_cursor           = nullptr;
       RenderSystem* rsys = GetRenderSystem();
       rsys->SetAppWindowSize((uint) windowWidth, (uint) windowHeight);
-      m_statusMsg = "OK";
+      SetStatusMsg(g_statusOk);
     }
 
     App::~App()
@@ -246,7 +246,7 @@ namespace ToolKit
         return OnSaveAsScene();
       }
 
-      auto saveFn = []() -> void
+      auto saveFn = [this]() -> void
       {
         // Serialize engine settings.
         g_app->m_workspace.SerializeEngineSettings();
@@ -259,7 +259,7 @@ namespace ToolKit
         String msg     = "Saved to: " + ConcatPaths({rootFolder, relPath});
 
         TK_LOG(msg.c_str());
-        g_app->m_statusMsg                    = "Scene saved.";
+        SetStatusMsg(g_statusSceneSaved);
 
         FolderWindowRawPtrArray folderWindows = g_app->GetAssetBrowsers();
         for (FolderWindow* folderWnd : folderWindows)
@@ -502,13 +502,13 @@ namespace ToolKit
         if (m_gameMod == GameMod::Stop)
         {
           gamePlugin->OnPlay();
-          m_statusMsg = "Game is playing";
+          SetStatusMsg(g_statusGameIsPlaying);
         }
 
         if (m_gameMod == GameMod::Paused)
         {
           gamePlugin->OnResume();
-          m_statusMsg = "Game is resumed";
+          SetStatusMsg(g_statusGameIsResumed);
         }
 
         m_gameMod = mod;
@@ -519,8 +519,8 @@ namespace ToolKit
         gamePlugin->m_currentState = PluginState::Paused;
         gamePlugin->OnPause();
 
-        m_statusMsg = "Game is paused";
-        m_gameMod   = mod;
+        SetStatusMsg(g_statusGameIsPaused);
+        m_gameMod = mod;
       }
 
       if (mod == GameMod::Stop)
@@ -528,8 +528,8 @@ namespace ToolKit
         gamePlugin->m_currentState = PluginState::Stop;
         gamePlugin->OnStop();
 
-        m_statusMsg = "Game is stopped";
-        m_gameMod   = mod;
+        SetStatusMsg(g_statusGameIsStopped);
+        m_gameMod = mod;
 
         ClearPlayInEditorSession();
 
@@ -554,8 +554,8 @@ namespace ToolKit
       static const StringView buildConfig = "RelWithDebInfo";
 #endif
 
-      String cmd    = "call " + ConcatPaths({path, "Build.bat "}) + "\"" + buildConfig.data() + "\"";
-      m_statusMsg   = "Compiling" + g_statusNoTerminate;
+      String cmd = "call " + ConcatPaths({path, "Build.bat "}) + "\"" + buildConfig.data() + "\"";
+      SetStatusMsg(g_statusCompiling + g_statusNoTerminate);
       m_isCompiling = true;
 
       ExecSysCommand(cmd,
@@ -565,25 +565,25 @@ namespace ToolKit
                      {
                        if (res)
                        {
-                         m_statusMsg = "Compile Failed.";
+                         SetStatusMsg(g_statusCompileFailed);
 
                          String detail;
                          if (res == 1)
                          {
-                           detail = "CMake Build Failed.";
+                           detail = g_statusCmakeBuildFailed;
                          }
 
                          if (res == -1)
                          {
-                           detail = "CMake Generate Failed.";
+                           detail = g_statusCmakeGenerateFailed;
                          }
 
-                         TK_ERR("%s %s", m_statusMsg.c_str(), detail.c_str());
+                         TK_ERR("%s %s", g_statusCompileFailed.c_str(), detail.c_str());
                        }
                        else
                        {
-                         m_statusMsg = "Compiled.";
-                         TK_LOG("%s", m_statusMsg.c_str());
+                         SetStatusMsg(g_statusCompiled);
+                         TK_LOG("%s", g_statusCompiled.c_str());
 
                          // Reload at the end of frame.
                          TKAsyncTask(WorkerManager::MainThread,
@@ -651,7 +651,7 @@ namespace ToolKit
       }
       else
       {
-        m_statusMsg = "No 3D viewport !";
+        SetStatusMsg(g_statusNo3dViewports);
         return;
       }
 
@@ -1094,7 +1094,7 @@ namespace ToolKit
     void App::ManageDropfile(const StringView& fileName)
     {
       TKAsyncTask(WorkerManager::MainThread,
-                  [fileName]() -> void
+                  [this, fileName]() -> void
                   {
                     const FolderWindowRawPtrArray& assetBrowsers = g_app->GetAssetBrowsers();
 
@@ -1120,7 +1120,7 @@ namespace ToolKit
 
                     if (!UI::ImportData.ShowImportWindow)
                     {
-                      g_app->m_statusMsg = "Drop discarded";
+                      SetStatusMsg(g_statusDropDiscarded);
                       TK_WRN(log.c_str());
                     }
                   });
@@ -1129,13 +1129,16 @@ namespace ToolKit
     void App::OpenSceneAsync(const String& fullPath)
     {
       // Start progress in loading bar.
-      m_statusMsg = "Loading" + g_statusNoTerminate;
+      SetStatusMsg(g_statusLoading + ": 0.00%%");
+      auto progressReportFn = [this](float progress) -> void
+      { SetStatusMsg(g_statusLoading + ": " + Format("%.2f", progress) + "%%"); };
 
       TKAsyncTask(WorkerManager::BackgroundPool,
-                  [this, fullPath]() -> void
+                  [this, fullPath, progressReportFn]() -> void
                   {
                     // Load scene in background.
-                    EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath);
+                    EditorScenePtr scene = GetSceneManager()->Create<EditorScene>(fullPath, progressReportFn);
+                    SetStatusMsg(g_statusComplate);
 
                     // Initiate and set the scene in the main thread.
                     TKAsyncTask(WorkerManager::MainThread,
@@ -1156,15 +1159,13 @@ namespace ToolKit
                                     }
                                     else
                                     {
-                                      m_statusMsg = "Layer creation failed. No 2d viewport.";
+                                      SetStatusMsg(g_statusNo2dViewports);
                                     }
                                   }
 
                                   SetCurrentScene(scene);
                                   scene->Init();
                                   m_workspace.SetScene(scene->m_name);
-
-                                  m_statusMsg = "Loaded";
                                 });
                   });
     }
@@ -1356,6 +1357,18 @@ namespace ToolKit
           ntt->SetVisibility(true, false);
         }
       }
+    }
+
+    void App::SetStatusMsg(const String& msg)
+    {
+      LockGuard lock(m_statusMsgMutex);
+      m_statusMsg = msg;
+    }
+
+    String App::GetStatusMsg()
+    {
+      LockGuard lock(m_statusMsgMutex);
+      return m_statusMsg;
     }
 
     EditorViewportPtr App::GetSimulationViewport()

@@ -310,8 +310,8 @@ namespace ToolKit
                                   false) &&
               !removeComp)
           {
-            g_app->m_statusMsg = "Component " + headerName + " removed.";
-            removeComp         = true;
+            g_app->SetStatusMsg(headerName + " " + g_statusRemoved);
+            removeComp = true;
           }
         }
         ImGui::PopID();
@@ -371,7 +371,7 @@ namespace ToolKit
 
           if (mesh != nullptr && mesh->GetMeshVal()->IsSkinned())
           {
-            g_app->m_statusMsg = "Failed";
+            g_app->SetStatusMsg(g_statusFailed);
             TK_WRN("Skeleton component is in use, it can't be removed.");
             return false;
           }

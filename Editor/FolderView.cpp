@@ -128,7 +128,7 @@ namespace ToolKit
           if (err)
           {
             TK_ERR("Copy failed: %s", err.message().c_str());
-            g_app->m_statusMsg = "Operation failed.";
+            g_app->SetStatusMsg(g_statusFailed);
           }
         }
         else if (g_cuttingFiles)
@@ -136,7 +136,8 @@ namespace ToolKit
           // move file to its new position
           if (std::rename(src.c_str(), dst.c_str()))
           {
-            TK_ERR("file cut paste failed!");
+            TK_ERR("File cut & paste failed!");
+            g_app->SetStatusMsg(g_statusFailed);
           }
         }
       }
@@ -725,7 +726,7 @@ namespace ToolKit
         if (ec)
         {
           TK_ERR("Delete failed: %s", ec.message().c_str());
-          g_app->m_statusMsg = "Operation failed.";
+          g_app->SetStatusMsg(g_statusFailed);
         }
 
         for (FolderView* view : getSameViewsFn(thisView))
@@ -1063,7 +1064,7 @@ namespace ToolKit
         if (errCode)
         {
           TK_ERR("Rename failed: %s", errCode.message().c_str());
-          g_app->m_statusMsg = "Operation failed.";
+          g_app->SetStatusMsg(g_statusFailed);
         }
         else
         {

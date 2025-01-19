@@ -244,6 +244,9 @@ namespace ToolKit
      */
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
 
+    /** Counts the number of objects node in the xml to provide a loading progress measure. */
+    void PreDeserializeImp(const SerializationFileInfo& info, XmlNode* parent) override;
+
     /**
      * Deserializes the scene from an XML document.
      * @param doc The XML document to deserialize from.

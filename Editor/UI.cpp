@@ -965,7 +965,7 @@ namespace ToolKit
             }
             else
             {
-              g_app->m_statusMsg = "Drop discarded.";
+              g_app->SetStatusMsg(g_statusDropDiscarded);
               TK_ERR("File isn't imported because it's not dropped into Textures folder.");
             }
             ImportData.Files.erase(ImportData.Files.begin() + i);

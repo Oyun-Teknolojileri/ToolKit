@@ -289,7 +289,7 @@ namespace ToolKit
         if (removeIndex != -1)
         {
           ParameterVariant* var = &entity->m_localData[removeIndex];
-          g_app->m_statusMsg    = Format("Parameter %d: %s removed.", displayIndex + 1, var->m_name.c_str());
+          g_app->SetStatusMsg(Format("Parameter %d: %s removed.", displayIndex + 1, var->m_name.c_str()));
           entity->m_localData.Remove(removeIndex);
         }
       }
@@ -302,7 +302,7 @@ namespace ToolKit
         int dataType = 0;
         if (ImGui::Combo("##NewCustData",
                          &dataType,
-                         "Sellect"
+                         "Select"
                          "Type\0String\0Boolean\0Int\0Float\0Vec2\0Vec3\0Vec4"
                          "\0Mat3\0Mat4\0MultiChoice"))
         {

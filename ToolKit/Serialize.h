@@ -12,6 +12,10 @@
 namespace ToolKit
 {
 
+  /** Progress callback for loading. */
+  typedef std::function<void(float)> ProgressCallback;
+
+  /** Serializaiton info for loading. */
   struct TK_API SerializationFileInfo
   {
     String File;
@@ -19,9 +23,11 @@ namespace ToolKit
     XmlDocument* Document = nullptr;
   };
 
+  /** Serializable object base class. */
   class TK_API Serializable
   {
    public:
+    /** Serialize the object to given document from the given parent. */
     void Serialize(XmlDocument* doc, XmlNode* parent) const
     {
       PreSerializeImp(doc, parent);
@@ -29,6 +35,7 @@ namespace ToolKit
       PostSerializeImp(doc, parent);
     }
 
+    /** Deserialize the object from given ducment from the given parent. */
     void DeSerialize(const SerializationFileInfo& info, XmlNode* parent)
     {
       PreDeserializeImp(info, parent);
@@ -36,7 +43,30 @@ namespace ToolKit
       PostDeSerializeImp(info, parent);
     }
 
+    /** Returns loaded percent of the serializable object. */
+    float GetLoadedPercent() { return 100.0f * m_numberOfThingsLoaded / m_numberOfThingsToLoad; }
+
+    /** Returns if loading of the serializable object is completed. */
+    bool IsLoadingComplated() { return glm::greaterThanEqual(GetLoadedPercent(), 100.0f); }
+
+    /** Sets progress callback function, which called with the complated percent every time progress updated. */
+    void SetProgressCallback(ProgressCallback callback) { m_progressCallback = callback; }
+
+    /**
+     * Used to update loading progress.
+     * Updates the m_numberOfThingsLoaded with given loadedCount number and calls the progress callbacks.
+     */
+    void UpdateProgress(uint loadedCount)
+    {
+      m_numberOfThingsLoaded += loadedCount;
+      if (m_progressCallback)
+      {
+        m_progressCallback(GetLoadedPercent());
+      }
+    }
+
    protected:
+    /** Pre serialization function. */
     virtual void PreSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
 
     /**
@@ -49,16 +79,36 @@ namespace ToolKit
      */
     virtual XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const = 0;
 
+    /** Post serialization function. */
     virtual void PostSerializeImp(XmlDocument* doc, XmlNode* parent) const {}
 
-    virtual void PreDeserializeImp(const SerializationFileInfo& info, XmlNode* parent) {}
+    /** Pre deserialization function. */
+    virtual void PreDeserializeImp(const SerializationFileInfo& info, XmlNode* parent) { m_numberOfThingsLoaded = 0; }
 
+    /** Deserialization implementation function. Every serializable function must define it. */
     virtual XmlNode* DeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) = 0;
 
-    virtual void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent) {}
+    /** Post deserialization function. */
+    virtual void PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
+    {
+      // At this point all loading must be complete.
+      m_numberOfThingsLoaded = m_numberOfThingsToLoad;
+    }
 
    public:
+    /** Version of the serializable object. */
     String m_version = TKVersionStr;
+
+   protected:
+    /** Total number of things that will be loading. Used in completed percent calculation. */
+    uint m_numberOfThingsToLoad = 1;
+
+   private:
+    /** Total number of things got loaded. Used in completed percent calculation. */
+    uint m_numberOfThingsLoaded         = 0;
+
+    /** Progress callback for loading. */
+    ProgressCallback m_progressCallback = nullptr;
   };
 
 } // namespace ToolKit

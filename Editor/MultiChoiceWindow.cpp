@@ -10,8 +10,6 @@
 #include "App.h"
 #include "CustomDataView.h"
 
-
-
 namespace ToolKit::Editor
 {
   TKDefineClass(MultiChoiceCraeteWindow, Window);
@@ -20,8 +18,9 @@ namespace ToolKit::Editor
   {
     if (m_variant.Choices.size() < 2ull)
     {
-      g_app->m_statusMsg = "Failed!";
-      TK_WRN("You must define at least two parameter.");
+      g_app->SetStatusMsg(g_statusFailed);
+
+      TK_ERR("You must define at least two parameter.");
       return false;
     }
 
@@ -29,8 +28,8 @@ namespace ToolKit::Editor
     {
       if (var.m_name.size() < 1)
       {
-        g_app->m_statusMsg = "Failed!";
-        TK_WRN("Name can't be empty.");
+        g_app->SetStatusMsg(g_statusFailed);
+        TK_ERR("Name can't be empty.");
         return false;
       }
     }
@@ -66,7 +65,7 @@ namespace ToolKit::Editor
     int dataType = 0;
     if (ImGui::Combo("AddChoice",
                      &dataType,
-                     "Sellect Type"
+                     "Select Type"
                      "\0String\0Boolean\0Int\0Float\0Vec2\0Vec3\0Vec4\0Mat3\0Mat4"))
     {
       switch (dataType)

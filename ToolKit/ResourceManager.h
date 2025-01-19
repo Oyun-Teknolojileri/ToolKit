@@ -34,7 +34,7 @@ namespace ToolKit
     void operator=(const ResourceManager&)  = delete;
 
     template <typename T>
-    std::shared_ptr<T> Create(const String& file)
+    std::shared_ptr<T> Create(const String& file, ProgressCallback progressCallback = nullptr)
     {
       if (!Exist(file))
       {
@@ -59,6 +59,7 @@ namespace ToolKit
           resource->SetFile(file);
         }
 
+        resource->SetProgressCallback(progressCallback);
         resource->Load();
         m_storage[file] = resource;
       }

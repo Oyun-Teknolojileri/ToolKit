@@ -653,7 +653,8 @@ namespace ToolKit
               // If there is a mesh component, update material component.
               if (Prefab::GetPrefabRoot(pd.entity) != nullptr)
               {
-                g_app->m_statusMsg = "Failed. Target is Prefab.";
+                g_app->SetStatusMsg(g_statusFailed);
+                TK_ERR("Failed. Target is Prefab.");
               }
               else
               {
@@ -679,8 +680,8 @@ namespace ToolKit
                 MaterialComponentPtr mmPtr = pd.entity->GetMaterialComponent();
                 if (mmPtr == nullptr)
                 {
-                  g_app->m_statusMsg = "MaterialComponent added.";
-                  mmPtr              = pd.entity->AddComponent<MaterialComponent>();
+                  g_app->SetStatusMsg(g_statusMaterialComponentAdded);
+                  mmPtr = pd.entity->AddComponent<MaterialComponent>();
                   mmPtr->UpdateMaterialList();
                 }
 

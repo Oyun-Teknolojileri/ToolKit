@@ -105,7 +105,7 @@ namespace ToolKit
     {
       if (contains(m_illegalChars, (char) data->EventChar))
       {
-        g_app->m_statusMsg = "Invalid character.";
+        g_app->SetStatusMsg(g_statusInvalidCharater);
         return 1;
       }
       return 0;

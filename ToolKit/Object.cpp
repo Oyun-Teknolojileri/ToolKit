@@ -72,6 +72,7 @@ namespace ToolKit
 
   void Object::PostDeSerializeImp(const SerializationFileInfo& info, XmlNode* parent)
   {
+    Serializable::PostDeSerializeImp(info, parent);
     ParameterEventConstructor(); // Set all the events after data deserialized.
   }
 

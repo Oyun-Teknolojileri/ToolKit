@@ -40,9 +40,11 @@ namespace ToolKit
         ImGui::Text(info.c_str());
 
         // If the status message has changed.
-        static String prevMsg = g_app->m_statusMsg;
-        bool noTerminate      = EndsWith(g_app->m_statusMsg, g_statusNoTerminate);
-        if (g_app->m_statusMsg != "OK" && !noTerminate)
+        static String prevMsg = g_app->GetStatusMsg();
+        String statusMsg      = g_app->GetStatusMsg();
+
+        bool noTerminate      = EndsWith(statusMsg, g_statusNoTerminate);
+        if (statusMsg != g_statusOk && !noTerminate)
         {
           // Hold msg for 3 sec. before switching to OK.
           static float elapsedTime  = 0.0f;
@@ -50,16 +52,16 @@ namespace ToolKit
 
           // For overlapping message updates,
           // always reset timer for the last event.
-          if (prevMsg != g_app->m_statusMsg)
+          if (prevMsg != statusMsg)
           {
             elapsedTime = 0.0f;
-            prevMsg     = g_app->m_statusMsg;
+            prevMsg     = statusMsg;
           }
 
           if (elapsedTime > 3)
           {
-            elapsedTime        = 0.0f;
-            g_app->m_statusMsg = "OK";
+            elapsedTime = 0.0f;
+            g_app->SetStatusMsg(g_statusOk);
           }
         }
 
@@ -73,7 +75,7 @@ namespace ToolKit
           elapsedTime                += ImGui::GetIO().DeltaTime;
 
           static const char* dots[4]  = {" ", " .", " ..", " ..."};
-          String trimmed              = Trim(g_app->m_statusMsg.c_str(), g_statusNoTerminate);
+          String trimmed              = Trim(statusMsg.c_str(), g_statusNoTerminate);
           trimmed                    += dots[glm::clamp((int) glm::floor(elapsedTime), 0, 3)];
 
           if (elapsedTime > 4)
@@ -85,10 +87,10 @@ namespace ToolKit
         }
         else
         {
-          ImGui::Text(g_app->m_statusMsg.c_str());
+          ImGui::Text(statusMsg.c_str());
         }
 
-        ImVec2 msgSize = ImGui::CalcTextSize(g_app->m_statusMsg.c_str());
+        ImVec2 msgSize = ImGui::CalcTextSize(statusMsg.c_str());
         float wndWidth = ImGui::GetContentRegionAvail().x;
 
         // If there is enough space for info.
