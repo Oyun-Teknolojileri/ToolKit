@@ -232,6 +232,9 @@
     <ClCompile Include="TKStats.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="SplashScreenRenderPath.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">

@@ -15,6 +15,7 @@
 
 namespace ToolKit
 {
+
   struct GameRendererParams
   {
     ViewportPtr viewport = nullptr;
@@ -48,4 +49,5 @@ namespace ToolKit
     RenderJobArray m_uiRenderJobs;
     RenderData m_uiRenderData;
   };
+
 } // namespace ToolKit

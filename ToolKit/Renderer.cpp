@@ -481,10 +481,12 @@ namespace ToolKit
 
   void Renderer::CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields)
   {
-    GLuint srcId = 0;
-    uint width   = m_windowSize.x;
-    uint height  = m_windowSize.y;
+    FramebufferPtr lastFb = m_framebuffer;
 
+    uint width            = m_windowSize.x;
+    uint height           = m_windowSize.y;
+
+    uint srcId            = 0;
     if (src)
     {
       const FramebufferSettings& fbs = src->GetSettings();
@@ -493,12 +495,15 @@ namespace ToolKit
       srcId                          = src->GetFboId();
     }
 
-    dest->ReconstructIfNeeded(width, height);
-
-    FramebufferPtr lastFb = m_framebuffer;
-
     RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, srcId);
-    RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
+
+    uint destId = 0;
+    if (dest)
+    {
+      dest->ReconstructIfNeeded(width, height);
+      destId = dest->GetFboId();
+    }
+    RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, destId);
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
 

@@ -76,6 +76,7 @@
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="SkeletonComponent.cpp" />
     <ClCompile Include="Sky.cpp" />
+    <ClCompile Include="SplashScreenRenderPath.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="SsaoPass.cpp" />
     <ClCompile Include="StateMachine.cpp" />
