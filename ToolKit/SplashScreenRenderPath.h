@@ -31,6 +31,6 @@ namespace ToolKit
     RenderData m_uiRenderData;
   };
 
-  typedef std::shared_ptr<SplashScreenRenderPath> SpashScreenRenderPathPtr;
+  typedef std::shared_ptr<SplashScreenRenderPath> SplashScreenRenderPathPtr;
 
 } // namespace ToolKit

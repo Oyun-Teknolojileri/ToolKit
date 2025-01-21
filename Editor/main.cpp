@@ -16,6 +16,7 @@
 #include "Mod.h"
 #include "PopupWindows.h"
 #include "PreviewViewport.h"
+#include "SplashScreenRenderPath.h"
 #include "TKStats.h"
 #include "UI.h"
 
@@ -191,13 +192,12 @@ namespace ToolKit
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 
-        g_window =
-            SDL_CreateWindow(settings.Window.Name.c_str(),
-                             SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED,
-                             settings.Window.Width,
-                             settings.Window.Height,
-                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
+        g_window = SDL_CreateWindow(settings.Window.Name.c_str(),
+                                    SDL_WINDOWPOS_CENTERED,
+                                    SDL_WINDOWPOS_CENTERED,
+                                    1024,
+                                    512,
+                                    SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_SHOWN);
 
         if (g_window == nullptr)
         {
@@ -284,15 +284,15 @@ namespace ToolKit
             SDL_GL_SetSwapInterval(0);
 
             // Init app
-            g_app                   = new App(settings.Window.Width, settings.Window.Height);
-            g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
-            g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
-
-            g_app->Init();
+            g_app                                  = new App(settings.Window.Width, settings.Window.Height);
+            g_app->m_sysComExecFn                  = &ToolKit::PlatformHelpers::SysComExec;
+            g_app->m_shellOpenDirFn                = &ToolKit::PlatformHelpers::OpenExplorer;
 
             // Register update functions
+            SplashScreenRenderPathPtr splashScreen = MakeNewPtr<SplashScreenRenderPath>();
+            splashScreen->Init({(uint) 1024, (uint) 512});
 
-            TKUpdateFn preUpdateFn = [](float deltaTime)
+            TKUpdateFn preUpdateFn = [splashScreen](float deltaTime)
             {
               SDL_Event sdlEvent;
               while (SDL_PollEvent(&sdlEvent))
@@ -301,7 +301,25 @@ namespace ToolKit
                 ProcessEvent(sdlEvent);
               }
 
-              g_app->Frame(deltaTime);
+              static float elapsedTime = 0.0f;
+              if (elapsedTime < 3000.0f)
+              {
+                elapsedTime += deltaTime;
+                GetRenderSystem()->AddRenderTask(
+                    {[splashScreen](Renderer* renderer) -> void { splashScreen->Render(renderer); }});
+              }
+              else
+              {
+                static bool firstTime = true;
+                if (firstTime)
+                {
+                  firstTime = false;
+                  g_app->Init();
+                  SDL_SetWindowBordered(g_window, SDL_TRUE);
+                }
+
+                g_app->Frame(deltaTime);
+              }
             };
             g_proxy->RegisterPreUpdateFunction(preUpdateFn);
 
