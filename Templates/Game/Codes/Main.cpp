@@ -193,6 +193,11 @@ namespace ToolKit
           GetUIManager()->RegisterViewport(g_viewport);
           GetRenderSystem()->SetAppWindowSize(width, height);
 
+          // Update widnow
+          SDL_SetWindowSize(g_window, width, height);
+          SDL_SetWindowBordered(g_window, SDL_TRUE);
+          SDL_SetWindowResizable(g_window, SDL_TRUE);
+
           // Init game
           g_game = new Game();
           g_game->SetViewport(g_viewport);
@@ -200,9 +205,6 @@ namespace ToolKit
           g_game->m_currentState = PluginState::Running;
           g_gameRenderer         = new GameRenderer();
           g_game->OnPlay();
-
-          SDL_SetWindowBordered(g_window, SDL_TRUE);
-          SDL_SetWindowResizable(g_window, SDL_TRUE);
         }
       }
       else
