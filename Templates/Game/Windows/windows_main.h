@@ -26,15 +26,13 @@ namespace ToolKit
     GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { std::cout << ms << std::endl; });
   }
 
-  inline void PlatformMainLoop(Game* g_game, bool& g_running, void (*TK_Loop)())
+  inline void PlatformMainLoop(bool* running, void (*TK_Loop)())
   {
-    while (g_game->m_currentState != PluginState::Stop && g_running)
+    while (*running)
     {
       TK_Loop();
     }
   }
 
-  inline void PlatformAdjustEngineSettings(int availableWidth, int availableHeight, EngineSettings* engineSettings)
-  {
-  }
+  inline void PlatformAdjustEngineSettings(int availableWidth, int availableHeight, EngineSettings* engineSettings) {}
 } // namespace ToolKit
