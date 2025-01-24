@@ -5,7 +5,13 @@ namespace ToolKit
 
   SplashScreenRenderPath::SplashScreenRenderPath() {}
 
-  SplashScreenRenderPath::~SplashScreenRenderPath() {}
+  SplashScreenRenderPath::~SplashScreenRenderPath()
+  {
+    if (UIManager* uiMan = GetUIManager())
+    {
+      uiMan->UnRegisterViewport(m_viewport);
+    }
+  }
 
   void SplashScreenRenderPath::Init(UVec2 screenSize)
   {

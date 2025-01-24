@@ -100,13 +100,11 @@ namespace ToolKit
 
     PlatformAdjustEngineSettings(DM.w, DM.h, g_engineSettings);
 
-    UVec2 splashScreenSize = {1024, 512};
-
-    g_window               = SDL_CreateWindow(g_appName,
+    g_window = SDL_CreateWindow(g_appName,
                                 SDL_WINDOWPOS_CENTERED,
                                 SDL_WINDOWPOS_CENTERED,
-                                splashScreenSize.x,
-                                splashScreenSize.y,
+                                g_engineSettings->Window.Width,
+                                g_engineSettings->Window.Height,
                                 PLATFORM_SDL_FLAGS | SDL_WINDOW_BORDERLESS);
 
     if (g_window == nullptr)
@@ -148,30 +146,27 @@ namespace ToolKit
         g_sdlEventPool->PoolEvent(sdlEvent);
         ProcessEvent(sdlEvent);
       }
-    };
-    g_proxy->RegisterPreUpdateFunction(preUpdateFn);
 
-    // Register post update function.
-    TKUpdateFn postUpdateFn = [splashScreenSize](float deltaTime)
-    {
-      static bool showSplashScreen             = true;
-      static float elapsedTime                 = 0.0f;
-      SplashScreenRenderPathPtr splashRenderer = nullptr;
+      static bool showSplashScreen                    = true;
+      static float elapsedTime                        = 0.0f;
+      static SplashScreenRenderPathPtr splashRenderer = nullptr;
 
       if (showSplashScreen)
       {
         RenderSystem* rsys = GetRenderSystem();
+        uint width         = g_engineSettings->Window.Width;
+        uint height        = g_engineSettings->Window.Height;
 
         if (splashRenderer == nullptr)
         {
           splashRenderer = MakeNewPtr<SplashScreenRenderPath>();
-          splashRenderer->Init(splashScreenSize);
+          splashRenderer->Init(UVec2(width, height));
         }
 
         if (elapsedTime < 1000.0f)
         {
           elapsedTime += deltaTime;
-          rsys->AddRenderTask({[splashRenderer](Renderer* renderer) -> void { splashRenderer->Render(renderer); }});
+          rsys->AddRenderTask({[](Renderer* renderer) -> void { splashRenderer->Render(renderer); }});
         }
         else
         {
@@ -187,8 +182,6 @@ namespace ToolKit
           splashRenderer   = nullptr;
 
           // Init viewport and window size
-          uint width       = g_engineSettings->Window.Width;
-          uint height      = g_engineSettings->Window.Height;
           g_viewport       = MakeNewPtr<GameViewport>((float) width, (float) height);
           GetUIManager()->RegisterViewport(g_viewport);
           GetRenderSystem()->SetAppWindowSize(width, height);
@@ -227,20 +220,18 @@ namespace ToolKit
         SDL_GL_SwapWindow(g_window);
 
         g_sdlEventPool->ClearPool(); // Clear after consumption.
-
-        if (!g_running)
-        {
-          int x = 3;
-          x++;
-        }
         g_running = g_running && g_game->m_currentState != PluginState::Stop;
-
-        if (!g_running)
-        {
-          int x = 3;
-          x++;
-        }
       }
+    };
+    g_proxy->RegisterPreUpdateFunction(preUpdateFn);
+
+    // Register post update function.
+    TKUpdateFn postUpdateFn = [](float deltaTime)
+    {
+      SDL_GL_MakeCurrent(g_window, g_context);
+      SDL_GL_SwapWindow(g_window);
+
+      g_sdlEventPool->ClearPool(); // Clear after consumption.
     };
     g_proxy->RegisterPostUpdateFunction(postUpdateFn);
   }

@@ -299,9 +299,9 @@ namespace ToolKit
                 ProcessEvent(sdlEvent);
               }
 
-              static bool showSplashScreen             = true;
-              static float elapsedTime                 = 0.0f;
-              SplashScreenRenderPathPtr splashRenderer = nullptr;
+              static bool showSplashScreen                    = true;
+              static float elapsedTime                        = 0.0f;
+              static SplashScreenRenderPathPtr splashRenderer = nullptr;
 
               if (showSplashScreen)
               {
@@ -316,8 +316,7 @@ namespace ToolKit
                 if (elapsedTime < 1000.0f)
                 {
                   elapsedTime += deltaTime;
-                  rsys->AddRenderTask(
-                      {[splashRenderer](Renderer* renderer) -> void { splashRenderer->Render(renderer); }});
+                  rsys->AddRenderTask({[](Renderer* renderer) -> void { splashRenderer->Render(renderer); }});
                 }
                 else
                 {
