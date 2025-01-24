@@ -40,6 +40,9 @@ namespace ToolKit
   {
     RenderPath::PreRender(renderer);
 
+    // Start with clearing the viewport.
+    renderer->SetFramebuffer(m_viewport->m_framebuffer, GraphicBitFields::AllBits);
+
     EntityRawPtrArray rawEntities = ToEntityRawPtrArray(m_splashScreen->m_scene->GetEntities());
     RenderJobProcessor::CreateRenderJobs(m_uiRenderData.jobs, rawEntities);
     RenderJobProcessor::SeperateRenderData(m_uiRenderData, true);

@@ -147,21 +147,24 @@ namespace ToolKit
         ProcessEvent(sdlEvent);
       }
 
+      // Initiate splash screen drawing.
       static bool showSplashScreen                    = true;
       static float elapsedTime                        = 0.0f;
       static SplashScreenRenderPathPtr splashRenderer = nullptr;
 
       if (showSplashScreen)
       {
-        RenderSystem* rsys = GetRenderSystem();
-        uint width         = g_engineSettings->Window.Width;
-        uint height        = g_engineSettings->Window.Height;
+        // Draw splash screen.
+        uint width  = g_engineSettings->Window.Width;
+        uint height = g_engineSettings->Window.Height;
 
         if (splashRenderer == nullptr)
         {
           splashRenderer = MakeNewPtr<SplashScreenRenderPath>();
           splashRenderer->Init(UVec2(width, height));
         }
+
+        RenderSystem* rsys = GetRenderSystem();
 
         if (elapsedTime < 1000.0f)
         {
@@ -170,12 +173,12 @@ namespace ToolKit
         }
         else
         {
+          // At the end of splash drawing, initiate the app.
           rsys->AddRenderTask({[](Renderer* renderer) -> void
                                {
                                  renderer->SetFramebuffer(nullptr, GraphicBitFields::AllBits);
                                  SDL_GL_SwapWindow(g_window);
                                }});
-
           rsys->FlushRenderTasks();
 
           showSplashScreen = false;
@@ -202,6 +205,7 @@ namespace ToolKit
       }
       else
       {
+        // After splash shown, execute and display the app frames.
         g_viewport->Update(deltaTime);
         g_game->Frame(deltaTime);
 
