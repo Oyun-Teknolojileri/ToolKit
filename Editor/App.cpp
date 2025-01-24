@@ -1494,13 +1494,16 @@ namespace ToolKit
         DeserializeWindows(root);
       }
 
-      LoadGamePlugin();
-
-      String scene = m_workspace.GetActiveProject().scene;
-      if (!scene.empty())
+      Project activeProject = m_workspace.GetActiveProject();
+      if (!activeProject.name.empty())
       {
-        String fullPath = ScenePath(scene);
-        OpenSceneAsync(fullPath);
+        LoadGamePlugin();
+
+        if (!activeProject.scene.empty())
+        {
+          String fullPath = ScenePath(activeProject.scene);
+          OpenSceneAsync(fullPath);
+        }
       }
 
       return nullptr;

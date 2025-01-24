@@ -13,8 +13,6 @@
 #include "ToolKit.h"
 #include "Util.h"
 
-
-
 namespace ToolKit
 {
 
@@ -24,7 +22,7 @@ namespace ToolKit
 
     if (!CheckSystemFile(fullPath))
     {
-      TK_ERR("Can not find plugin file %s", fullPath.c_str());
+      TK_WRN("Can not find plugin file %s. Compile the project.", fullPath.c_str());
       return nullptr;
     }
 
