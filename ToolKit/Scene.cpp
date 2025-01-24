@@ -23,7 +23,7 @@ namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
 
-  Scene::Scene() { m_name = "New Scene"; }
+  Scene::Scene() { m_name = "NewScene"; }
 
   Scene::~Scene() { Destroy(false); }
 

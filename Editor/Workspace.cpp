@@ -308,6 +308,7 @@ namespace ToolKit
             {
               Project project = {projectName, sceneName};
               SetActiveProject(project);
+              break;
             }
           }
         }
