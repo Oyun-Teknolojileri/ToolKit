@@ -199,17 +199,23 @@ namespace ToolKit
     void LinkPrefab(const String& fullPath);
 
     /**
-     * Removes the entity with the given id from the scene.
-     * @param  The id of the entity that will be removed.
-     * @param  States if the remove will be recursive to the all leafs.
-     * @returns The removed entity.
+     * Removes the entity with the given ID from the scene.
+     *
+     * This function will remove the specified entity from the scene.
+     * If the `deep` parameter is set to true, it will also remove all
+     * child entities associated with the specified entity.
+     *
+     * @param id The ID of the entity that will be removed.
+     * @param deep States if the remove will be recursive to all leafs.
+     * @returns The removed entity, or nullptr if no entity with that ID exists.
      */
     virtual EntityPtr RemoveEntity(ULongID id, bool deep = true);
+    virtual EntityPtr RemoveEntity(EntityPtr entity, bool deep = true);
 
     /**
      * Removes an array of entities from the scene.
      * @param entities An array of pointers to the entities to be removed.
-     * @param  States if the remove will be recursive to the all leafs.
+     * @param deep States if the remove will be recursive to the all leafs.
      */
     virtual void RemoveEntity(const EntityPtrArray& entities, bool deep = true);
 

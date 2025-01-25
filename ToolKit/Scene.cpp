@@ -405,6 +405,8 @@ namespace ToolKit
     return removed;
   }
 
+  EntityPtr Scene::RemoveEntity(EntityPtr entity, bool deep) { return RemoveEntity(entity->GetIdVal(), deep); }
+
   void Scene::RemoveEntity(const EntityPtrArray& entities, bool deep)
   {
     for (size_t i = 0; i < entities.size(); i++)

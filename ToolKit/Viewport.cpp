@@ -63,6 +63,8 @@ namespace ToolKit
     m_attachedCamera = camId;
   }
 
+  void ViewportBase::AttachCamera(CameraPtr cam) { AttachCamera(cam->GetIdVal()); }
+
   ViewportBase::ViewportBase()
   {
     m_camera         = MakeNewPtr<Camera>();
