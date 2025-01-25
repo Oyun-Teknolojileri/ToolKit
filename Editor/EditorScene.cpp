@@ -24,8 +24,12 @@ namespace ToolKit
 
     void EditorScene::Load()
     {
+      m_newScene = false; // Loaded scene's can't be new.
+
+      // Load the scene.
       Scene::Load();
 
+      // Adjust editor entities.
       for (EntityPtr& ntt : m_entities)
       {
         // Create gizmos
