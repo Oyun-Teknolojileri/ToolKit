@@ -18,7 +18,7 @@ namespace ToolKit
 
     TKDefineClass(EditorScene, Scene);
 
-    EditorScene::EditorScene() { m_newScene = false; }
+    EditorScene::EditorScene() { m_newScene = true; }
 
     EditorScene::~EditorScene() { Destroy(false); }
 
