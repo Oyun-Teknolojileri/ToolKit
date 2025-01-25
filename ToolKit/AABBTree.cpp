@@ -37,9 +37,9 @@ namespace ToolKit
       {
         EntityPtr ntt            = m_nodes[i].entity.lock();
         ntt->m_aabbTreeNodeProxy = nullNode;
-        m_nodes[i].entity.reset();
       }
 
+      m_nodes[i].entity = EntityWeakPtr();
       m_nodes[i].next   = i + 1;
       m_nodes[i].parent = i;
       m_nodes[i].leafs.clear();
