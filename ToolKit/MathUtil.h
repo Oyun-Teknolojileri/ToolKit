@@ -57,6 +57,8 @@ namespace ToolKit
                                        const Vec3& spherePos2,
                                        float sphereRadius2);
 
+  TK_API bool SphereSphereIntersection(const BoundingSphere& sphere1, const BoundingSphere& sphere2);
+
   TK_API IntersectResult BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2);
 
   TK_API bool BoxPointIntersection(const BoundingBox& box, const Vec3& point);

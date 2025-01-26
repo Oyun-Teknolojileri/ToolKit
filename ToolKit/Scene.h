@@ -134,6 +134,9 @@ namespace ToolKit
     /** Adds an entity to the scene. If an index is provided, insert the entity to the given position in the array. */
     virtual void AddEntity(EntityPtr entity, int index = -1);
 
+    /** Adds an array of entities to the scene. */
+    virtual void AddEntity(const EntityPtrArray& entities);
+
     /**
      * Gets all the entities in the scene.
      * @returns An array containing pointers to all the entities in the scene.
