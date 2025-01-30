@@ -266,7 +266,10 @@ namespace ToolKit
     bool m_dirty; //!< Hint for child to update its parent cache.
   };
 
-  /** Recursively traverse each child of the parent and apply callback function. */
-  TK_API void TraverseChildNodes(Node* parent, const std::function<void(Node* node)>& callbackFn);
+  /**
+   * Recursively traverse each child of the parent and apply callback function.
+   * Execution order is bottom - up. Meaning that lambda called on leafs than parent.
+   */
+  TK_API void TraverseNodeHierarchyBottomUp(Node* parent, const std::function<void(Node* node)>& callbackFn);
 
 } // namespace ToolKit

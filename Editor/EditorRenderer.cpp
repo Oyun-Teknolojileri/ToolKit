@@ -369,7 +369,7 @@ namespace ToolKit
           if (ntt->IsA<Prefab>())
           {
             auto addToSelectionFn = [&highlightList](Node* node) { highlightList.push_back(node->OwnerEntity()); };
-            TraverseChildNodes(ntt->m_node, addToSelectionFn);
+            TraverseNodeHierarchyBottomUp(ntt->m_node, addToSelectionFn);
           }
         }
 

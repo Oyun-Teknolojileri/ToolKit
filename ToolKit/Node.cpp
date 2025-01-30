@@ -562,11 +562,11 @@ void Node::Translate(const Vec3& val, TransformationSpace space)
     return m_worldCache;
   }
 
-  void TraverseChildNodes(Node* parent, const std::function<void(Node* node)>& callbackFn)
+  void TraverseNodeHierarchyBottomUp(Node* parent, const std::function<void(Node* node)>& callbackFn)
   {
     for (Node* childNode : parent->m_children)
     {
-      TraverseChildNodes(childNode, callbackFn);
+      TraverseNodeHierarchyBottomUp(childNode, callbackFn);
     }
     callbackFn(parent);
   }
