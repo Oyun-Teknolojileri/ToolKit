@@ -16,6 +16,7 @@
 #include "Mod.h"
 #include "PopupWindows.h"
 #include "PreviewViewport.h"
+#include "SplashScreenRenderPath.h"
 #include "TKStats.h"
 #include "UI.h"
 
@@ -193,11 +194,11 @@ namespace ToolKit
 
         g_window =
             SDL_CreateWindow(settings.Window.Name.c_str(),
-                             SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED,
-                             settings.Window.Width,
-                             settings.Window.Height,
-                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
+                             SDL_WINDOWPOS_CENTERED,
+                             SDL_WINDOWPOS_CENTERED,
+                             1024,
+                             512,
+                             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS);
 
         if (g_window == nullptr)
         {
@@ -288,11 +289,8 @@ namespace ToolKit
             g_app->m_sysComExecFn   = &ToolKit::PlatformHelpers::SysComExec;
             g_app->m_shellOpenDirFn = &ToolKit::PlatformHelpers::OpenExplorer;
 
-            g_app->Init();
-
             // Register update functions
-
-            TKUpdateFn preUpdateFn = [](float deltaTime)
+            TKUpdateFn preUpdateFn  = [](float deltaTime)
             {
               SDL_Event sdlEvent;
               while (SDL_PollEvent(&sdlEvent))
@@ -301,8 +299,49 @@ namespace ToolKit
                 ProcessEvent(sdlEvent);
               }
 
-              g_app->Frame(deltaTime);
+              static bool showSplashScreen                    = true;
+              static float elapsedTime                        = 0.0f;
+              static SplashScreenRenderPathPtr splashRenderer = nullptr;
+
+              if (showSplashScreen)
+              {
+                RenderSystem* rsys = GetRenderSystem();
+
+                if (splashRenderer == nullptr)
+                {
+                  splashRenderer = MakeNewPtr<SplashScreenRenderPath>();
+                  splashRenderer->Init({1024, 512});
+                }
+
+                if (elapsedTime < 1000.0f)
+                {
+                  elapsedTime += deltaTime;
+                  rsys->AddRenderTask({[](Renderer* renderer) -> void { splashRenderer->Render(renderer); }});
+                }
+                else
+                {
+                  rsys->AddRenderTask({[](Renderer* renderer) -> void
+                                       {
+                                         renderer->SetFramebuffer(nullptr, GraphicBitFields::AllBits);
+                                         SDL_GL_SwapWindow(g_window);
+                                       }});
+
+                  rsys->FlushRenderTasks();
+
+                  showSplashScreen = false;
+                  splashRenderer   = nullptr;
+                  g_app->Init();
+
+                  SDL_SetWindowBordered(g_window, SDL_TRUE);
+                  SDL_SetWindowResizable(g_window, SDL_TRUE);
+                }
+              }
+              else
+              {
+                g_app->Frame(deltaTime);
+              }
             };
+
             g_proxy->RegisterPreUpdateFunction(preUpdateFn);
 
             TKUpdateFn postUpdateFn = [](float deltaTime)
@@ -315,6 +354,7 @@ namespace ToolKit
               g_app->m_lastFrameHWRenderPassCount = Stats::GetHWRenderPassCount();
               g_app->m_lastFrameDrawCallCount     = Stats::GetDrawCallCount();
             };
+
             g_proxy->RegisterPostUpdateFunction(postUpdateFn);
 
             // Post init the engine after editor is up.

@@ -263,6 +263,12 @@ namespace ToolKit
     entities.erase(it, entities.end());
   }
 
+  /**
+   * Recursively traverse each child of the parent and apply callback function.
+   * Execution order is bottom - up. Meaning that lambda called on leafs than parent.
+   */
+  TK_API void TraverseEntityHierarchyBottomUp(EntityPtr parent, const std::function<void(EntityPtr child)>& callbackFn);
+
   // EntityNode
   //////////////////////////////////////////
 

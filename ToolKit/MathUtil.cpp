@@ -273,6 +273,11 @@ namespace ToolKit
     return dist < (sphereRadius + sphereRadius2);
   }
 
+  bool SphereSphereIntersection(const BoundingSphere& sphere1, const BoundingSphere& sphere2)
+  {
+    return SphereSphereIntersection(sphere1.pos, sphere1.radius, sphere2.pos, sphere2.radius);
+  }
+
   IntersectResult BoxBoxIntersection(const BoundingBox& box1, const BoundingBox& box2)
   {
     // Check if box1 is completely outside box2.

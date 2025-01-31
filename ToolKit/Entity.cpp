@@ -426,6 +426,11 @@ namespace ToolKit
     }
   }
 
+  void TraverseEntityHierarchyBottomUp(EntityPtr parent, const std::function<void(EntityPtr child)>& callbackFn)
+  {
+    return TraverseNodeHierarchyBottomUp(parent->m_node, [&](Node* node) -> void { callbackFn(node->OwnerEntity()); });
+  }
+
   EntityNode::EntityNode() { m_partOfAABBTree = false; }
 
   EntityNode::EntityNode(const String& name) { SetNameVal(name); }

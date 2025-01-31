@@ -57,7 +57,23 @@ namespace ToolKit
       ActionManager::GetInstance()->Init();
 
       m_workspace.Init();
-      CreateNewScene();
+
+      // Load the last scene or create a new scene.
+      String lastScene = m_workspace.GetActiveProject().scene;
+      if (lastScene.empty())
+      {
+        CreateNewScene();
+      }
+      else
+      {
+        // ApplyProjectSettings uses OpenSceneAsync to load the last open scene,
+        // In the mean time, we have to show a dummy scene.
+        if (SceneManager* sceneMan = GetSceneManager())
+        {
+          ScenePtr defaultScene = sceneMan->Create<Scene>(ScenePath("Empty" + SCENE, true));
+          sceneMan->SetCurrentScene(defaultScene);
+        }
+      }
 
       ApplyProjectSettings(false);
 
@@ -112,15 +128,12 @@ namespace ToolKit
     void App::CreateNewScene()
     {
       String sceneName = "NewScene" + SCENE;
-      if (!m_newSceneName.empty())
-      {
-        sceneName = m_newSceneName;
-      }
+      String file      = CreateIncrementalFileFullPath(ScenePath(sceneName), " ");
+      DecomposePath(file, nullptr, &sceneName, nullptr);
 
       EditorScenePtr scene = MakeNewPtr<EditorScene>();
-      scene->SetFile(ScenePath(sceneName));
-
-      scene->m_name     = sceneName;
+      scene->SetFile(file);
+      scene->m_name     = sceneName + SCENE;
       scene->m_newScene = true;
       SetCurrentScene(scene);
     }
@@ -231,9 +244,6 @@ namespace ToolKit
     {
       ClearSession();
       CreateNewScene();
-
-      m_newSceneName.clear();
-      m_workspace.SetScene(name);
     }
 
     void App::OnSaveScene()
@@ -268,7 +278,7 @@ namespace ToolKit
         }
       };
 
-      // File existance check.
+      // File existence check.
       String fullPath = currScene->GetFile();
       if (currScene->m_newScene && CheckFile(fullPath))
       {
@@ -616,18 +626,12 @@ namespace ToolKit
     {
       ClearSession();
 
-      EditorScenePtr currentScene = GetCurrentScene();
-      currentScene->UnInit();
-
       if (PluginManager* pluginMan = GetPluginManager())
       {
         String pluginPath = m_workspace.GetBinPath();
         pluginMan->Load(pluginPath);
         ReconstructDynamicMenus();
       }
-
-      currentScene->Load();
-      currentScene->Init();
     }
 
     EditorScenePtr App::GetCurrentScene()
@@ -714,11 +718,14 @@ namespace ToolKit
       if (EditorSceneManager* sceneMan = static_cast<EditorSceneManager*>(GetSceneManager()))
       {
         // Reload to retrieve the original scene, clears the game play modifications.
-        if (ScenePtr scene = sceneMan->GetCurrentScene())
+        if (EditorScene* scene = sceneMan->GetCurrentScene()->As<EditorScene>())
         {
-          scene->UnInit();
-          scene->Load();
-          scene->Init();
+          if (!scene->m_newScene)
+          {
+            scene->UnInit();
+            scene->Load();
+            scene->Init();
+          }
         }
       }
 
@@ -1212,7 +1219,7 @@ namespace ToolKit
       m_workspace.SetActiveProject(project);
       m_workspace.Serialize(nullptr, nullptr);
       m_workspace.SerializeEngineSettings();
-      OnNewScene("New Scene");
+      CreateNewScene();
 
       LoadGamePlugin();
 
@@ -1494,13 +1501,16 @@ namespace ToolKit
         DeserializeWindows(root);
       }
 
-      LoadGamePlugin();
-
-      String scene = m_workspace.GetActiveProject().scene;
-      if (!scene.empty())
+      Project activeProject = m_workspace.GetActiveProject();
+      if (!activeProject.name.empty())
       {
-        String fullPath = ScenePath(scene);
-        OpenSceneAsync(fullPath);
+        LoadGamePlugin();
+
+        if (!activeProject.scene.empty())
+        {
+          String fullPath = ScenePath(activeProject.scene);
+          OpenSceneAsync(fullPath);
+        }
       }
 
       return nullptr;

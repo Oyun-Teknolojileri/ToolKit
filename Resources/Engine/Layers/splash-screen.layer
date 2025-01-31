@@ -1,0 +1,95 @@
+<S version="v0.4.9" name="splash-screen">
+	<Object Cl="Canvas">
+		<PB>
+			<P t="11" name="Id" v="8280839388284188300"/>
+			<P t="9" name="Name" v="MainCanvas"/>
+			<P t="9" name="Tag" v=""/>
+			<P t="10" name="Visible" v="1"/>
+			<P t="10" name="TransformLock" v="0"/>
+			<P t="14" name="Size" x="512.000000" y="512.000000"/>
+			<P t="14" name="PivotOffset" x="0.000000" y="0.000000"/>
+			<P t="13" name="Material"/>
+			<P t="18" name="UpdateSizeFromTexture"/>
+		</PB>
+		<Entity>
+			<N is="0">
+				<T x="0.000000" y="0.000000" z="1.000000"/>
+				<R x="0.000000" y="0.000000" z="0.000000" w="1.000000"/>
+				<S x="1.000000" y="1.000000" z="1.000000"/>
+			</N>
+			<Ca>
+				<Object Cl="MeshComponent">
+					<PB>
+						<P t="11" name="Id" v="17037589640580487046"/>
+						<P t="12" name="Mesh"/>
+						<P t="10" name="CastShadow" v="0"/>
+					</PB>
+					<Component>
+						<MeshComponent/>
+					</Component>
+				</Object>
+				<Object Cl="MaterialComponent">
+					<PB>
+						<P t="11" name="Id" v="1402832830313361222"/>
+					</PB>
+					<Component>
+						<MaterialComponent MaterialCount="0"/>
+					</Component>
+				</Object>
+			</Ca>
+			<Surface>
+				<Anchor ratios0="0.000000" offsets0="0.000000" ratios1="1.000000" offsets1="0.000000" ratios2="0.000000" offsets2="0.000000" ratios3="1.000000" offsets3="0.000000"/>
+				<Canvas/>
+			</Surface>
+		</Entity>
+	</Object>
+	<Object Cl="Surface">
+		<PB>
+			<P t="11" name="Id" v="17924894125193357469"/>
+			<P t="9" name="Name" v="Splash"/>
+			<P t="9" name="Tag" v=""/>
+			<P t="10" name="Visible" v="1"/>
+			<P t="10" name="TransformLock" v="0"/>
+			<P t="14" name="Size" x="512.000000" y="512.000000"/>
+			<P t="14" name="PivotOffset" x="0.000000" y="0.000000"/>
+			<P t="13" name="Material"/>
+			<P t="18" name="UpdateSizeFromTexture"/>
+		</PB>
+		<Entity pi="8280839388284188300">
+			<N is="0">
+				<T x="0.000000" y="0.000000" z="0.000000"/>
+				<R x="0.000000" y="0.000000" z="0.000000" w="1.000000"/>
+				<S x="1.000000" y="1.000000" z="1.000000"/>
+			</N>
+			<Ca>
+				<Object Cl="MeshComponent">
+					<PB>
+						<P t="11" name="Id" v="15837062410345902495"/>
+						<P t="12" name="Mesh"/>
+						<P t="10" name="CastShadow" v="0"/>
+					</PB>
+					<Component>
+						<MeshComponent/>
+					</Component>
+				</Object>
+				<Object Cl="MaterialComponent">
+					<PB>
+						<P t="11" name="Id" v="12374683263922920840"/>
+					</PB>
+					<Component>
+						<MaterialComponent MaterialCount="1">
+							<0>
+								<ResourceRef Class="Material" File="ToolKit\splash-logo.material"/>
+							</0>
+						</MaterialComponent>
+					</Component>
+				</Object>
+			</Ca>
+			<Surface>
+				<Anchor ratios0="0.500000" offsets0="-256.000000" ratios1="0.500000" offsets1="-256.000000" ratios2="0.500000" offsets2="-256.000000" ratios3="0.500000" offsets3="-256.000000"/>
+			</Surface>
+		</Entity>
+	</Object>
+	<PostProcessing TonemappingEnabled="0" TonemapperMode="1" EnableBloom="0" BloomIntensity="1.000000" BloomThreshold="1.000000" BloomIterationCount="5" GammaCorrectionEnabled="1" Gamma="2.200000" SSAOEnabled="1" SSAORadius="0.500000" SSAOBias="0.025000" SSAOKernelSize="16" DepthOfFieldEnabled="0" FocusPoint="10.000000" FocusScale="5.000000" DofQuality="1" FXAAEnabled="0"/>
+</S>
+

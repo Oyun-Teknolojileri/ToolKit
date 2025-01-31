@@ -57,7 +57,10 @@ namespace ToolKit
    */
   struct TK_API Timing
   {
+    /** Initialize the timer for the engine. Locks the engine to given frame per seconds. */
     void Init(uint fps);
+
+    /** Returns the elapsed time for the last frame in milliseconds. */
     float GetDeltaTime();
 
     float CurrentTime     = 0.0f; //!< Total elapsed time in milliseconds. Updated after every frame.

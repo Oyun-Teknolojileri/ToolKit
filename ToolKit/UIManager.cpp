@@ -19,11 +19,7 @@ namespace ToolKit
 
   UILayer::UILayer() { m_id = GetHandleManager()->GenerateHandle(); }
 
-  UILayer::UILayer(const String& file) : UILayer()
-  {
-    m_scene = GetSceneManager()->Create<Scene>(file);
-    m_scene->Load();
-  }
+  UILayer::UILayer(const String& file) : UILayer() { m_scene = GetSceneManager()->Create<Scene>(file); }
 
   UILayer::UILayer(ScenePtr scene) : UILayer()
   {

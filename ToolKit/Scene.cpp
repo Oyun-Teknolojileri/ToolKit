@@ -23,7 +23,7 @@ namespace ToolKit
 {
   TKDefineClass(Scene, Resource);
 
-  Scene::Scene() { m_name = "New Scene"; }
+  Scene::Scene() { m_name = "NewScene"; }
 
   Scene::~Scene() { Destroy(false); }
 
@@ -350,13 +350,21 @@ namespace ToolKit
     }
   }
 
+  void Scene::AddEntity(const EntityPtrArray& entities)
+  {
+    for (const EntityPtr& ntt : entities)
+    {
+      AddEntity(ntt);
+    }
+  }
+
   void Scene::_RemoveChildren(EntityPtr removed)
   {
     NodeRawPtrArray& children = removed->m_node->m_children;
 
-    for (Node* child : children)
+    for (size_t i = 0; i < children.size(); i++)
     {
-      if (EntityPtr childNtt = child->OwnerEntity())
+      if (EntityPtr childNtt = children[i]->OwnerEntity())
       {
         RemoveEntity(childNtt->GetIdVal());
       }
@@ -404,6 +412,8 @@ namespace ToolKit
 
     return removed;
   }
+
+  EntityPtr Scene::RemoveEntity(EntityPtr entity, bool deep) { return RemoveEntity(entity->GetIdVal(), deep); }
 
   void Scene::RemoveEntity(const EntityPtrArray& entities, bool deep)
   {
@@ -864,7 +874,8 @@ namespace ToolKit
 
   void SceneManager::SetCurrentScene(const ScenePtr& scene)
   {
-    m_currentScene                     = scene;
+    m_currentScene = scene;
+    m_currentScene->Init();
 
     // Apply scene post processing effects.
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;

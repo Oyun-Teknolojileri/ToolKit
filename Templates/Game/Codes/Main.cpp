@@ -25,6 +25,7 @@
 #include "Plugin.h"
 #include "SDL.h"
 #include "Scene.h"
+#include "SplashScreenRenderPath.h"
 #include "ToolKit.h"
 #include "Types.h"
 #include "UIManager.h"
@@ -71,126 +72,170 @@ namespace ToolKit
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0)
     {
       g_running = false;
+      return;
     }
-    else
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+
+    // EGL does not support sRGB backbuffer. Need to use an extension
+    // https://stackoverflow.com/questions/20396523/android-egl-srgb-default-renderbuffer
+
+    SDL_DisplayMode DM;
+    SDL_GetCurrentDisplayMode(0, &DM);
+
+    String settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
+    g_proxy->m_engineSettings->Load(settingsFile);
+    g_engineSettings = g_proxy->m_engineSettings;
+    if (g_engineSettings->Window.FullScreen)
     {
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+      g_proxy->m_engineSettings->Window.Width  = DM.w;
+      g_proxy->m_engineSettings->Window.Height = DM.h;
+    }
 
-      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-      SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+    PlatformAdjustEngineSettings(DM.w, DM.h, g_engineSettings);
 
-      // EGL does not support sRGB backbuffer. Need to use an extension
-      // https://stackoverflow.com/questions/20396523/android-egl-srgb-default-renderbuffer
+    g_window = SDL_CreateWindow(g_appName,
+                                SDL_WINDOWPOS_CENTERED,
+                                SDL_WINDOWPOS_CENTERED,
+                                g_engineSettings->Window.Width,
+                                g_engineSettings->Window.Height,
+                                PLATFORM_SDL_FLAGS | SDL_WINDOW_BORDERLESS);
 
-      SDL_DisplayMode DM;
-      SDL_GetCurrentDisplayMode(0, &DM);
+    if (g_window == nullptr)
+    {
+      const char* error = SDL_GetError();
+      TK_LOG("%s", error);
+      g_running = false;
+      return;
+    }
 
-      String settingsFile = ConcatPaths({ConfigPath(), "Engine.settings"});
-      g_proxy->m_engineSettings->Load(settingsFile);
-      g_engineSettings = g_proxy->m_engineSettings;
-      if (g_engineSettings->Window.FullScreen)
+    g_context = SDL_GL_CreateContext(g_window);
+    if (g_context == nullptr)
+    {
+      const char* error = SDL_GetError();
+      TK_LOG("%s", error);
+      g_running = false;
+      return;
+    }
+
+    SDL_GL_MakeCurrent(g_window, g_context);
+    const char* error = SDL_GetError();
+    TK_LOG("%s", error);
+
+    // Init OpenGl.
+    g_proxy->m_renderSys->InitGl((void*) SDL_GL_GetProcAddress, [](const String& msg) { TK_LOG("%s", msg.c_str()); });
+
+    // Set defaults
+    SDL_GL_SetSwapInterval(0);
+
+    // ToolKit Init
+    g_proxy->Init();
+
+    // Register pre update function.
+    TKUpdateFn preUpdateFn = [](float deltaTime)
+    {
+      SDL_Event sdlEvent;
+      while (SDL_PollEvent(&sdlEvent))
       {
-        g_proxy->m_engineSettings->Window.Width  = DM.w;
-        g_proxy->m_engineSettings->Window.Height = DM.h;
+        g_sdlEventPool->PoolEvent(sdlEvent);
+        ProcessEvent(sdlEvent);
       }
 
-      PlatformAdjustEngineSettings(DM.w, DM.h, g_engineSettings);
+      // Initiate splash screen drawing.
+      static bool showSplashScreen                    = true;
+      static float elapsedTime                        = 0.0f;
+      static SplashScreenRenderPathPtr splashRenderer = nullptr;
 
-      g_window = SDL_CreateWindow(g_appName,
-                                  SDL_WINDOWPOS_UNDEFINED,
-                                  SDL_WINDOWPOS_UNDEFINED,
-                                  g_engineSettings->Window.Width,
-                                  g_engineSettings->Window.Height,
-                                  PLATFORM_SDL_FLAGS);
+      if (showSplashScreen)
+      {
+        // Draw splash screen.
+        uint width  = g_engineSettings->Window.Width;
+        uint height = g_engineSettings->Window.Height;
 
-      if (g_window == nullptr)
-      {
-        g_running = false;
-      }
-      else
-      {
-        g_context = SDL_GL_CreateContext(g_window);
-        if (g_context == nullptr)
+        if (splashRenderer == nullptr)
         {
-          const char* error = SDL_GetError();
-          TK_LOG("%s", error);
-          g_running = false;
+          splashRenderer = MakeNewPtr<SplashScreenRenderPath>();
+          splashRenderer->Init(UVec2(width, height));
+        }
+
+        RenderSystem* rsys = GetRenderSystem();
+
+        if (elapsedTime < 1000.0f)
+        {
+          elapsedTime += deltaTime;
+          rsys->AddRenderTask({[](Renderer* renderer) -> void { splashRenderer->Render(renderer); }});
         }
         else
         {
-          SDL_GL_MakeCurrent(g_window, g_context);
+          // At the end of splash drawing, initiate the app.
+          rsys->AddRenderTask({[](Renderer* renderer) -> void
+                               {
+                                 renderer->SetFramebuffer(nullptr, GraphicBitFields::AllBits);
+                                 SDL_GL_SwapWindow(g_window);
+                               }});
+          rsys->FlushRenderTasks();
 
-          const char* error = SDL_GetError();
-          TK_LOG("%s", error);
-
-          // Init OpenGl.
-          g_proxy->m_renderSys->InitGl((void*) SDL_GL_GetProcAddress,
-                                       [](const String& msg) { TK_LOG("%s", msg.c_str()); });
-
-          // Set defaults
-          SDL_GL_SetSwapInterval(0);
-
-          // ToolKit Init
-          g_proxy->Init();
+          showSplashScreen = false;
+          splashRenderer   = nullptr;
 
           // Init viewport and window size
-          uint width  = g_engineSettings->Window.Width;
-          uint height = g_engineSettings->Window.Height;
-          g_viewport  = MakeNewPtr<GameViewport>((float) width, (float) height);
+          g_viewport       = MakeNewPtr<GameViewport>((float) width, (float) height);
           GetUIManager()->RegisterViewport(g_viewport);
           GetRenderSystem()->SetAppWindowSize(width, height);
+
+          // Update widnow
+          SDL_SetWindowSize(g_window, width, height);
+          SDL_SetWindowBordered(g_window, SDL_TRUE);
+          SDL_SetWindowResizable(g_window, SDL_TRUE);
 
           // Init game
           g_game = new Game();
           g_game->SetViewport(g_viewport);
           g_game->Init(g_proxy);
           g_game->m_currentState = PluginState::Running;
-
           g_gameRenderer         = new GameRenderer();
-
           g_game->OnPlay();
-
-          // Register update functions
-
-          TKUpdateFn preUpdateFn = [](float deltaTime)
-          {
-            SDL_Event sdlEvent;
-            while (SDL_PollEvent(&sdlEvent))
-            {
-              g_sdlEventPool->PoolEvent(sdlEvent);
-              ProcessEvent(sdlEvent);
-            }
-          };
-          g_proxy->RegisterPreUpdateFunction(preUpdateFn);
-
-          TKUpdateFn postUpdateFn = [](float deltaTime)
-          {
-            g_viewport->Update(deltaTime);
-            g_game->Frame(deltaTime);
-
-            if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
-            {
-              GameRendererParams params;
-              params.gfx      = scene->m_postProcessSettings;
-              params.scene    = scene;
-              params.viewport = g_viewport;
-              g_gameRenderer->SetParams(params);
-            }
-
-            GetRenderSystem()->AddRenderTask(
-                {[deltaTime](Renderer* renderer) -> void { g_gameRenderer->Render(renderer); }});
-
-            SDL_GL_SwapWindow(g_window);
-
-            g_sdlEventPool->ClearPool(); // Clear after consumption.
-          };
-          g_proxy->RegisterPostUpdateFunction(postUpdateFn);
         }
       }
-    }
+      else
+      {
+        // After splash shown, execute and display the app frames.
+        g_viewport->Update(deltaTime);
+        g_game->Frame(deltaTime);
+
+        if (ScenePtr scene = GetSceneManager()->GetCurrentScene())
+        {
+          GameRendererParams params;
+          params.gfx      = scene->m_postProcessSettings;
+          params.scene    = scene;
+          params.viewport = g_viewport;
+          g_gameRenderer->SetParams(params);
+        }
+
+        GetRenderSystem()->AddRenderTask(
+            {[deltaTime](Renderer* renderer) -> void { g_gameRenderer->Render(renderer); }});
+
+        g_sdlEventPool->ClearPool(); // Clear after consumption.
+        g_running = g_running && g_game->m_currentState != PluginState::Stop;
+      }
+    };
+    g_proxy->RegisterPreUpdateFunction(preUpdateFn);
+
+    // Register post update function.
+    TKUpdateFn postUpdateFn = [](float deltaTime)
+    {
+      SDL_GL_MakeCurrent(g_window, g_context);
+      SDL_GL_SwapWindow(g_window);
+
+      g_sdlEventPool->ClearPool(); // Clear after consumption.
+    };
+    g_proxy->RegisterPostUpdateFunction(postUpdateFn);
   }
 
   void Exit()
@@ -223,12 +268,11 @@ namespace ToolKit
     PreInit();
     Init();
 
-    PlatformMainLoop(g_game, g_running, TK_Loop);
+    PlatformMainLoop(&g_running, TK_Loop);
 
     Exit();
     return 0;
   }
-
 } // namespace ToolKit
 
 int main(int argc, char* argv[]) { return ToolKit::ToolKit_Main(argc, argv); }

@@ -29,6 +29,7 @@
 
 namespace ToolKit
 {
+
   AAssetManager* assetManager = nullptr;
 
   inline void CopyFileToDataPath(String& internalDataPath, const char* file)
@@ -92,9 +93,9 @@ namespace ToolKit
     CopyAllAssetsToDataPath(internalPath);
   }
 
-  inline void PlatformMainLoop(Game* g_game, bool g_running, void (*TK_Loop)())
+  inline void PlatformMainLoop(bool* running, void (*TK_Loop)())
   {
-    while (g_game->m_currentState != PluginState::Stop && g_running)
+    while (*running)
     {
       TK_Loop();
     }
@@ -105,6 +106,7 @@ namespace ToolKit
     engineSettings->Window.Width  = (uint) availableWidth;
     engineSettings->Window.Height = (uint) availableHeight;
   }
+
 } // namespace ToolKit
 
 extern "C"

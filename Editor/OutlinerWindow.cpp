@@ -393,7 +393,7 @@ namespace ToolKit
           EntityPtr ntt = ntties[i];
 
           // RemoveEntity may recursively delete all children if exist, so we need to add back all removed.
-          TraverseChildNodes(ntt->m_node,
+          TraverseNodeHierarchyBottomUp(ntt->m_node,
                              [&](Node* child) -> void
                              {
                                if (EntityPtr childNtt = child->OwnerEntity())

@@ -11,6 +11,7 @@
 
 namespace ToolKit
 {
+
   class TK_API GameViewport : public Viewport
   {
    public:
@@ -19,4 +20,7 @@ namespace ToolKit
 
     void Update(float dt) override;
   };
+
+  typedef std::shared_ptr<GameViewport> GameViewportPtr;
+
 } // namespace ToolKit

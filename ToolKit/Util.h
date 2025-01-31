@@ -60,7 +60,8 @@ namespace ToolKit
    */
   TK_API bool CheckFile(const String& path);
 
-  TK_API String CreateCopyFileFullPath(const String& fullPath);
+  /** Creates a file name, if there is a file with the same name, adds a number incrementally to end of file. */
+  TK_API String CreateIncrementalFileFullPath(const String& fullPath, const String& postFix = "_copy");
   TK_API void DecomposePath(const String& fullPath, String* path, String* name, String* ext);
 
   TK_API String NormalizePath(String path);

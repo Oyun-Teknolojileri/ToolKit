@@ -201,6 +201,18 @@ namespace ToolKit
     m_mat = job.Material;
     m_mat->Init();
 
+    // Set used textures.
+    if (m_mat->m_diffuseTexture)
+    {
+      SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
+    }
+
+    if (m_mat->m_cubeMap)
+    {
+      SetTexture(6, m_mat->m_cubeMap->m_textureId);
+    }
+
+    // Set state.
     RenderState* renderState = m_mat->GetRenderState();
     SetRenderState(renderState, job.requireCullFlip);
 
@@ -355,19 +367,6 @@ namespace ToolKit
       m_renderState.lineWidth = state->lineWidth;
       glLineWidth(m_renderState.lineWidth);
     }
-
-    if (m_mat)
-    {
-      if (m_mat->m_diffuseTexture)
-      {
-        SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
-      }
-
-      if (m_mat->m_cubeMap)
-      {
-        SetTexture(6, m_mat->m_cubeMap->m_textureId);
-      }
-    }
   }
 
   void Renderer::SetStencilOperation(StencilOperation op)
@@ -481,10 +480,12 @@ namespace ToolKit
 
   void Renderer::CopyFrameBuffer(FramebufferPtr src, FramebufferPtr dest, GraphicBitFields fields)
   {
-    GLuint srcId = 0;
-    uint width   = m_windowSize.x;
-    uint height  = m_windowSize.y;
+    FramebufferPtr lastFb = m_framebuffer;
 
+    uint width            = m_windowSize.x;
+    uint height           = m_windowSize.y;
+
+    uint srcId            = 0;
     if (src)
     {
       const FramebufferSettings& fbs = src->GetSettings();
@@ -493,12 +494,15 @@ namespace ToolKit
       srcId                          = src->GetFboId();
     }
 
-    dest->ReconstructIfNeeded(width, height);
-
-    FramebufferPtr lastFb = m_framebuffer;
-
     RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, srcId);
-    RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, dest->GetFboId());
+
+    uint destId = 0;
+    if (dest)
+    {
+      dest->ReconstructIfNeeded(width, height);
+      destId = dest->GetFboId();
+    }
+    RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, destId);
 
     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, (GLbitfield) fields, GL_NEAREST);
 

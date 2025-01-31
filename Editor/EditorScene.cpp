@@ -18,14 +18,18 @@ namespace ToolKit
 
     TKDefineClass(EditorScene, Scene);
 
-    EditorScene::EditorScene() { m_newScene = false; }
+    EditorScene::EditorScene() { m_newScene = true; }
 
     EditorScene::~EditorScene() { Destroy(false); }
 
     void EditorScene::Load()
     {
+      m_newScene = false; // Loaded scene's can't be new.
+
+      // Load the scene.
       Scene::Load();
 
+      // Adjust editor entities.
       for (EntityPtr& ntt : m_entities)
       {
         // Create gizmos

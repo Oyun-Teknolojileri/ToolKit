@@ -59,6 +59,7 @@ namespace ToolKit
      * Attached camera must exist in the current scene.
      */
     virtual void AttachCamera(ULongID camID);
+    virtual void AttachCamera(CameraPtr cam);
 
    public:
     /**

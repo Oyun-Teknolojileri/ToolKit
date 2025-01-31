@@ -278,8 +278,7 @@ namespace ToolKit
 
      private:
       // Internal states.
-      bool m_onQuit = false;
-      String m_newSceneName;
+      bool m_onQuit      = false;
       float m_deltaTime  = 0.0f;
       bool m_isCompiling = false;
 

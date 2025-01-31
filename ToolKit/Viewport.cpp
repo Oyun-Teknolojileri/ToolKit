@@ -57,11 +57,15 @@ namespace ToolKit
 
   void ViewportBase::AttachCamera(ULongID camId)
   {
-    assert(camId == NULL_HANDLE || GetSceneManager()->GetCurrentScene()->GetEntity(camId) != nullptr &&
-                                       "Given camera must be in the current scene.");
+    // Sanity checks
+    bool isCamNull      = camId == NULL_HANDLE;
+    bool isCamFromScene = GetSceneManager()->GetCurrentScene()->GetEntity(camId) != nullptr;
+    assert(isCamNull || isCamFromScene && "Given camera must be in the current scene.");
 
     m_attachedCamera = camId;
   }
+
+  void ViewportBase::AttachCamera(CameraPtr cam) { AttachCamera(cam->GetIdVal()); }
 
   ViewportBase::ViewportBase()
   {

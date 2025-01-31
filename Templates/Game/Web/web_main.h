@@ -19,20 +19,20 @@
 
 namespace ToolKit
 {
+
   inline void PlatformPreInit(Main* g_proxy)
   {
     g_proxy->m_resourceRoot = ConcatPaths({".", "..", "Resources"});
-    g_proxy->m_cfgPath = ConcatPaths({ ".", "..", "Config", "Web" });
+    g_proxy->m_cfgPath      = ConcatPaths({".", "..", "Config", "Web"});
 
     GetLogger()->SetWriteConsoleFn([](LogType lt, String ms) -> void { std::cout << ms << std::endl; });
   }
 
-  inline void PlatformMainLoop(Game* g_game, bool& g_running, void (*TK_Loop)())
+  inline void PlatformMainLoop(bool* running, void (*TK_Loop)())
   {
     emscripten_set_main_loop_arg((em_arg_callback_func) TK_Loop, nullptr, 0, 1);
   }
 
-  inline void PlatformAdjustEngineSettings(int availableWidth, int availableHeight, EngineSettings* engineSettings)
-  {
-  }
+  inline void PlatformAdjustEngineSettings(int availableWidth, int availableHeight, EngineSettings* engineSettings) {}
+
 } // namespace ToolKit

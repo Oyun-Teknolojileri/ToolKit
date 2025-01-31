@@ -77,7 +77,7 @@ namespace ToolKit
     assert(other->Class() == Class());
     if (!m_file.empty())
     {
-      other->m_file = CreateCopyFileFullPath(m_file);
+      other->m_file = CreateIncrementalFileFullPath(m_file);
     }
     other->m_name      = m_name;
     other->m_dirty     = m_dirty;

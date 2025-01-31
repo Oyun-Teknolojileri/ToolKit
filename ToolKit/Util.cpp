@@ -216,20 +216,20 @@ namespace ToolKit
 
   bool CheckFile(const String& path) { return GetFileManager()->CheckFileFromResources(path); }
 
-  String CreateCopyFileFullPath(const String& fullPath)
+  String CreateIncrementalFileFullPath(const String& fullPath, const String& postFix)
   {
-    String cpyPath;
+    String cpyPath = fullPath;
     if (!fullPath.empty())
     {
-      String path, name, ext;
-      DecomposePath(fullPath, &path, &name, &ext);
-      cpyPath = ConcatPaths({path, name + "_copy" + ext});
-      if (CheckFile(cpyPath))
+      if (CheckFile(fullPath))
       {
+        String path, name, ext;
+        DecomposePath(fullPath, &path, &name, &ext);
+
         int i = 1;
         do
         {
-          cpyPath = ConcatPaths({path, name + "_copy(" + std::to_string(i++) + ")" + ext});
+          cpyPath = ConcatPaths({path, name + postFix + "(" + std::to_string(i++) + ")" + ext});
         } while (CheckFile(cpyPath));
       }
     }

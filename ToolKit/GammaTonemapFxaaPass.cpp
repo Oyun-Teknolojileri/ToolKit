@@ -30,9 +30,10 @@ namespace ToolKit
     renderer->CopyTexture(srcTexture, m_processTexture);
 
     m_quadPass->m_material->m_diffuseTexture = m_processTexture;
-    m_quadPass->m_material->m_fragmentShader = m_postProcessShader;
-    m_quadPass->m_params.frameBuffer         = m_params.frameBuffer;
-    m_quadPass->m_params.clearFrameBuffer    = GraphicBitFields::AllBits;
+    m_quadPass->SetFragmentShader(m_postProcessShader, renderer);
+
+    m_quadPass->m_params.frameBuffer      = m_params.frameBuffer;
+    m_quadPass->m_params.clearFrameBuffer = GraphicBitFields::AllBits;
 
     m_quadPass->UpdateUniform(ShaderUniform("enableFxaa", (int) m_params.enableFxaa));
     m_quadPass->UpdateUniform(ShaderUniform("enableGammaCorrection", (int) m_params.enableGammaCorrection));

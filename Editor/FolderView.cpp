@@ -904,7 +904,7 @@ namespace ToolKit
         if (ImGui::MenuItem("Duplicate"))
         {
           String fullPath = entry->GetFullPath();
-          String cpyPath  = CreateCopyFileFullPath(fullPath);
+          String cpyPath  = CreateIncrementalFileFullPath(fullPath);
           std::filesystem::copy(fullPath, cpyPath);
           thisView->m_parent->ReconstructFolderTree();
 
