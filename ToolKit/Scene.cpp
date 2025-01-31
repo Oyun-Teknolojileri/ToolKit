@@ -874,7 +874,8 @@ namespace ToolKit
 
   void SceneManager::SetCurrentScene(const ScenePtr& scene)
   {
-    m_currentScene                     = scene;
+    m_currentScene = scene;
+    m_currentScene->Init();
 
     // Apply scene post processing effects.
     GetEngineSettings().PostProcessing = m_currentScene->m_postProcessSettings;
