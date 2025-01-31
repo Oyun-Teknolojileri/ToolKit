@@ -221,8 +221,6 @@ namespace ToolKit
         GetRenderSystem()->AddRenderTask(
             {[deltaTime](Renderer* renderer) -> void { g_gameRenderer->Render(renderer); }});
 
-        SDL_GL_SwapWindow(g_window);
-
         g_sdlEventPool->ClearPool(); // Clear after consumption.
         g_running = g_running && g_game->m_currentState != PluginState::Stop;
       }
