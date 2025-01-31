@@ -201,6 +201,18 @@ namespace ToolKit
     m_mat = job.Material;
     m_mat->Init();
 
+    // Set used textures.
+    if (m_mat->m_diffuseTexture)
+    {
+      SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
+    }
+
+    if (m_mat->m_cubeMap)
+    {
+      SetTexture(6, m_mat->m_cubeMap->m_textureId);
+    }
+
+    // Set state.
     RenderState* renderState = m_mat->GetRenderState();
     SetRenderState(renderState, job.requireCullFlip);
 
@@ -354,19 +366,6 @@ namespace ToolKit
     {
       m_renderState.lineWidth = state->lineWidth;
       glLineWidth(m_renderState.lineWidth);
-    }
-
-    if (m_mat)
-    {
-      if (m_mat->m_diffuseTexture)
-      {
-        SetTexture(0, m_mat->m_diffuseTexture->m_textureId);
-      }
-
-      if (m_mat->m_cubeMap)
-      {
-        SetTexture(6, m_mat->m_cubeMap->m_textureId);
-      }
     }
   }
 
