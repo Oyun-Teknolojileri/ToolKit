@@ -198,6 +198,8 @@
     <None Include="..\Resources\Engine\Shaders\camera.shader" />
     <None Include="..\Resources\Engine\Shaders\copyTextureFrag.shader" />
     <None Include="..\Resources\Engine\Shaders\copyTextureVert.shader" />
+    <None Include="..\Resources\Engine\Shaders\cubemapToEquirectFrag.shader" />
+    <None Include="..\Resources\Engine\Shaders\cubemapToEquirectVert.shader" />
     <None Include="..\Resources\Engine\Shaders\defaultFragment.shader" />
     <None Include="..\Resources\Engine\Shaders\defaultVertex.shader" />
     <None Include="..\Resources\Engine\Shaders\depthOfFieldFrag.shader" />

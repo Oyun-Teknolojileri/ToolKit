@@ -688,5 +688,11 @@
     <None Include="..\Resources\Engine\Shaders\VSM.shader">
       <Filter>Render\Shaders</Filter>
     </None>
+    <None Include="..\Resources\Engine\Shaders\cubemapToEquirectFrag.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\cubemapToEquirectVert.shader">
+      <Filter>Render\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

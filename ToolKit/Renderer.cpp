@@ -1420,6 +1420,24 @@ namespace ToolKit
     return cubeMap;
   }
 
+  TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level) 
+  { 
+    RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(cubemap->m_width, cubemap->m_height, TextureSettings());
+    euqiRectTexture->Init();
+
+    // Store current frame buffer.
+    FramebufferPtr prevBuffer = GetFrameBuffer();
+    m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, euqiRectTexture);
+    SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::AllBits);
+
+    ShaderPtr cubmap2Equirect = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
+    DrawFullQuad(cubmap2Equirect);
+
+    SetFramebuffer(prevBuffer, GraphicBitFields::None);
+
+    return euqiRectTexture;
+  }
+
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)
   {
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
