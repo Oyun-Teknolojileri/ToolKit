@@ -1420,9 +1420,10 @@ namespace ToolKit
     return cubeMap;
   }
 
-  TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level) 
-  { 
-    RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(cubemap->m_width, cubemap->m_height, TextureSettings());
+  TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void* pixels, int size)
+  {
+    uint textureSize                = cubemap->m_width;
+    RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(textureSize, textureSize, TextureSettings());
     euqiRectTexture->Init();
 
     // Store current frame buffer.
@@ -1437,6 +1438,13 @@ namespace ToolKit
     rectMat->Init();
 
     DrawFullQuad(rectMat);
+
+    if (pixels != nullptr)
+    {
+      uint64 requiredSize = textureSize * textureSize * 4 * sizeof(float);
+      assert(size >= requiredSize && "Buffer size is not sufficient.");
+      glReadPixels(0, 0, textureSize, textureSize, GL_RGBA, GL_FLOAT, pixels);
+    }
 
     SetFramebuffer(prevBuffer, GraphicBitFields::None);
 

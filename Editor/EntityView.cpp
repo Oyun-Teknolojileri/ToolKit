@@ -14,6 +14,7 @@
 #include <Canvas.h>
 #include <Drawable.h>
 #include <GradientSky.h>
+#include <Image.h>
 #include <Material.h>
 #include <MathUtil.h>
 #include <Mesh.h>
@@ -496,6 +497,16 @@ namespace ToolKit
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
             Cast<SkyBase>(ntt)->ReInit();
+            GetRenderSystem()->AddRenderTask(
+                {[ntt](Renderer* renderer) -> void
+                 {
+                   SkyBasePtr sky = Cast<SkyBase>(ntt);
+                   int size       = sky->GetIBLTextureSizeVal().GetValue<int>();
+                   int bufferSize = size * size * 4 * sizeof(float);
+                   float* pixels  = new float[bufferSize];
+                   renderer->GenerateEquiRectengularProjection(sky->GetIrradianceMap(), 0, pixels, bufferSize);
+                   WriteHdr(TexturePath("allendolan.hdr"), size, size, 4, pixels);
+                 }});
           }
           UI::EndCenteredTextButton();
         }
