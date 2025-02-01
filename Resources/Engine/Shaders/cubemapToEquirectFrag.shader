@@ -1,12 +1,11 @@
 <shader>
 	<type name = "fragmentShader" />
-	<uniform name = "CubeMap" />
 	<source>
 	<!--
 		#version 300 es
 		precision highp float;
 
-		uniform samplerCube CubeMap;
+		uniform samplerCube s_texture6;
 
 		in vec2 uv;
 		out vec4 fragColor;
@@ -23,7 +22,7 @@
 			dir.y = cos(theta);
 			dir.z = sin(theta) * sin(phi);
 
-			vec3 color = texture(CubeMap, normalize(dir)).rgb;
+			vec3 color = texture(s_texture6, normalize(dir)).rgb;
 			fragColor = vec4(color, 1.0);
 		}
 	-->

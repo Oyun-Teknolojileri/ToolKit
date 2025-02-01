@@ -1430,8 +1430,13 @@ namespace ToolKit
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, euqiRectTexture);
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::AllBits);
 
-    ShaderPtr cubmap2Equirect = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
-    DrawFullQuad(cubmap2Equirect);
+    MaterialPtr rectMat       = MakeNewPtr<Material>();
+    rectMat->m_cubeMap        = cubemap;
+    rectMat->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectVert.shader", true));
+    rectMat->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
+    rectMat->Init();
+
+    DrawFullQuad(rectMat);
 
     SetFramebuffer(prevBuffer, GraphicBitFields::None);
 
