@@ -89,11 +89,11 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Threads.cpp" />
-    <ClCompile Include="TKImage.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="TKOpenGL.cpp">
       <OrderInUnityFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">150</OrderInUnityFile>
     </ClCompile>
-    <ClCompile Include="TKStats.cpp" />
+    <ClCompile Include="Stats.cpp" />
     <ClCompile Include="ToolKit.cpp" />
     <ClCompile Include="UIManager.cpp" />
     <ClCompile Include="Util.cpp" />
@@ -178,9 +178,9 @@
     <ClInclude Include="Threads.h" />
     <ClInclude Include="TKAssert.h" />
     <ClInclude Include="Object.h" />
-    <ClInclude Include="TKImage.h" />
-    <ClInclude Include="TKPlatform.h" />
-    <ClInclude Include="TKStats.h" />
+    <ClInclude Include="Image.h" />
+    <ClInclude Include="Platform.h" />
+    <ClInclude Include="Stats.h" />
     <ClInclude Include="ToolKit.h" />
     <ClInclude Include="TKOpenGL.h" />
     <ClInclude Include="Types.h" />

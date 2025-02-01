@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Light.h"
-#include "TKStats.h"
+#include "Stats.h"
 #include "Types.h"
 
 namespace ToolKit

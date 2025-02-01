@@ -12,7 +12,7 @@
  * relatled structures.
  */
 
-#include "TKPlatform.h"
+#include "Platform.h"
 
 // GLM
 #ifndef TK_GLM

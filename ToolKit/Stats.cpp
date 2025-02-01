@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "TKStats.h"
+#include "Stats.h"
 
 #include "TKAssert.h"
 #include "TKOpenGL.h"

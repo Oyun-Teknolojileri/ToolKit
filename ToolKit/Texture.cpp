@@ -11,15 +11,15 @@
 #include "EngineSettings.h"
 #include "FileManager.h"
 #include "FullQuadPass.h"
+#include "Image.h"
 #include "Logger.h"
 #include "Material.h"
 #include "RHI.h"
 #include "RHIConstants.h"
 #include "RenderSystem.h"
 #include "Shader.h"
-#include "TKImage.h"
+#include "Stats.h"
 #include "TKOpenGL.h"
-#include "TKStats.h"
 #include "ToolKit.h"
 
 namespace ToolKit

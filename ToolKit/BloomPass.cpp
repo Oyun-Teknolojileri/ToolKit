@@ -8,7 +8,7 @@
 #include "BloomPass.h"
 
 #include "Shader.h"
-#include "TKStats.h"
+#include "Stats.h"
 #include "ToolKit.h"
 
 namespace ToolKit

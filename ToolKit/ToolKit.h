@@ -14,7 +14,7 @@
 
 #include "Logger.h"
 #include "Object.h"
-#include "TKPlatform.h"
+#include "Platform.h"
 #include "Types.h"
 
 /**

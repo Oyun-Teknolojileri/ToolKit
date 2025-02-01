@@ -21,8 +21,8 @@
 #include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
+#include "Stats.h"
 #include "TKOpenGL.h"
-#include "TKStats.h"
 #include "Threads.h"
 #include "UIManager.h"
 

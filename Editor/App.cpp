@@ -19,7 +19,7 @@
 #include <PluginManager.h>
 #include <Resource.h>
 #include <SDL.h>
-#include <TKStats.h>
+#include <Stats.h>
 #include <UIManager.h>
 
 #include <sstream>

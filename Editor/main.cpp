@@ -17,7 +17,7 @@
 #include "PopupWindows.h"
 #include "PreviewViewport.h"
 #include "SplashScreenRenderPath.h"
-#include "TKStats.h"
+#include "Stats.h"
 #include "UI.h"
 
 #include <Common/SDLEventPool.h>

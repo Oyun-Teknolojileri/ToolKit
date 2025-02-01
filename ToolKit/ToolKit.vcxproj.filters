@@ -172,7 +172,7 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
-    <ClCompile Include="TKImage.cpp">
+    <ClCompile Include="Image.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="TKOpenGL.cpp">
@@ -229,7 +229,7 @@
     <ClCompile Include="AABBTree.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="TKStats.cpp">
+    <ClCompile Include="Stats.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="SplashScreenRenderPath.cpp">
@@ -420,7 +420,7 @@
     <ClInclude Include="Scene.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="TKImage.h">
+    <ClInclude Include="Image.h">
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="TKOpenGL.h">
@@ -432,7 +432,7 @@
     <ClInclude Include="ToolKit.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="TKPlatform.h">
+    <ClInclude Include="Platform.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="TKAssert.h">
@@ -462,7 +462,7 @@
     <ClInclude Include="StateMachine.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="TKStats.h">
+    <ClInclude Include="Stats.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="RHI.h">

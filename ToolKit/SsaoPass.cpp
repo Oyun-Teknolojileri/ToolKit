@@ -12,8 +12,8 @@
 #include "MathUtil.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Stats.h"
 #include "TKOpenGL.h"
-#include "TKStats.h"
 #include "ToolKit.h"
 
 #include <random>

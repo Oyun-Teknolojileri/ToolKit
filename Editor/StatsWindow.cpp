@@ -9,7 +9,7 @@
 
 #include "EditorTypes.h"
 
-#include <TKStats.h>
+#include <Stats.h>
 
 namespace ToolKit
 {

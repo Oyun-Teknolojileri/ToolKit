@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "TKPlatform.h"
+#include "Platform.h"
 
 #ifdef TK_ANDROID
   #include <GLES3/gl32.h>

@@ -7,8 +7,8 @@
 
 #pragma once
 
+#include "Stats.h"
 #include "TKOpenGL.h"
-#include "TKStats.h"
 #include "Types.h"
 
 namespace ToolKit

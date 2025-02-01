@@ -14,7 +14,7 @@
 #include "RHIConstants.h"
 #include "RenderSystem.h"
 #include "Shader.h"
-#include "TKStats.h"
+#include "Stats.h"
 
 namespace ToolKit
 {

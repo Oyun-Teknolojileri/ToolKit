@@ -18,7 +18,7 @@
 #include "RHIConstants.h"
 #include "RenderSystem.h"
 #include "Scene.h"
-#include "TKStats.h"
+#include "Stats.h"
 #include "ToolKit.h"
 
 namespace ToolKit

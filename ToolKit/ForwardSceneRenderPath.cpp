@@ -11,7 +11,7 @@
 #include "MathUtil.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "TKStats.h"
+#include "Stats.h"
 
 namespace ToolKit
 {

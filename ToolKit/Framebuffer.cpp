@@ -9,8 +9,8 @@
 
 #include "Logger.h"
 #include "RHI.h"
+#include "Stats.h"
 #include "TKOpenGL.h"
-#include "TKStats.h"
 #include "ToolKit.h"
 
 namespace ToolKit

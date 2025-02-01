@@ -7,7 +7,7 @@
 
 #include "Threads.h"
 
-#include "TKPlatform.h"
+#include "Platform.h"
 #include "ToolKit.h"
 
 namespace ToolKit

@@ -5,7 +5,7 @@
  * please visit [otyazilim.com] or contact us at [info@otyazilim.com].
  */
 
-#include "TKImage.h"
+#include "Image.h"
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb/stb_image_resize.h"
@@ -22,31 +22,32 @@
 
 namespace ToolKit
 {
-  unsigned char* ImageLoad(const char* filename, int* x, int* y, int* comp, int req_comp)
+
+  ubyte* ImageLoad(StringView filename, int* x, int* y, int* comp, int req_comp)
   {
-    return stbi_load(filename, x, y, comp, req_comp);
+    return stbi_load(filename.data(), x, y, comp, req_comp);
   }
 
-  float* ImageLoadF(const char* filename, int* x, int* y, int* comp, int req_comp)
+  float* ImageLoadF(StringView filename, int* x, int* y, int* comp, int req_comp)
   {
-    return stbi_loadf(filename, x, y, comp, req_comp);
+    return stbi_loadf(filename.data(), x, y, comp, req_comp);
   }
 
-  unsigned char* ImageLoadFromMemory(const unsigned char* buffer, int len, int* x, int* y, int* comp, int req_comp)
+  ubyte* ImageLoadFromMemory(const ubyte* buffer, int len, int* x, int* y, int* comp, int req_comp)
   {
     return stbi_load_from_memory(buffer, len, x, y, comp, req_comp);
   }
 
-  float* ImageLoadFromMemoryF(const unsigned char* buffer, int len, int* x, int* y, int* comp, int req_comp)
+  float* ImageLoadFromMemoryF(const ubyte* buffer, int len, int* x, int* y, int* comp, int req_comp)
   {
     return stbi_loadf_from_memory(buffer, len, x, y, comp, req_comp);
   }
 
-  int ImageResize(const unsigned char* input_pixels,
+  int ImageResize(const ubyte* input_pixels,
                   int input_w,
                   int input_h,
                   int input_stride_in_bytes,
-                  unsigned char* output_pixels,
+                  ubyte* output_pixels,
                   int output_w,
                   int output_h,
                   int output_stride_in_bytes,
@@ -63,12 +64,18 @@ namespace ToolKit
                               num_channels);
   }
 
-  int WritePNG(const char* filename, int x, int y, int comp, const void* data, int stride_bytes)
+  int WritePNG(StringView filename, int x, int y, int comp, const void* data, int stride_bytes)
   {
-    return stbi_write_png(filename, x, y, comp, data, stride_bytes);
+    return stbi_write_png(filename.data(), x, y, comp, data, stride_bytes);
+  }
+
+  int WriteHdr(StringView filename, int x, int y, int comp, const float* data)
+  {
+    return stbi_write_hdr(filename.data(), x, y, comp, data);
   }
 
   void ImageSetVerticalOnLoad(bool val) { stbi_set_flip_vertically_on_load(val); }
 
   void ImageFree(void* img) { stbi_image_free(img); }
+
 } // namespace ToolKit

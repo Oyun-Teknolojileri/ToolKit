@@ -8,12 +8,12 @@
 #include <Animation.h>
 #include <Common/Win32Utils.h>
 #include <DirectionComponent.h>
+#include <Image.h>
 #include <Material.h>
 #include <MaterialComponent.h>
 #include <Mesh.h>
 #include <MeshComponent.h>
 #include <Scene.h>
-#include <TKImage.h>
 #include <Texture.h>
 #include <ToolKit.h>
 #include <Types.h>

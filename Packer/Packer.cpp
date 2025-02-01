@@ -8,10 +8,10 @@
 #include <Animation.h>
 #include <Common/Win32Utils.h>
 #include <FileManager.h>
+#include <Image.h>
 #include <Material.h>
 #include <RenderSystem.h>
 #include <SDL.h>
-#include <TKImage.h>
 #include <TKOpenGL.h>
 #include <Texture.h>
 #include <ToolKit.h>

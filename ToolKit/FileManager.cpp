@@ -8,12 +8,12 @@
 #include "FileManager.h"
 
 #include "Audio.h"
+#include "Image.h"
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "Shader.h"
-#include "TKImage.h"
 #include "ToolKit.h"
 
 #include <unzip.h>
