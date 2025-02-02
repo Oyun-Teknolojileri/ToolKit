@@ -28,8 +28,11 @@ namespace ToolKit
 
     virtual MaterialPtr GetSkyboxMaterial();
     HdriPtr GetHdri();
+
+    /** Returns a unit bounding box. */
     const BoundingBox& GetBoundingBox(bool inWorld = false) override;
 
+    /** Returns true when hdr is loaded and initialized. */
     virtual bool IsReadyToRender();
 
    protected:
@@ -37,6 +40,9 @@ namespace ToolKit
     void ParameterEventConstructor() override;
     void ConstructSkyMaterial(ShaderPtr vertexPrg, ShaderPtr fragPrg);
     XmlNode* SerializeImp(XmlDocument* doc, XmlNode* parent) const override;
+
+    /** Returns the environment map baked file name without mip level post fix. */
+    String GetBakedEnvironmentFileBaseName(bool specular);
 
    public:
     TKDeclareParam(bool, DrawSky);

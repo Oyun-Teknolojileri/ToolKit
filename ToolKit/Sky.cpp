@@ -146,42 +146,27 @@ namespace ToolKit
                    SkyBasePtr skyBase = self.lock();
                    if (HdriPtr hdr = skyBase->GetHdri())
                    {
-                     String file = hdr->GetFile();
-                     if (!IsDefaultResource(file))
+                     auto bakeFn = [renderer](CubeMapPtr cubemap, const String& file) -> void
                      {
-                       String path, name, ext;
-                       if (file.empty() && skyBase->IsA<GradientSky>())
-                       {
-                         path = TexturePath("sky_bake_");
-                         name = std::to_string(skyBase->GetIdVal());
-                         ext  = HDR;
-                       }
-                       else
-                       {
-                         DecomposePath(file, &path, &name, &ext);
-                         path += GetPathSeparatorAsStr();
-                       }
+                       float* pixelBuffer;
+                       renderer->GenerateEquiRectengularProjection(cubemap, 0, (void**) &pixelBuffer);
 
-                       auto bakeFn = [renderer](CubeMapPtr cubemap, const String& file) -> void
-                       {
-                         float* pixelBuffer;
-                         renderer->GenerateEquiRectengularProjection(cubemap, 0, (void**) &pixelBuffer);
+                       UVec2 mapSize = cubemap->GetEquiRectengularMapSize();
+                       WriteHdr(file, mapSize.x, mapSize.y, 4, pixelBuffer);
+                       SafeDelArray(pixelBuffer);
+                     };
 
-                         UVec2 mapSize = cubemap->GetEquiRectengularMapSize();
-                         WriteHdr(file, mapSize.x, mapSize.y, 4, pixelBuffer);
-                         SafeDelArray(pixelBuffer);
-                       };
+                     // Bake diffuse env map for level 0.
+                     String bakeFile  = skyBase->GetBakedEnvironmentFileBaseName(false);
+                     bakeFile        += std::to_string(0) + HDR;
+                     bakeFn(hdr->m_diffuseEnvMap, bakeFile);
 
-                       // Bake diffuse env map for level 0.
-                       String bakeFile = path + name + "_diff_env_bake_0" + ext;
-                       bakeFn(hdr->m_diffuseEnvMap, bakeFile);
+                     // Bake specular env map for level 0.
+                     bakeFile  = skyBase->GetBakedEnvironmentFileBaseName(true);
+                     bakeFile += std::to_string(0) + HDR;
+                     bakeFn(hdr->m_specularEnvMap, bakeFile);
 
-                       // Bake specular env map for level 0.
-                       bakeFile = path + name + "_spec_env_bake_0" + ext;
-                       bakeFn(hdr->m_specularEnvMap, bakeFile);
-
-                       TK_LOG("Irradiance map baked.");
-                     }
+                     TK_LOG("Irradiance map baked.");
                    }
                  }
                },
@@ -247,6 +232,35 @@ namespace ToolKit
     XmlNode* node = CreateXmlNode(doc, StaticClass()->Name, root);
 
     return node;
+  }
+
+  String SkyBase::GetBakedEnvironmentFileBaseName(bool specular)
+  {
+    String file = GetHdri()->GetFile();
+
+    String path, name, ext;
+    if (file.empty())
+    {
+      path = TexturePath("sky_bake_");
+      name = std::to_string(GetIdVal());
+      ext  = HDR;
+    }
+    else
+    {
+      DecomposePath(file, &path, &name, &ext);
+      path += GetPathSeparatorAsStr();
+    }
+
+    if (specular)
+    {
+      file = path + name + "_spec_env_bake_";
+    }
+    else
+    {
+      file = path + name + "_diff_env_bake_";
+    }
+
+    return file;
   }
 
   TKDefineClass(Sky, SkyBase);
