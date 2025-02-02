@@ -212,6 +212,14 @@ namespace ToolKit
 
   void Texture::Settings(const TextureSettings& settings) { m_settings = settings; }
 
+  int Texture::CalculateMipmapLevels()
+  {
+    int maxDimension = glm::max(m_width, m_height);
+    int mipLevels    = glm::log2(maxDimension) + 1;
+
+    return mipLevels;
+  }
+
   void Texture::Clear()
   {
     ImageFree(m_image);
@@ -587,8 +595,6 @@ namespace ToolKit
 
     Texture::UnInit();
   }
-
-  bool Hdri::IsTextureAssigned() { return !GetFile().empty(); }
 
   // RenderTarget
   //////////////////////////////////////////

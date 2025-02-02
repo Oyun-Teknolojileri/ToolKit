@@ -11,6 +11,7 @@
 
 namespace ToolKit
 {
+  static VariantCategory SkyCategory {"Sky", 90};
 
   class TK_API SkyBase : public Entity
   {
@@ -26,11 +27,10 @@ namespace ToolKit
     bool IsInitialized();
 
     virtual MaterialPtr GetSkyboxMaterial();
-    virtual CubeMapPtr GetIrradianceMap();
     HdriPtr GetHdri();
     const BoundingBox& GetBoundingBox(bool inWorld = false) override;
 
-    virtual bool ReadyToRender();
+    virtual bool IsReadyToRender();
 
    protected:
     void ParameterConstructor() override;
@@ -43,6 +43,7 @@ namespace ToolKit
     TKDeclareParam(bool, Illuminate);
     TKDeclareParam(float, Intensity);
     TKDeclareParam(MultiChoiceVariant, IBLTextureSize);
+    TKDeclareParam(VariantCallback, BakeIrradianceMap);
 
    protected:
     bool m_initialized           = false;

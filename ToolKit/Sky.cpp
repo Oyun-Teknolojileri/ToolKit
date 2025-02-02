@@ -10,7 +10,9 @@
 #include "DirectionComponent.h"
 #include "EnvironmentComponent.h"
 #include "GradientSky.h"
+#include "Image.h"
 #include "Material.h"
+#include "RenderSystem.h"
 #include "Shader.h"
 #include "ToolKit.h"
 
@@ -85,12 +87,6 @@ namespace ToolKit
 
   MaterialPtr SkyBase::GetSkyboxMaterial() { return m_skyboxMaterial; }
 
-  CubeMapPtr SkyBase::GetIrradianceMap()
-  {
-    HdriPtr hdri = GetHdri();
-    return hdri->m_diffuseEnvMap;
-  }
-
   HdriPtr SkyBase::GetHdri()
   {
     HdriPtr hdri = GetComponent<EnvironmentComponent>()->GetHdriVal();
@@ -99,7 +95,7 @@ namespace ToolKit
 
   const BoundingBox& SkyBase::GetBoundingBox(bool inWorld) { return unitBox; }
 
-  bool SkyBase::ReadyToRender()
+  bool SkyBase::IsReadyToRender()
   {
     if (EnvironmentComponentPtr envComp = GetComponent<EnvironmentComponent>())
     {
@@ -116,9 +112,9 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
 
-    DrawSky_Define(true, "Sky", 90, true, true);
-    Illuminate_Define(true, "Sky", 90, true, true);
-    Intensity_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
+    DrawSky_Define(true, SkyCategory.Name, SkyCategory.Priority, true, true);
+    Illuminate_Define(true, SkyCategory.Name, SkyCategory.Priority, true, true);
+    Intensity_Define(1.0f, SkyCategory.Name, SkyCategory.Priority, true, true, {false, true, 0.0f, 100000.0f, 0.1f});
 
     auto createParameterVariantFn = [](const String& name, int val)
     {
@@ -136,7 +132,63 @@ namespace ToolKit
         1
     };
 
-    IBLTextureSize_Define(mcv, "Sky", 90, true, true);
+    IBLTextureSize_Define(mcv, SkyCategory.Name, SkyCategory.Priority, true, true);
+
+    SkyBaseWeakPtr self = Self<SkyBase>();
+    BakeIrradianceMap_Define(
+        [self]() -> void
+        {
+          GetRenderSystem()->AddRenderTask(
+              {[self](Renderer* renderer) -> void
+               {
+                 if (!self.expired())
+                 {
+                   SkyBasePtr skyBase = self.lock();
+                   if (HdriPtr hdr = skyBase->GetHdri())
+                   {
+                     String file = hdr->GetFile();
+                     if (!IsDefaultResource(file))
+                     {
+                       String path, name, ext;
+                       if (file.empty() && skyBase->IsA<GradientSky>())
+                       {
+                         path = TexturePath("sky_bake_");
+                         name = std::to_string(skyBase->GetIdVal());
+                         ext  = HDR;
+                       }
+                       else
+                       {
+                         DecomposePath(file, &path, &name, &ext);
+                       }
+
+                       auto bakeFn = [renderer](CubeMapPtr cubemap, const String& file) -> void
+                       {
+                         float* pixelBuffer;
+                         renderer->GenerateEquiRectengularProjection(cubemap, 0, (void**) &pixelBuffer);
+
+                         UVec2 mapSize = cubemap->GetEquiRectengularMapSize();
+                         WriteHdr(file, mapSize.x, mapSize.y, 4, pixelBuffer);
+                         SafeDelArray(pixelBuffer);
+                       };
+
+                       // Bake diffuse env map for level 0.
+                       String bakeFile = path + name + "_diff_env_bake_0" + ext;
+                       bakeFn(hdr->m_diffuseEnvMap, bakeFile);
+
+                       // Bake specular env map for level 0.
+                       bakeFile = path + name + "_spec_env_bake_0" + ext;
+                       bakeFn(hdr->m_specularEnvMap, bakeFile);
+                     }
+                   }
+                 }
+               },
+               nullptr,
+               RenderTaskPriority::Low});
+        },
+        SkyCategory.Name,
+        SkyCategory.Priority,
+        true,
+        true);
 
     SetNameVal("SkyBase");
   }
@@ -233,9 +285,9 @@ namespace ToolKit
   {
     Super::ParameterConstructor();
 
-    Exposure_Define(1.0f, "Sky", 90, true, true, {false, true, 0.0f, 50.0f, 0.05f});
+    Exposure_Define(1.0f, SkyCategory.Name, SkyCategory.Priority, true, true, {false, true, 0.0f, 50.0f, 0.05f});
 
-    Hdri_Define(nullptr, "Sky", 90, true, true);
+    Hdri_Define(nullptr, SkyCategory.Name, SkyCategory.Priority, true, true);
 
     SetNameVal("Sky");
 

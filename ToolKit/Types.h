@@ -184,6 +184,7 @@ namespace ToolKit
   typedef std::vector<class LineBatch*> LineBatchRawPtrArray;
   typedef std::vector<LineBatchPtr> LineBatchPtrArray;
   typedef std::shared_ptr<class SkyBase> SkyBasePtr;
+  typedef std::weak_ptr<class SkyBase> SkyBaseWeakPtr;
   typedef std::shared_ptr<class Sky> SkyPtr;
   typedef std::shared_ptr<class GradientSky> GradientSkyPtr;
   typedef std::shared_ptr<class Prefab> PrefabPtr;

@@ -177,7 +177,7 @@ namespace ToolKit
       m_sky->Init();
       if (m_drawSky = m_sky->GetDrawSkyVal())
       {
-        if (m_sky->ReadyToRender())
+        if (m_sky->IsReadyToRender())
         {
           m_skyPass->m_params.FrameBuffer = m_params.MainFramebuffer;
           m_skyPass->m_params.Cam         = m_params.Cam;

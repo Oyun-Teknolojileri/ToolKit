@@ -51,10 +51,17 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
+    /** Returns texture settings struct. */
     const TextureSettings& Settings();
+
+    /** Sets the settings for the texture. Does not cause a re init. */
     void Settings(const TextureSettings& settings);
 
+    /** Calculates the required number of mip levels. Mip levels not necessarily exist. */
+    int CalculateMipmapLevels();
+
    protected:
+    /** Removes image data. */
     virtual void Clear();
 
    public:
@@ -87,6 +94,7 @@ namespace ToolKit
     GraphicTypes GetDepthFormat();
 
    protected:
+    /** UnInit the texture. */
     void Clear() override;
 
    public:
@@ -99,6 +107,7 @@ namespace ToolKit
      */
     bool m_constructed = false;
 
+    /** States sample count of the depth buffer. */
     int m_multiSample;
   };
 
@@ -143,6 +152,7 @@ namespace ToolKit
     UVec2 GetEquiRectengularMapSize() { return UVec2(m_width * 4, m_height * 2); }
 
    protected:
+    /** Free the image data for each face. */
     void Clear() override;
 
    public:
@@ -165,8 +175,6 @@ namespace ToolKit
     void Load() override;
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
-
-    bool IsTextureAssigned();
 
    public:
     CubeMapPtr m_cubemap         = nullptr;
