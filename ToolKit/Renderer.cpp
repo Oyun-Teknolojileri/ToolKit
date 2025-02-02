@@ -1472,7 +1472,7 @@ namespace ToolKit
 
       // Read the pixels from the FBO
       std::vector<GLubyte> buffer(mipWidth * mipHeight * 4); // Assuming 4 bytes per pixel (RGBA)
-      glReadPixels(0, 0, mipWidth, mipHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+      glReadPixels(0, 0, mipWidth, mipHeight, GL_RGBA, GL_FLOAT, buffer.data());
 
       // Bind the destination cube map
       glBindTexture(GL_TEXTURE_CUBE_MAP, dst->m_textureId);
@@ -1485,7 +1485,7 @@ namespace ToolKit
                       mipWidth,
                       mipHeight,
                       GL_RGBA,
-                      GL_UNSIGNED_BYTE,
+                      GL_FLOAT,
                       buffer.data());
     }
 

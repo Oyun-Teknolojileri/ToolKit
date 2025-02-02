@@ -91,7 +91,7 @@ namespace ToolKit
      */
     TexturePtr GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void** pixels);
 
-    /** Copies the source cube map into destination cube map's given mip level. */
+    /** Copies the source cube map into destination cube map's given mip level. Expects cubemaps tobe rgba float. */
     void CopyCubeMapToMipLevel(CubeMapPtr src, CubeMapPtr dst, int mipLevel);
 
     /** Generates specular environment for given number of mip levels. */
