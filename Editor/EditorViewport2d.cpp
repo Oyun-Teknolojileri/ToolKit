@@ -13,8 +13,6 @@
 
 #include <SDL.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

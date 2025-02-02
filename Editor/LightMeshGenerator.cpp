@@ -13,8 +13,6 @@
 #include <Primative.h>
 #include <Types.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

@@ -16,8 +16,6 @@
 #include <Mesh.h>
 #include <PluginManager.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

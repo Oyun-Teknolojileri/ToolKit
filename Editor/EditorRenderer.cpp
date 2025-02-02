@@ -25,8 +25,6 @@
 #include <UIManager.h>
 #include <Util.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

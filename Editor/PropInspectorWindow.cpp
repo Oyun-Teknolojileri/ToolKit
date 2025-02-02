@@ -23,8 +23,6 @@
 #include <Mesh.h>
 #include <Prefab.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

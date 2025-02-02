@@ -15,8 +15,6 @@
 #include <Mesh.h>
 #include <Surface.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
 

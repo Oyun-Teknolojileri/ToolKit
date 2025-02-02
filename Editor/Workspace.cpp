@@ -11,8 +11,6 @@
 
 #include <FileManager.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

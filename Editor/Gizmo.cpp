@@ -14,8 +14,6 @@
 #include <MathUtil.h>
 #include <Mesh.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

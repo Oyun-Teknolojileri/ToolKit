@@ -12,8 +12,6 @@
 #include <AnimationControllerComponent.h>
 #include <Prefab.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

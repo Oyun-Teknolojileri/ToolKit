@@ -15,8 +15,6 @@
 #include <Material.h>
 #include <Texture.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor
@@ -227,7 +225,7 @@ namespace ToolKit
         LineBatchPtr batch  = MakeNewPtr<LineBatch>();
         Vec3 clr            = ZERO;
         clr[glm::min(i, 2)] = 1.0f;
-        
+
         if (i == 3)
         {
           clr.x = 1.0f;

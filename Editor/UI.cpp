@@ -23,8 +23,6 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor

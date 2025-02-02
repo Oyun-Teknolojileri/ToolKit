@@ -33,8 +33,6 @@
 #include <array>
 #include <chrono>
 
-#include <DebugNew.h>
-
 SDL_Window* g_window    = nullptr;
 SDL_GLContext g_context = nullptr;
 

@@ -19,8 +19,6 @@
 #include <unzip.h>
 #include <zip.h>
 
-#include "DebugNew.h"
-
 namespace ToolKit
 {
   FileManager::FileManager() {}
