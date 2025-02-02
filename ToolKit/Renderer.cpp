@@ -1451,6 +1451,50 @@ namespace ToolKit
     return euqiRectTexture;
   }
 
+  void Renderer::CopyCubeMapToMipLevel(CubeMapPtr src, CubeMapPtr dst, int mipLevel)
+  {
+    GLuint fbo;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    uint mipWidth  = src->m_width;
+    uint mipHeight = src->m_height;
+
+    // Iterate over each face of the cube map
+    for (int face = 0; face < 6; ++face)
+    {
+      // Attach the source cube map face to the FBO
+      glFramebufferTexture2D(GL_FRAMEBUFFER,
+                             GL_COLOR_ATTACHMENT0,
+                             GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                             src->m_textureId,
+                             mipLevel);
+
+      // Read the pixels from the FBO
+      std::vector<GLubyte> buffer(mipWidth * mipHeight * 4); // Assuming 4 bytes per pixel (RGBA)
+      glReadPixels(0, 0, mipWidth, mipHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+
+      // Bind the destination cube map
+      glBindTexture(GL_TEXTURE_CUBE_MAP, dst->m_textureId);
+
+      // Copy the data to the destination cube map's mip level
+      glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                      mipLevel,
+                      0,
+                      0,
+                      mipWidth,
+                      mipHeight,
+                      GL_RGBA,
+                      GL_UNSIGNED_BYTE,
+                      buffer.data());
+    }
+
+    // Clean up
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &fbo);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  }
+
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)
   {
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
@@ -1538,7 +1582,7 @@ namespace ToolKit
     cubemapRt->Init();
 
     // Intentionally creating space to fill later. ( mip maps will be calculated for specular ibl )
-    RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId, 0);
+    RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemapRt->m_textureId, 0);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
@@ -1598,12 +1642,12 @@ namespace ToolKit
         mat->UpdateProgramUniform("roughness", (float) mip / (float) mipMaps);
         mat->UpdateProgramUniform("resPerFace", (float) mipSize);
 
-        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemap->m_textureId, 0);
+        RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemap->m_textureId, 0);
 
         DrawCube(cam, mat);
 
         // Copy color attachment to cubemap's correct mip level and face.
-        RHI::SetTexture(GL_TEXTURE_CUBE_MAP, cubemapRt->m_textureId, 0);
+        RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemapRt->m_textureId, 0);
         glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, 0, 0, 0, 0, mipSize, mipSize);
       }
     }
