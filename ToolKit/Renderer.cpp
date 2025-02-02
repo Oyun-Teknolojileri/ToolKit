@@ -1422,8 +1422,10 @@ namespace ToolKit
 
   TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void* pixels, int size)
   {
-    uint textureSize                = cubemap->m_width;
-    RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(textureSize, textureSize, TextureSettings());
+    int textureSize                 = cubemap->m_width;
+    int equiRectWidth               = 4 * textureSize;
+    int equiRectHeight              = 2 * textureSize;
+    RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(equiRectWidth, equiRectHeight, TextureSettings());
     euqiRectTexture->Init();
 
     // Store current frame buffer.
@@ -1441,9 +1443,9 @@ namespace ToolKit
 
     if (pixels != nullptr)
     {
-      uint64 requiredSize = textureSize * textureSize * 4 * sizeof(float);
+      uint64 requiredSize = equiRectWidth * equiRectHeight * 4 * sizeof(float);
       assert(size >= requiredSize && "Buffer size is not sufficient.");
-      glReadPixels(0, 0, textureSize, textureSize, GL_RGBA, GL_FLOAT, pixels);
+      glReadPixels(0, 0, equiRectWidth, equiRectHeight, GL_RGBA, GL_FLOAT, pixels);
     }
 
     SetFramebuffer(prevBuffer, GraphicBitFields::None);

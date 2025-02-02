@@ -492,7 +492,7 @@ namespace ToolKit
         }
 
         // If entity is gradient sky create a "Update IBL Textures" button
-        if (ntt->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
+        if (ntt->IsA<SkyBase>() ) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
@@ -502,10 +502,10 @@ namespace ToolKit
                  {
                    SkyBasePtr sky = Cast<SkyBase>(ntt);
                    int size       = sky->GetIBLTextureSizeVal().GetValue<int>();
-                   int bufferSize = size * size * 4 * sizeof(float);
+                   int bufferSize = 4 * size * 2 * size * 4 * sizeof(float);
                    float* pixels  = new float[bufferSize];
-                   renderer->GenerateEquiRectengularProjection(sky->GetIrradianceMap(), 0, pixels, bufferSize);
-                   WriteHdr(TexturePath("allendolan.hdr"), size, size, 4, pixels);
+                   renderer->GenerateEquiRectengularProjection(sky->GetHdri()->m_cubemap, 0, pixels, bufferSize);
+                   WriteHdr(TexturePath("allendolan.hdr"), 4 * size, 2 * size, 4, pixels);
                  }});
           }
           UI::EndCenteredTextButton();
