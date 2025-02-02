@@ -32,6 +32,7 @@ namespace ToolKit
       return;
     }
 
+    // Create an environment component with hdr.
     EnvironmentComponentPtr envComp = GetComponent<EnvironmentComponent>();
     if (envComp == nullptr)
     {
@@ -40,28 +41,40 @@ namespace ToolKit
     }
 
     HdriPtr hdri = nullptr;
-    // Provide an empty hdri to construct gradient sky.
     if (IsA<GradientSky>())
     {
+      // Provide an empty hdr to construct gradient sky.
       hdri = MakeNewPtr<Hdri>();
     }
     else
     {
+      // Check if there is a loaded hdr.
       hdri = envComp->GetHdriVal();
-      if (hdri != nullptr)
+      if (hdri == nullptr)
       {
-        hdri->Init();
-      }
-      else
-      {
-        // Use default hdri image.
+        // Use default hdr image.
         TextureManager* tman = GetTextureManager();
         hdri                 = tman->Create<Hdri>(tman->GetDefaultResource(Hdri::StaticClass()));
-        hdri->Init();
       }
     }
 
+    // Associate hdr.
     envComp->SetHdriVal(hdri);
+
+    // Check sky hdr caches.
+    String bakeFile = GetBakedEnvironmentFileBaseName(false);
+    if (CheckFile(bakeFile + HDR))
+    {
+      hdri->_diffuseBakeFile = bakeFile;
+    }
+
+    bakeFile = GetBakedEnvironmentFileBaseName(true);
+    if (CheckFile(bakeFile += "0" + HDR)) // Base mip level.
+    {
+      hdri->_specularBakeFile = bakeFile;
+    }
+
+    hdri->Init();
 
     envComp->SetSizeVal(Vec3(TK_FLT_MAX));
     envComp->OwnerEntity(Self<Entity>());
@@ -158,7 +171,7 @@ namespace ToolKit
 
                      // Bake diffuse env map for level 0.
                      String bakeFile  = skyBase->GetBakedEnvironmentFileBaseName(false);
-                     bakeFile        += std::to_string(0) + HDR;
+                     bakeFile        += HDR;
                      bakeFn(hdr->m_diffuseEnvMap, bakeFile);
 
                      // Bake specular env map for level 0.
@@ -236,7 +249,11 @@ namespace ToolKit
 
   String SkyBase::GetBakedEnvironmentFileBaseName(bool specular)
   {
-    String file = GetHdri()->GetFile();
+    String file;
+    if (HdriPtr hdr = GetHdri())
+    {
+      file = hdr->GetFile();
+    }
 
     String path, name, ext;
     if (file.empty())
@@ -257,7 +274,7 @@ namespace ToolKit
     }
     else
     {
-      file = path + name + "_diff_env_bake_";
+      file = path + name + "_diff_env_bake";
     }
 
     return file;

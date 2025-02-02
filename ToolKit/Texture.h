@@ -177,14 +177,15 @@ namespace ToolKit
     void UnInit() override;
 
    public:
+    float m_exposure             = 1.0f;
+    int m_specularIBLTextureSize = 256;
+
     CubeMapPtr m_cubemap         = nullptr;
     CubeMapPtr m_specularEnvMap  = nullptr;
     CubeMapPtr m_diffuseEnvMap   = nullptr;
 
-    float m_exposure             = 1.0f;
-    int m_specularIBLTextureSize = 256;
-
-    String m_bakedFile; //!< If not null, init will try to look up baked environment maps.
+    String _diffuseBakeFile;  //!< If not null, init will try to look up baked environment maps.
+    String _specularBakeFile; //!< If not null, init will try to look up baked environment maps.
 
    private:
     bool m_waitingForInit = false;

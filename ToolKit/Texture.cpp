@@ -545,40 +545,72 @@ namespace ToolKit
 
     // Init 2D hdri texture
     Texture::Init(flushClientSideArray);
-    m_initiated     = false;
+    m_initiated = false;
 
-    RenderTask task = {[this](Renderer* renderer) -> void
-                       {
-                         if (m_initiated)
+    if (_diffuseBakeFile.empty())
+    {
+      RenderTask task = {[this](Renderer* renderer) -> void
                          {
+                           if (m_initiated)
+                           {
+                             m_waitingForInit = false;
+                             return;
+                           }
+
+                           // Convert hdri image to cubemap images.
+                           TexturePtr self = GetTextureManager()->Create<Texture>(GetFile());
+                           uint size       = m_width / 4;
+                           m_cubemap       = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+
+                           if (m_specularIBLTextureSize < 128)
+                           {
+                             m_specularIBLTextureSize = 128;
+                           }
+
+                           // Pre-filtered and mip mapped environment map
+                           m_specularEnvMap = renderer->GenerateSpecularEnvMap(m_cubemap,
+                                                                               m_specularIBLTextureSize,
+                                                                               RHIConstants::SpecularIBLLods);
+
+                           // Generate diffuse irradience cubemap images
+                           size             = m_width / 32;
+                           m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(m_cubemap, size);
+
+                           m_initiated      = true;
                            m_waitingForInit = false;
-                           return;
-                         }
+                         }};
 
-                         // Convert hdri image to cubemap images.
-                         TexturePtr self = GetTextureManager()->Create<Texture>(GetFile());
-                         uint size       = m_width / 4;
-                         m_cubemap       = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
-
-                         if (m_specularIBLTextureSize < 128)
+      GetRenderSystem()->AddRenderTask(task);
+    }
+    else
+    {
+      // TODO: Create a smaller diffuse irradiance cache width / 32. Write and read all specular caches. Merge this
+      // function with above.
+      RenderTask task = {[this](Renderer* renderer) -> void
                          {
-                           m_specularIBLTextureSize = 128;
-                         }
+                           if (m_initiated)
+                           {
+                             m_waitingForInit = false;
+                             return;
+                           }
 
-                         // Pre-filtered and mip mapped environment map
-                         m_specularEnvMap = renderer->GenerateSpecularEnvMap(m_cubemap,
-                                                                             m_specularIBLTextureSize,
-                                                                             RHIConstants::SpecularIBLLods);
+                           // Convert hdri image to cubemap images.
+                           TexturePtr self     = GetTextureManager()->Create<Texture>(GetFile());
+                           uint size           = m_width / 4;
+                           m_cubemap           = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
 
-                         // Generate diffuse irradience cubemap images
-                         size             = m_width / 32;
-                         m_diffuseEnvMap  = renderer->GenerateDiffuseEnvMap(m_cubemap, size);
+                           // Read diffuse and specular irradiance cache map.
+                           String cacheFile    = _diffuseBakeFile + HDR;
+                           TexturePtr envCache = GetTextureManager()->Create<Texture>(cacheFile);
+                           m_diffuseEnvMap     = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
 
-                         m_initiated      = true;
-                         m_waitingForInit = false;
-                       }};
+                           m_initiated         = true;
+                           m_waitingForInit    = false;
+                         }};
 
-    GetRenderSystem()->AddRenderTask(task);
+      GetRenderSystem()->AddRenderTask(task);
+    }
+
     m_waitingForInit = true;
   }
 
