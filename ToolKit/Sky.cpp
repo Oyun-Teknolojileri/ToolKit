@@ -159,6 +159,7 @@ namespace ToolKit
                        else
                        {
                          DecomposePath(file, &path, &name, &ext);
+                         path += GetPathSeparatorAsStr();
                        }
 
                        auto bakeFn = [renderer](CubeMapPtr cubemap, const String& file) -> void
@@ -178,6 +179,8 @@ namespace ToolKit
                        // Bake specular env map for level 0.
                        bakeFile = path + name + "_spec_env_bake_0" + ext;
                        bakeFn(hdr->m_specularEnvMap, bakeFile);
+
+                       TK_LOG("Irradiance map baked.");
                      }
                    }
                  }
