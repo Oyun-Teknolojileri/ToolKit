@@ -139,6 +139,9 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
+    /** Size of a texture that will hold the cube map in equirectengular projection. */
+    UVec2 GetEquiRectengularMapSize() { return UVec2(m_width * 4, m_height * 2); }
+
    protected:
     void Clear() override;
 

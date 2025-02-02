@@ -1420,12 +1420,13 @@ namespace ToolKit
     return cubeMap;
   }
 
-  TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void* pixels, int size)
+  TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void** pixels)
   {
     int textureSize                 = cubemap->m_width;
-    int equiRectWidth               = 4 * textureSize;
-    int equiRectHeight              = 2 * textureSize;
-    RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(equiRectWidth, equiRectHeight, TextureSettings());
+
+    // Enlarge the cube map to a single texture.
+    UVec2 equiRectSize              = cubemap->GetEquiRectengularMapSize();
+    RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(equiRectSize.x, equiRectSize.y, TextureSettings());
     euqiRectTexture->Init();
 
     // Store current frame buffer.
@@ -1433,19 +1434,16 @@ namespace ToolKit
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, euqiRectTexture);
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::AllBits);
 
-    MaterialPtr rectMat       = MakeNewPtr<Material>();
-    rectMat->m_cubeMap        = cubemap;
-    rectMat->m_vertexShader   = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectVert.shader", true));
-    rectMat->m_fragmentShader = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
-    rectMat->Init();
+    ShaderPtr rectProjectShader = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
+    RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemap->m_textureId, 6);
 
-    DrawFullQuad(rectMat);
+    DrawFullQuad(rectProjectShader);
 
     if (pixels != nullptr)
     {
-      uint64 requiredSize = equiRectWidth * equiRectHeight * 4 * sizeof(float);
-      assert(size >= requiredSize && "Buffer size is not sufficient.");
-      glReadPixels(0, 0, equiRectWidth, equiRectHeight, GL_RGBA, GL_FLOAT, pixels);
+      uint64 requiredSize = equiRectSize.x * equiRectSize.y * 4 * sizeof(float);
+      *pixels             = new float[requiredSize];
+      glReadPixels(0, 0, equiRectSize.x, equiRectSize.y, GL_RGBA, GL_FLOAT, *pixels);
     }
 
     SetFramebuffer(prevBuffer, GraphicBitFields::None);

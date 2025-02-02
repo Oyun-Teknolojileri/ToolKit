@@ -7,15 +7,15 @@
 
 		uniform samplerCube s_texture6;
 
-		in vec2 uv;
+		in vec2 v_texture;
 		out vec4 fragColor;
 
 		const float PI = 3.14159265359;
 
 		void main()
 		{
-			float phi = uv.x * 2.0 * PI;
-			float theta = uv.y * PI;
+			float phi = v_texture.x * 2.0 * PI;
+			float theta = v_texture.y * PI;
 
 			vec3 dir;
 			dir.x = sin(theta) * cos(phi);

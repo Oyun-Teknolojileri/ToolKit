@@ -84,12 +84,12 @@ namespace ToolKit
     CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure = 1.0f);
 
     /**
-     * Projects a cubemap to an 2d texture using equrectengular projection.
-     * If level set, projects a spesific level.
-     * If a non null, allocated pixels array is provided, pixel data is read back into it.
-     * size will point the pixel buffer size. Pixel buffer must be pre allocated. Size is used for sanity check.
+     * Projects a cubemap to an 2d texture using equirectengular projection.
+     * If level set, projects a specific mip level of the cubemap.
+     * If a non null, pointer address provided, fills the pixel content in it.
+     * Life time management of the buffer belongs to caller.
      */
-    TexturePtr GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void* pixels, int size);
+    TexturePtr GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void** pixels);
 
     CubeMapPtr GenerateSpecularEnvMap(CubeMapPtr cubemap, uint size, int mipMaps);
     CubeMapPtr GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size);

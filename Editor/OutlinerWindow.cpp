@@ -13,10 +13,7 @@
 #include "Prefab.h"
 #include "TopBar.h"
 
-#include <ImGui/imgui_internal.h>
 #include <MathUtil.h>
-
-#include <stack>
 
 #include <DebugNew.h>
 
@@ -394,13 +391,13 @@ namespace ToolKit
 
           // RemoveEntity may recursively delete all children if exist, so we need to add back all removed.
           TraverseNodeHierarchyBottomUp(ntt->m_node,
-                             [&](Node* child) -> void
-                             {
-                               if (EntityPtr childNtt = child->OwnerEntity())
-                               {
-                                 scene->AddEntity(childNtt, startIndex + insertLoc++);
-                               }
-                             });
+                                        [&](Node* child) -> void
+                                        {
+                                          if (EntityPtr childNtt = child->OwnerEntity())
+                                          {
+                                            scene->AddEntity(childNtt, startIndex + insertLoc++);
+                                          }
+                                        });
         }
       };
 
@@ -505,7 +502,7 @@ namespace ToolKit
 
       if (ImGui::Begin(m_name.c_str(), &m_visible))
       {
-        odd                          = 0;
+        m_oddAlternatingPattern      = 0;
         m_anyEntityHovered           = false;
 
         const EntityPtrArray& ntties = currScene->GetEntities();
@@ -739,34 +736,44 @@ namespace ToolKit
     // draws a rectangle on tree node, for even odd pattern
     void OutlinerWindow::DrawRowBackground(int depth)
     {
-      depth          = glm::min(depth, 7); // 7 array max size
-      // offsets on starting point of the rectangle
-      float depths[] = // last two of the offsets are not adjusted well enough
-          {18.0f, 30.0f, 51.0f, 71.0f, 96.0f, 115.0f, 140.0f, 155.0f};
+      depth                  = glm::min(depth, 7); // 7 array max size
 
-      ImRect workRect        = ImGui::GetCurrentWindow()->WorkRect;
-      float x1               = workRect.Min.x + depths[depth];
-      float x2               = workRect.Max.x;
+      // Define the depth offsets for indentation
+      float depths[]         = {18.0f, 30.0f, 51.0f, 71.0f, 96.0f, 115.0f, 140.0f, 155.0f};
+
+      // Get the current cursor position (top-left corner of the row)
+      ImVec2 cursor_pos      = ImGui::GetCursorScreenPos();
+
+      // Get the width of the available content region
+      float x1               = cursor_pos.x + depths[depth];
+      float x2               = cursor_pos.x + ImGui::GetContentRegionMax().x;
+
+      // Calculate the height of the row
       float item_spacing_y   = ImGui::GetStyle().ItemSpacing.y;
-      float item_offset_y    = -item_spacing_y * 0.5f;
       float line_height      = ImGui::GetTextLineHeight() + item_spacing_y;
-      float y0               = ImGui::GetCursorScreenPos().y + (float) item_offset_y;
 
+      // Offset for better alignment
+      float y0               = cursor_pos.y - (item_spacing_y * 0.5f);
+      float y1               = y0 + line_height;
+
+      // Get the draw list
       ImDrawList* draw_list  = ImGui::GetWindowDrawList();
+
+      // Adjust the color based on the odd-even pattern
       ImGuiStyle& style      = ImGui::GetStyle();
       ImVec4 v4Color         = style.Colors[ImGuiCol_TabHovered];
       v4Color.x             *= 0.62f;
       v4Color.y             *= 0.62f;
       v4Color.z             *= 0.62f;
-      // if odd black otherwise given color
-      ImU32 col              = ImGui::ColorConvertFloat4ToU32(v4Color) * (odd++ & 1);
 
-      if (col == 0)
+      // static int odd         = 0;
+      ImU32 col              = ImGui::ColorConvertFloat4ToU32(v4Color) * (m_oddAlternatingPattern++ & 1);
+
+      // Only draw if the color is non-zero (i.e., it's an odd row)
+      if (col != 0)
       {
-        return;
+        draw_list->AddRectFilled(ImVec2(x1, y0), ImVec2(x2, y1), col);
       }
-      float y1 = y0 + line_height;
-      draw_list->AddRectFilled(ImVec2(x1, y0), ImVec2(x2, y1), col);
     }
 
     bool OutlinerWindow::DrawHeader(EntityPtr ntt, ImGuiTreeNodeFlags flags, int depth)

@@ -32,6 +32,8 @@
 #include <RapidXml/rapidxml_utils.hpp>
 
 // STL
+#include <assert.h>
+
 #include <array>
 #include <deque>
 #include <filesystem>
@@ -43,6 +45,7 @@
 #include <queue>
 #include <random>
 #include <set>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

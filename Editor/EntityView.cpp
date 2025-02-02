@@ -20,8 +20,6 @@
 #include <Mesh.h>
 #include <Prefab.h>
 
-#include <DebugNew.h>
-
 namespace ToolKit
 {
   namespace Editor
@@ -492,21 +490,11 @@ namespace ToolKit
         }
 
         // If entity is gradient sky create a "Update IBL Textures" button
-        if (ntt->IsA<SkyBase>() ) // TODO This might not be necessary
+        if (ntt->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
         {
           if (UI::BeginCenteredTextButton("Update IBL Textures"))
           {
             Cast<SkyBase>(ntt)->ReInit();
-            GetRenderSystem()->AddRenderTask(
-                {[ntt](Renderer* renderer) -> void
-                 {
-                   SkyBasePtr sky = Cast<SkyBase>(ntt);
-                   int size       = sky->GetIBLTextureSizeVal().GetValue<int>();
-                   int bufferSize = 4 * size * 2 * size * 4 * sizeof(float);
-                   float* pixels  = new float[bufferSize];
-                   renderer->GenerateEquiRectengularProjection(sky->GetHdri()->m_cubemap, 0, pixels, bufferSize);
-                   WriteHdr(TexturePath("allendolan.hdr"), 4 * size, 2 * size, 4, pixels);
-                 }});
           }
           UI::EndCenteredTextButton();
         }

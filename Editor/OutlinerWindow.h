@@ -70,15 +70,17 @@ namespace ToolKit
       EntityPtr m_rootsParent       = nullptr;
 
       String m_searchString;
-      bool m_stringSearchMode   = false;
-      bool m_searchCaseSens     = true;
-      bool m_anyEntityHovered   = false;
+      bool m_stringSearchMode     = false;
+      bool m_searchCaseSens       = true;
+      bool m_anyEntityHovered     = false;
+
       // for even odd pattern
-      int odd                   = 0;
+      int m_oddAlternatingPattern = 0;
+
       // the objects that we want to reorder will inserted at this index
-      int m_insertSelectedIndex = TK_INT_MAX;
-      float m_treeStartY        = 0.0;
-      int m_searchStringSize    = 0;
+      int m_insertSelectedIndex   = TK_INT_MAX;
+      float m_treeStartY          = 0.0;
+      int m_searchStringSize      = 0;
     };
 
     typedef std::shared_ptr<OutlinerWindow> OutlinerWindowPtr;
