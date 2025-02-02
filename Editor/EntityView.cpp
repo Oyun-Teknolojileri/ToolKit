@@ -479,24 +479,29 @@ namespace ToolKit
           ParameterVariantRawPtrArray vars;
           ntt->m_localData.GetByCategory(category.Name, vars);
 
+          ParameterVariantRawPtrArray varCallbacks;
           for (ParameterVariant* var : vars)
           {
+            if (var->GetType() == ParameterVariant::VariantType::VariantCallback)
+            {
+              varCallbacks.push_back(var);
+              continue;
+            }
+
             ValueUpdateFn multiUpdate = CustomDataView::MultiUpdate(var);
 
             var->m_onValueChangedFn.push_back(multiUpdate);
             CustomDataView::ShowVariant(var, nullptr);
             var->m_onValueChangedFn.pop_back();
           }
-        }
 
-        // If entity is gradient sky create a "Update IBL Textures" button
-        if (ntt->IsA<GradientSky>() && category.Name.compare("Sky") == 0) // TODO This might not be necessary
-        {
-          if (UI::BeginCenteredTextButton("Update IBL Textures"))
+          // Show the function callbacks at the end of variables.
+          ImGui::SeparatorText("Functions");
+
+          for (ParameterVariant* var : varCallbacks)
           {
-            Cast<SkyBase>(ntt)->ReInit();
+            CustomDataView::ShowVariant(var, nullptr);
           }
-          UI::EndCenteredTextButton();
         }
 
         if (category.Name == PrefabCategory.Name)
