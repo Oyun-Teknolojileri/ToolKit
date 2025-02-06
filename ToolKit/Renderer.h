@@ -85,7 +85,6 @@ namespace ToolKit
 
     /**
      * Projects a cubemap to an 2d texture using equirectengular projection.
-     * If level set, projects a specific mip level of the cubemap.
      * If a non null, pointer address provided, fills the pixel content in it.
      * Life time management of the buffer belongs to caller.
      */

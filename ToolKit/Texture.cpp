@@ -547,7 +547,7 @@ namespace ToolKit
     Texture::Init(flushClientSideArray);
     m_initiated = false;
 
-    if (_diffuseBakeFile.empty())
+    if (/* _diffuseBakeFile.empty() */ 1)
     {
       RenderTask task = {[this](Renderer* renderer) -> void
                          {

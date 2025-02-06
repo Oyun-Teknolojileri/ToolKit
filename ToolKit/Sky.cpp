@@ -159,25 +159,38 @@ namespace ToolKit
                    SkyBasePtr skyBase = self.lock();
                    if (HdriPtr hdr = skyBase->GetHdri())
                    {
-                     auto bakeFn = [renderer](CubeMapPtr cubemap, const String& file) -> void
+                     auto bakeFn = [renderer](CubeMapPtr cubemap, const String& file, int level) -> void
                      {
                        float* pixelBuffer;
-                       renderer->GenerateEquiRectengularProjection(cubemap, 0, (void**) &pixelBuffer);
+                       renderer->GenerateEquiRectengularProjection(cubemap, level, (void**) &pixelBuffer);
 
-                       UVec2 mapSize = cubemap->GetEquiRectengularMapSize();
-                       WriteHdr(file, mapSize.x, mapSize.y, 4, pixelBuffer);
+                       UVec2 rectSize = cubemap->GetEquiRectengularMapSize();
+                       int mipWidth   = rectSize.x >> level;
+                       int mipHeight  = rectSize.y >> level;
+
+                       WriteHdr(file, mipWidth, mipHeight, 4, pixelBuffer);
                        SafeDelArray(pixelBuffer);
                      };
 
                      // Bake diffuse env map for level 0.
                      String bakeFile  = skyBase->GetBakedEnvironmentFileBaseName(false);
                      bakeFile        += HDR;
-                     bakeFn(hdr->m_diffuseEnvMap, bakeFile);
+                     bakeFn(hdr->m_diffuseEnvMap, bakeFile, 0);
 
-                     // Bake specular env map for level 0.
-                     bakeFile  = skyBase->GetBakedEnvironmentFileBaseName(true);
-                     bakeFile += std::to_string(0) + HDR;
-                     bakeFn(hdr->m_specularEnvMap, bakeFile);
+                     // Bake specular env map for all levels.
+                     bakeFile = skyBase->GetBakedEnvironmentFileBaseName(true);
+
+                     if (hdr->m_specularEnvMap)
+                     {
+                       int lodCount = glm::min(hdr->m_specularEnvMap->CalculateMipmapLevels(),
+                                               (int) RHIConstants::SpecularIBLLods);
+
+                       for (int i = 0; i < lodCount; i++)
+                       {
+                         String file = bakeFile + std::to_string(i) + HDR;
+                         bakeFn(hdr->m_specularEnvMap, file, i);
+                       }
+                     }
 
                      TK_LOG("Irradiance map baked.");
                    }
