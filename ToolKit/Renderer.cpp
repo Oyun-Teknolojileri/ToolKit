@@ -1585,7 +1585,7 @@ namespace ToolKit
 
     // Intentionally creating space to fill later. ( mip maps will be calculated for specular ibl )
     RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemapRt->m_textureId, 0);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     // Views for 6 different angles
