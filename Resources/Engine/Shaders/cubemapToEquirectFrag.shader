@@ -6,7 +6,7 @@
 		precision highp float;
 
 		uniform samplerCube s_texture6;
-		uniform float lodLevel;
+		uniform int lodLevel;
 
 		in vec2 v_texture;
 		out vec4 fragColor;
@@ -23,7 +23,7 @@
 			dir.y = cos(theta);
 			dir.z = sin(theta) * sin(phi);
 
-			vec3 color = textureLod(s_texture6, normalize(dir), lodLevel).rgb;
+			vec3 color = textureLod(s_texture6, normalize(dir), float(lodLevel)).rgb;
 			fragColor = vec4(color, 1.0);
 		}
 	-->
