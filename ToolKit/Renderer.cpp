@@ -1436,10 +1436,17 @@ namespace ToolKit
     m_oneColorAttachmentFramebuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0, euqiRectTexture);
     SetFramebuffer(m_oneColorAttachmentFramebuffer, GraphicBitFields::AllBits);
 
-    ShaderPtr rectProjectShader = GetShaderManager()->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
+    ShaderManager* shaderMan         = GetShaderManager();
+    MaterialPtr cubeToEquiRect       = MakeNewPtr<Material>();
+    cubeToEquiRect->m_fragmentShader = shaderMan->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
+    cubeToEquiRect->m_vertexShader   = shaderMan->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
+    cubeToEquiRect->Init();
+
+    cubeToEquiRect->UpdateProgramUniform("lodLevel", level);
+
     RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemap->m_textureId, 6);
 
-    DrawFullQuad(rectProjectShader);
+    DrawFullQuad(cubeToEquiRect);
 
     if (pixels != nullptr)
     {
