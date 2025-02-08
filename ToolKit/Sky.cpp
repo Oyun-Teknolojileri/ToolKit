@@ -69,7 +69,7 @@ namespace ToolKit
     }
 
     bakeFile = GetBakedEnvironmentFileBaseName(true);
-    if (CheckFile(bakeFile += "0" + HDR)) // Base mip level.
+    if (CheckFile(bakeFile + "1" + HDR)) // Fist baked level is 1.
     {
       hdri->_specularBakeFile = bakeFile;
     }
@@ -185,7 +185,7 @@ namespace ToolKit
                        int lodCount = glm::min(hdr->m_specularEnvMap->CalculateMipmapLevels(),
                                                (int) RHIConstants::SpecularIBLLods);
 
-                       for (int i = 0; i < lodCount; i++)
+                       for (int i = 1; i < lodCount; i++) // Skip first lod which is the original texture.
                        {
                          String file = bakeFile + std::to_string(i) + HDR;
                          bakeFn(hdr->m_specularEnvMap, file, i);

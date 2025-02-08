@@ -547,7 +547,7 @@ namespace ToolKit
     Texture::Init(flushClientSideArray);
     m_initiated = false;
 
-    if (/* _diffuseBakeFile.empty() */ 1)
+    if (_diffuseBakeFile.empty())
     {
       RenderTask task = {[this](Renderer* renderer) -> void
                          {
@@ -586,27 +586,48 @@ namespace ToolKit
     {
       // TODO: Create a smaller diffuse irradiance cache width / 32. Write and read all specular caches. Merge this
       // function with above.
-      RenderTask task = {[this](Renderer* renderer) -> void
-                         {
-                           if (m_initiated)
-                           {
-                             m_waitingForInit = false;
-                             return;
-                           }
+      RenderTask task = {
+          [this](Renderer* renderer) -> void
+          {
+            if (m_initiated)
+            {
+              m_waitingForInit = false;
+              return;
+            }
 
-                           // Convert hdri image to cubemap images.
-                           TexturePtr self     = GetTextureManager()->Create<Texture>(GetFile());
-                           uint size           = m_width / 4;
-                           m_cubemap           = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+            // Convert hdri image to cubemap images.
+            TexturePtr self     = GetTextureManager()->Create<Texture>(GetFile());
+            uint size           = m_width / 4;
+            m_cubemap           = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
 
-                           // Read diffuse and specular irradiance cache map.
-                           String cacheFile    = _diffuseBakeFile + HDR;
-                           TexturePtr envCache = GetTextureManager()->Create<Texture>(cacheFile);
-                           m_diffuseEnvMap     = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
+            // Read diffuse irradiance cache map.
+            String cacheFile    = _diffuseBakeFile + HDR;
+            TexturePtr envCache = GetTextureManager()->Create<Texture>(cacheFile);
+            m_diffuseEnvMap     = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
 
-                           m_initiated         = true;
-                           m_waitingForInit    = false;
-                         }};
+            // Read specular irradiance cache map.
+            m_specularEnvMap    = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+
+            // Initial level is just the copy of color map, try reading rest.
+            for (int i = 1; i < RHIConstants::SpecularIBLLods; i++)
+            {
+              String cacheFile = _specularBakeFile + std::to_string(i) + HDR;
+              if (CheckFile(cacheFile))
+              {
+                TexturePtr texture     = GetTextureManager()->Create<Texture>(cacheFile);
+                uint size              = texture->m_width / 4;
+                CubeMapPtr specLodCube = renderer->GenerateCubemapFrom2DTexture(texture, size, 1.0f);
+                renderer->CopyCubeMapToMipLevel(specLodCube, m_specularEnvMap, i);
+              }
+              else
+              {
+                TK_WRN("Missing specular irradiance cache LOD: %d Map: %s", i, _specularBakeFile.c_str());
+              }
+            }
+
+            m_initiated      = true;
+            m_waitingForInit = false;
+          }};
 
       GetRenderSystem()->AddRenderTask(task);
     }
