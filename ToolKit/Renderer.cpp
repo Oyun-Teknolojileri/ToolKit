@@ -1427,7 +1427,6 @@ namespace ToolKit
     int mipHeight                   = rectSize.y >> level;
 
     // Enlarge the cube map to a single texture.
-    UVec2 equiRectSize              = cubemap->GetEquiRectengularMapSize();
     RenderTargetPtr euqiRectTexture = MakeNewPtr<RenderTarget>(mipWidth, mipHeight, TextureSettings());
     euqiRectTexture->Init();
 
