@@ -19,6 +19,9 @@
 namespace ToolKit
 {
 
+  // SkyBase
+  //////////////////////////////////////////
+
   TKDefineClass(SkyBase, Entity);
 
   SkyBase::SkyBase() { m_partOfAABBTree = false; }
@@ -292,6 +295,9 @@ namespace ToolKit
 
     return file;
   }
+
+  // Sky
+  //////////////////////////////////////////
 
   TKDefineClass(Sky, SkyBase);
 

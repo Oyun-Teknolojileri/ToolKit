@@ -11,6 +11,10 @@
 
 namespace ToolKit
 {
+
+  // SkyBase
+  //////////////////////////////////////////
+
   static VariantCategory SkyCategory {"Sky", 90};
 
   class TK_API SkyBase : public Entity
@@ -55,6 +59,9 @@ namespace ToolKit
     bool m_initialized           = false;
     MaterialPtr m_skyboxMaterial = nullptr;
   };
+
+  // Sky
+  //////////////////////////////////////////
 
   class TK_API Sky : public SkyBase
   {

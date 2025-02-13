@@ -60,6 +60,9 @@ namespace ToolKit
     /** Calculates the required number of mip levels. Mip levels not necessarily exist. */
     int CalculateMipmapLevels();
 
+    /** Generate mip maps for the texture. */
+    void GenerateMipMaps();
+
    protected:
     /** Removes image data. */
     virtual void Clear();

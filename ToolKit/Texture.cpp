@@ -220,6 +220,12 @@ namespace ToolKit
     return mipLevels;
   }
 
+  void Texture::GenerateMipMaps()
+  {
+    RHI::SetTexture((GLenum) m_settings.Target, m_textureId);
+    glGenerateMipmap((GLenum) m_settings.Target);
+  }
+
   void Texture::Clear()
   {
     ImageFree(m_image);

@@ -1462,46 +1462,37 @@ namespace ToolKit
 
   void Renderer::CopyCubeMapToMipLevel(CubeMapPtr src, CubeMapPtr dst, int mipLevel)
   {
-    GLuint fbo;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-    uint mipWidth  = src->m_width;
-    uint mipHeight = src->m_height;
-
-    // Iterate over each face of the cube map
-    for (int face = 0; face < 6; ++face)
+    // Ensure the framebuffer is initialized
+    if (!m_copyFb)
     {
-      // Attach the source cube map face to the FBO
+      FramebufferSettings fbSettings = {src->m_width, src->m_height, false, false};
+      m_copyFb                       = MakeNewPtr<Framebuffer>(fbSettings, "RendererCopyFB");
+      m_copyFb->Init();
+    }
+
+    // Reconstruct framebuffer if needed
+    m_copyFb->ReconstructIfNeeded(src->m_width, src->m_height);
+
+    // Bind the framebuffer
+    RHI::SetFramebuffer(GL_FRAMEBUFFER, m_copyFb->GetFboId());
+
+    dst->GenerateMipMaps();
+
+    // Attach the destination cubemap to the framebuffer
+    for (int face = 0; face < 6; face++)
+    {
       glFramebufferTexture2D(GL_FRAMEBUFFER,
                              GL_COLOR_ATTACHMENT0,
                              GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                             src->m_textureId,
+                             dst->m_textureId,
                              mipLevel);
 
-      // Read the pixels from the FBO
-      std::vector<GLubyte> buffer(mipWidth * mipHeight * 4); // Assuming 4 bytes per pixel (RGBA)
-      glReadPixels(0, 0, mipWidth, mipHeight, GL_RGBA, GL_FLOAT, buffer.data());
-
-      // Bind the destination cube map
-      glBindTexture(GL_TEXTURE_CUBE_MAP, dst->m_textureId);
-
-      // Copy the data to the destination cube map's mip level
-      glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                      mipLevel,
-                      0,
-                      0,
-                      mipWidth,
-                      mipHeight,
-                      GL_RGBA,
-                      GL_FLOAT,
-                      buffer.data());
+      // Copy the source cubemap face to the destination
+      glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, src->m_width, src->m_height);
     }
 
-    // Clean up
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDeleteFramebuffers(1, &fbo);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    // Unbind the framebuffer
+    RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)
