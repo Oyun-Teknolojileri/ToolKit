@@ -1474,6 +1474,7 @@ namespace ToolKit
     // Bind the framebuffer
     RHI::SetFramebuffer(GL_FRAMEBUFFER, m_copyFb->GetFboId());
 
+    // Create enough storage space to copy caches.
     dst->GenerateMipMaps();
 
     // Attach the destination cubemap to the framebuffer
@@ -1580,9 +1581,7 @@ namespace ToolKit
     cubemapRt->Init();
 
     // Intentionally creating space to fill later. ( mip maps will be calculated for specular ibl )
-    RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemapRt->m_textureId, 0);
-
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    cubemapRt->GenerateMipMaps();
 
     // Views for 6 different angles
     CameraPtr cam = MakeNewPtr<Camera>();
