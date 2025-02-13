@@ -590,8 +590,6 @@ namespace ToolKit
     }
     else
     {
-      // TODO: Create a smaller diffuse irradiance cache width / 32. Write and read all specular caches. Merge this
-      // function with above.
       RenderTask task = {
           [this](Renderer* renderer) -> void
           {
