@@ -633,6 +633,12 @@ namespace ToolKit
 
             m_initiated      = true;
             m_waitingForInit = false;
+
+            // Clear file path after initialization, otherwise init always loads from file.
+            // This isn't desired, only after load we should read from file. Settings changes should reflect during
+            // editor time or in game requests.
+            _diffuseBakeFile.clear();
+            _specularBakeFile.clear();
           }};
 
       GetRenderSystem()->AddRenderTask(task);
