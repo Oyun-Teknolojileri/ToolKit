@@ -359,7 +359,7 @@ namespace ToolKit
 
   CubeMap::CubeMap(const String& file) : Texture() { SetFile(file); }
 
-  CubeMap::~CubeMap() {}
+  CubeMap::~CubeMap() { UnInit(); }
 
   void CubeMap::Consume(RenderTargetPtr cubeMapTarget)
   {
@@ -367,16 +367,14 @@ namespace ToolKit
 
     assert(targetTextureSettings.Target == GraphicTypes::TargetCubeMap);
 
-    m_textureId                = cubeMapTarget->m_textureId;
-    m_width                    = cubeMapTarget->m_width;
-    m_height                   = cubeMapTarget->m_height;
+    m_textureId  = cubeMapTarget->m_textureId;
+    m_width      = cubeMapTarget->m_width;
+    m_height     = cubeMapTarget->m_height;
 
-    m_settings                 = targetTextureSettings;
-    m_initiated                = true;
+    m_settings   = targetTextureSettings;
+    m_initiated  = true;
 
-    cubeMapTarget->m_initiated = false;
-    cubeMapTarget->m_textureId = 0;
-    cubeMapTarget              = nullptr;
+    m_consumedRT = cubeMapTarget;
   }
 
   void CubeMap::Load()
@@ -492,6 +490,13 @@ namespace ToolKit
   void CubeMap::UnInit()
   {
     Texture::UnInit();
+
+    if (m_consumedRT)
+    {
+      m_consumedRT->m_initiated = false;
+      m_consumedRT->m_textureId = 0;
+      m_consumedRT              = nullptr;
+    }
 
     Clear();
     m_initiated = false;

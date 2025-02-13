@@ -160,6 +160,7 @@ namespace ToolKit
 
    public:
     std::vector<uint8*> m_images;
+    RenderTargetPtr m_consumedRT;
   };
 
   // Hdri
