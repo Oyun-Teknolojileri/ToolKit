@@ -1439,11 +1439,10 @@ namespace ToolKit
     MaterialPtr cubeToEquiRect       = MakeNewPtr<Material>();
     cubeToEquiRect->m_fragmentShader = shaderMan->Create<Shader>(ShaderPath("cubemapToEquirectFrag.shader", true));
     cubeToEquiRect->m_vertexShader   = shaderMan->Create<Shader>(ShaderPath("fullQuadVert.shader", true));
+    cubeToEquiRect->m_cubeMap        = cubemap;
     cubeToEquiRect->Init();
 
     cubeToEquiRect->UpdateProgramUniform("lodLevel", level);
-
-    RHI::SetTexture((GLenum) GraphicTypes::TargetCubeMap, cubemap->m_textureId, 6);
 
     DrawFullQuad(cubeToEquiRect);
 
