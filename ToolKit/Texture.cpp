@@ -605,14 +605,23 @@ namespace ToolKit
             }
 
             // Convert hdri image to cubemap images.
-            TexturePtr self     = GetTextureManager()->Create<Texture>(GetFile());
-            uint size           = m_width / 4;
-            m_cubemap           = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+            TexturePtr self = GetTextureManager()->Create<Texture>(GetFile());
+            uint size       = m_width / 4;
+            m_cubemap       = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+
+            // Floating point texture settings for caches.
+            TextureSettings fTexture;
+            fTexture.InternalFormat = GraphicTypes::FormatRGBA16F;
+            fTexture.Type           = GraphicTypes::TypeFloat;
 
             // Read diffuse irradiance cache map.
-            String cacheFile    = _diffuseBakeFile + HDR;
-            TexturePtr envCache = GetTextureManager()->Create<Texture>(cacheFile);
-            m_diffuseEnvMap     = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
+            String cacheFile        = _diffuseBakeFile + HDR;
+            TexturePtr envCache     = MakeNewPtr<Texture>();
+            envCache->Settings(fTexture);
+            envCache->SetFile(cacheFile);
+            envCache->Load();
+
+            m_diffuseEnvMap = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
 
             // Read specular irradiance cache map.
             m_specularEnvMap =
@@ -626,7 +635,11 @@ namespace ToolKit
               String cacheFile = _specularBakeFile + std::to_string(i) + HDR;
               if (CheckFile(cacheFile))
               {
-                TexturePtr texture     = GetTextureManager()->Create<Texture>(cacheFile);
+                TexturePtr texture     = MakeNewPtr<Texture>();
+                texture->Settings(fTexture);
+                texture->SetFile(cacheFile);
+                texture->Load();
+
                 uint size              = texture->m_width / 4;
                 CubeMapPtr specLodCube = renderer->GenerateCubemapFrom2DTexture(texture, size, 1.0f);
                 renderer->CopyCubeMapToMipLevel(specLodCube, m_specularEnvMap, i);
