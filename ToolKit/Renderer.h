@@ -81,7 +81,10 @@ namespace ToolKit
     void SetTexture(ubyte slotIndx, uint textureId);
 
     /** Reads an equirectengular hdr image and creates a cube map from it. */
-    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure = 1.0f);
+    CubeMapPtr GenerateCubemapFrom2DTexture(TexturePtr texture,
+                                            uint size,
+                                            float exposure         = 1.0f,
+                                            GraphicTypes minfilter = GraphicTypes::SampleNearest);
 
     /**
      * Projects a cubemap to an 2d texture using equirectengular projection.

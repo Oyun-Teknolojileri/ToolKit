@@ -615,7 +615,10 @@ namespace ToolKit
             m_diffuseEnvMap     = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
 
             // Read specular irradiance cache map.
-            m_specularEnvMap    = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+            m_specularEnvMap =
+                renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f, GraphicTypes::SampleLinearMipmapLinear);
+
+            m_specularEnvMap->GenerateMipMaps();
 
             // Initial level is just the copy of color map, try reading rest.
             for (int i = 1; i < RHIConstants::SpecularIBLLods; i++)

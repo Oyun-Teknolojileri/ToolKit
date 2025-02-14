@@ -1351,13 +1351,16 @@ namespace ToolKit
 
   void Renderer::SetShadowAtlas(TexturePtr shadowAtlas) { m_shadowAtlas = shadowAtlas; }
 
-  CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture, uint size, float exposure)
+  CubeMapPtr Renderer::GenerateCubemapFrom2DTexture(TexturePtr texture,
+                                                    uint size,
+                                                    float exposure,
+                                                    GraphicTypes minFilter)
   {
     const TextureSettings set = {GraphicTypes::TargetCubeMap,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
                                  GraphicTypes::UVClampToEdge,
-                                 GraphicTypes::SampleLinear,
+                                 minFilter,
                                  GraphicTypes::SampleLinear,
                                  GraphicTypes::FormatRGBA16F,
                                  GraphicTypes::FormatRGBA,
@@ -1460,38 +1463,41 @@ namespace ToolKit
 
   void Renderer::CopyCubeMapToMipLevel(CubeMapPtr src, CubeMapPtr dst, int mipLevel)
   {
-    // Ensure the framebuffer is initialized
-    if (!m_copyFb)
+    FramebufferSettings fbs;
+    fbs.width                  = dst->m_width;
+    fbs.height                 = dst->m_height;
+    fbs.useDefaultDepth        = false;
+
+    FramebufferPtr writeBuffer = MakeNewPtr<Framebuffer>(fbs);
+    writeBuffer->Init();
+
+    fbs.width                 = src->m_width;
+    fbs.height                = src->m_height;
+
+    FramebufferPtr readBuffer = MakeNewPtr<Framebuffer>(fbs);
+    readBuffer->Init();
+
+    RHI::SetTexture((GLenum) dst->Settings().Target, dst->m_textureId);
+
+    for (int i = 0; i < 6; i++)
     {
-      FramebufferSettings fbSettings = {src->m_width, src->m_height, false, false};
-      m_copyFb                       = MakeNewPtr<Framebuffer>(fbSettings, "RendererCopyFB");
-      m_copyFb->Init();
+      writeBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                      dst->m_consumedRT,
+                                      mipLevel,
+                                      -1,
+                                      Framebuffer::CubemapFace(i));
+
+      readBuffer->SetColorAttachment(Framebuffer::Attachment::ColorAttachment0,
+                                     src->m_consumedRT,
+                                     0,
+                                     -1,
+                                     Framebuffer::CubemapFace(i));
+
+      RHI::SetFramebuffer(GL_DRAW_FRAMEBUFFER, writeBuffer->GetFboId());
+      RHI::SetFramebuffer(GL_READ_FRAMEBUFFER, readBuffer->GetFboId());
+
+      glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipLevel, 0, 0, 0, 0, src->m_width, src->m_height);
     }
-
-    // Reconstruct framebuffer if needed
-    m_copyFb->ReconstructIfNeeded(src->m_width, src->m_height);
-
-    // Bind the framebuffer
-    RHI::SetFramebuffer(GL_FRAMEBUFFER, m_copyFb->GetFboId());
-
-    // Create enough storage space to copy caches.
-    dst->GenerateMipMaps();
-
-    // Attach the destination cubemap to the framebuffer
-    for (int face = 0; face < 6; face++)
-    {
-      glFramebufferTexture2D(GL_FRAMEBUFFER,
-                             GL_COLOR_ATTACHMENT0,
-                             GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                             dst->m_textureId,
-                             mipLevel);
-
-      // Copy the source cubemap face to the destination
-      glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, src->m_width, src->m_height);
-    }
-
-    // Unbind the framebuffer
-    RHI::SetFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
   CubeMapPtr Renderer::GenerateDiffuseEnvMap(CubeMapPtr cubemap, uint size)

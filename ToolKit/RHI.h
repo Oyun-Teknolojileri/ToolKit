@@ -48,11 +48,6 @@ namespace ToolKit
 
     static GLuint m_currentUniformBufferId;
     static GLuint m_currentUniformBufferBaseId[4];
-
-    /**
-     * Holds which texture is binded to which texture unit.
-     */
-    static std::unordered_map<uint, uint> m_slotTextureIDmap;
   };
 
 } // namespace ToolKit

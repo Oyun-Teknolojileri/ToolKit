@@ -17,8 +17,6 @@ namespace ToolKit
   GLuint RHI::m_currentUniformBufferBaseId[4] = {UINT_MAX, UINT_MAX, UINT_MAX, UINT_MAX};
   bool RHI::m_initialized                     = false;
 
-  std::unordered_map<uint, uint> RHI::m_slotTextureIDmap;
-
   void RHI::SetFramebuffer(GLenum target, GLuint framebufferID)
   {
     if (target == GL_READ_FRAMEBUFFER)
@@ -94,39 +92,11 @@ namespace ToolKit
   {
     assert(textureSlot >= 0 && textureSlot <= 31);
 
-    auto itr = m_slotTextureIDmap.find(textureSlot);
-    if (itr != m_slotTextureIDmap.end())
-    {
-      if (itr->second == textureID)
-      {
-        // Do not bind if already binded.
-        return;
-      }
-    }
-
-    m_slotTextureIDmap[textureSlot] = textureID;
     glActiveTexture(GL_TEXTURE0 + textureSlot);
     glBindTexture(target, textureID);
   }
 
-  void RHI::DeleteTextures(int textureCount, GLuint* textures)
-  {
-    if (m_initialized)
-    {
-      for (int i = 0; i < 32; ++i)
-      {
-        for (int ii = 0; ii < textureCount; ++ii)
-        {
-          if (m_slotTextureIDmap[i] == textures[ii])
-          {
-            m_slotTextureIDmap[i] = 0;
-          }
-        }
-      }
-    }
-
-    glDeleteTextures(textureCount, textures);
-  }
+  void RHI::DeleteTextures(int textureCount, GLuint* textures) { glDeleteTextures(textureCount, textures); }
 
   void RHI::BindVertexArray(GLuint VAO)
   {
