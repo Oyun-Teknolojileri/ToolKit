@@ -162,10 +162,16 @@ namespace ToolKit
                    SkyBasePtr skyBase = self.lock();
                    if (HdriPtr hdr = skyBase->GetHdri())
                    {
-                     auto bakeFn = [renderer](CubeMapPtr cubemap, const String& file, int level) -> void
+                     auto bakeFn = [renderer, skyBase](CubeMapPtr cubemap, const String& file, int level) -> void
                      {
                        float* pixelBuffer;
-                       renderer->GenerateEquiRectengularProjection(cubemap, level, (void**) &pixelBuffer);
+                       float exposure = 1.0f;
+                       if (EnvironmentComponent* envCmp = skyBase->GetComponentFast<EnvironmentComponent>())
+                       {
+                         exposure = envCmp->GetExposureVal();
+                       }
+
+                       renderer->GenerateEquiRectengularProjection(cubemap, level, exposure, (void**) &pixelBuffer);
 
                        UVec2 rectSize = cubemap->GetEquiRectengularMapSize();
                        int mipWidth   = rectSize.x >> level;

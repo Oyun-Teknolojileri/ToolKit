@@ -1423,7 +1423,7 @@ namespace ToolKit
     return cubeMap;
   }
 
-  TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void** pixels)
+  TexturePtr Renderer::GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, float exposure, void** pixels)
   {
     UVec2 rectSize                  = cubemap->GetEquiRectengularMapSize();
     int mipWidth                    = rectSize.x >> level;
@@ -1446,6 +1446,7 @@ namespace ToolKit
     cubeToEquiRect->Init();
 
     cubeToEquiRect->UpdateProgramUniform("lodLevel", level);
+    cubeToEquiRect->UpdateProgramUniform("Exposure", exposure);
 
     DrawFullQuad(cubeToEquiRect);
 

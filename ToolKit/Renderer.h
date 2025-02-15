@@ -91,7 +91,7 @@ namespace ToolKit
      * If a non null, pointer address provided, fills the pixel content in it.
      * Life time management of the buffer belongs to caller.
      */
-    TexturePtr GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, void** pixels);
+    TexturePtr GenerateEquiRectengularProjection(CubeMapPtr cubemap, int level, float exposure, void** pixels);
 
     /** Copies the source cube map into destination cube map's given mip level. Expects cubemaps tobe rgba float. */
     void CopyCubeMapToMipLevel(CubeMapPtr src, CubeMapPtr dst, int mipLevel);
