@@ -595,70 +595,25 @@ namespace ToolKit
     }
     else
     {
-      RenderTask task = {
-          [this](Renderer* renderer) -> void
-          {
-            if (m_initiated)
-            {
-              m_waitingForInit = false;
-              return;
-            }
+      RenderTask task = {[this](Renderer* renderer) -> void
+                         {
+                           if (m_initiated)
+                           {
+                             m_waitingForInit = false;
+                             return;
+                           }
 
-            // Convert hdri image to cubemap images.
-            TexturePtr self = GetTextureManager()->Create<Texture>(GetFile());
-            uint size       = m_width / 4;
-            m_cubemap       = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+                           LoadIrradianceCaches(renderer);
 
-            // Floating point texture settings for caches.
-            TextureSettings fTexture;
-            fTexture.InternalFormat = GraphicTypes::FormatRGBA16F;
-            fTexture.Type           = GraphicTypes::TypeFloat;
+                           m_initiated      = true;
+                           m_waitingForInit = false;
 
-            // Read diffuse irradiance cache map.
-            String cacheFile        = _diffuseBakeFile + HDR;
-            TexturePtr envCache     = MakeNewPtr<Texture>();
-            envCache->Settings(fTexture);
-            envCache->SetFile(cacheFile);
-            envCache->Load();
-
-            m_diffuseEnvMap = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
-
-            // Read specular irradiance cache map.
-            m_specularEnvMap =
-                renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f, GraphicTypes::SampleLinearMipmapLinear);
-
-            m_specularEnvMap->GenerateMipMaps();
-
-            // Initial level is just the copy of color map, try reading rest.
-            for (int i = 1; i < RHIConstants::SpecularIBLLods; i++)
-            {
-              String cacheFile = _specularBakeFile + std::to_string(i) + HDR;
-              if (CheckFile(cacheFile))
-              {
-                TexturePtr texture     = MakeNewPtr<Texture>();
-                texture->Settings(fTexture);
-                texture->SetFile(cacheFile);
-                texture->Load();
-
-                uint size              = texture->m_width / 4;
-                CubeMapPtr specLodCube = renderer->GenerateCubemapFrom2DTexture(texture, size, 1.0f);
-                renderer->CopyCubeMapToMipLevel(specLodCube, m_specularEnvMap, i);
-              }
-              else
-              {
-                TK_WRN("Missing specular irradiance cache LOD: %d Map: %s", i, _specularBakeFile.c_str());
-              }
-            }
-
-            m_initiated      = true;
-            m_waitingForInit = false;
-
-            // Clear file path after initialization, otherwise init always loads from file.
-            // This isn't desired, only after load we should read from file. Settings changes should reflect during
-            // editor time or in game requests.
-            _diffuseBakeFile.clear();
-            _specularBakeFile.clear();
-          }};
+                           // Clear file path after initialization, otherwise init always loads from file.
+                           // This isn't desired, only after load we should read from file. Settings changes should
+                           // reflect during editor time or in game requests.
+                           _diffuseBakeFile.clear();
+                           _specularBakeFile.clear();
+                         }};
 
       GetRenderSystem()->AddRenderTask(task);
     }
@@ -678,6 +633,68 @@ namespace ToolKit
     m_waitingForInit = false;
 
     Texture::UnInit();
+  }
+
+  void Hdri::LoadIrradianceCaches(Renderer* renderer)
+  {
+    // Convert hdri image to cubemap images.
+    TextureManager* texMan = GetTextureManager();
+    TexturePtr self;
+    uint size = m_width / 4;
+
+    if (IsDynamic())
+    {
+      // A dynamic hdri, like gradient sky. Fetch from generated data.
+      self = m_cubemap->m_consumedRT;
+    }
+    else
+    {
+      // If not constructed dynamically, load from disk
+      self      = texMan->Create<Texture>(GetFile());
+      m_cubemap = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f);
+    }
+
+    // Floating point texture settings for caches.
+    TextureSettings fTexture;
+    fTexture.InternalFormat = GraphicTypes::FormatRGBA16F;
+    fTexture.Type           = GraphicTypes::TypeFloat;
+
+    // Read diffuse irradiance cache map.
+    String cacheFile        = _diffuseBakeFile + HDR;
+    TexturePtr envCache     = MakeNewPtr<Texture>();
+    envCache->Settings(fTexture);
+    envCache->SetFile(cacheFile);
+    envCache->Load();
+    texMan->Manage(envCache);
+
+    m_diffuseEnvMap  = renderer->GenerateCubemapFrom2DTexture(envCache, size, 1.0f);
+
+    // Read specular irradiance cache map.
+    m_specularEnvMap = renderer->GenerateCubemapFrom2DTexture(self, size, 1.0f, GraphicTypes::SampleLinearMipmapLinear);
+
+    m_specularEnvMap->GenerateMipMaps();
+
+    // Initial level is just the copy of color map, try reading rest.
+    for (int i = 1; i < RHIConstants::SpecularIBLLods; i++)
+    {
+      String cacheFile = _specularBakeFile + std::to_string(i) + HDR;
+      if (CheckFile(cacheFile))
+      {
+        TexturePtr texture = MakeNewPtr<Texture>();
+        texture->Settings(fTexture);
+        texture->SetFile(cacheFile);
+        texture->Load();
+        texMan->Manage(texture);
+
+        uint size              = texture->m_width / 4;
+        CubeMapPtr specLodCube = renderer->GenerateCubemapFrom2DTexture(texture, size, 1.0f);
+        renderer->CopyCubeMapToMipLevel(specLodCube, m_specularEnvMap, i);
+      }
+      else
+      {
+        TK_WRN("Missing specular irradiance cache LOD: %d Map: %s", i, _specularBakeFile.c_str());
+      }
+    }
   }
 
   // RenderTarget

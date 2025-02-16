@@ -12,6 +12,7 @@
 #include "Logger.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "RenderSystem.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "ToolKit.h"
@@ -243,14 +244,19 @@ namespace ToolKit
 
       // Load all scenes
       String pt = entry.path().string();
-      String name;
-      DecomposePath(pt, nullptr, &name, nullptr);
+      String name, ext;
+      DecomposePath(pt, nullptr, &name, &ext);
 
-      TK_LOG("Packing Scene: %s\n", name.c_str());
+      if (ext == SCENE || ext == LAYER)
+      {
+        TK_LOG("Packing Scene: %s\n", name.c_str());
 
-      ScenePtr scene = GetSceneManager()->Create<Scene>(pt);
-      scene->Load();
-      scene->Init();
+        ScenePtr scene = GetSceneManager()->Create<Scene>(pt);
+        scene->Load();
+        scene->Init();
+
+        GetRenderSystem()->FlushRenderTasks(); // Finalize loading baked files.
+      }
     }
   }
 

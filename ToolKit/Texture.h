@@ -180,6 +180,9 @@ namespace ToolKit
     void Init(bool flushClientSideArray = false) override;
     void UnInit() override;
 
+    /** Loads baked irradiance caches. Make sure this called from render thread. Use render task. */
+    void LoadIrradianceCaches(class Renderer* renderer);
+
    public:
     float m_exposure             = 1.0f;
     int m_specularIBLTextureSize = 256;

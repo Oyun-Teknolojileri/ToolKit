@@ -38,6 +38,7 @@ namespace ToolKit
     TKDeclareParam(Vec3, MiddleColor);
     TKDeclareParam(Vec3, BottomColor);
     TKDeclareParam(float, GradientExponent);
+    TKDeclareParam(VariantCallback, ReGenerateIrradianceMap);
 
    private:
     bool m_waitingForInit = false;

@@ -624,7 +624,7 @@ namespace ToolKit
       case ParameterVariant::VariantType::ULongID:
       {
         ULongID val = var->GetVar<ULongID>();
-        if (ImGui::InputScalar(var->m_name.c_str(), ImGuiDataType_U32, var->GetVarPtr<ULongID>()) &&
+        if (ImGui::InputScalar(var->m_name.c_str(), ImGuiDataType_U64, var->GetVarPtr<ULongID>()) &&
             IsTextInputFinalized())
         {
           *var = val;

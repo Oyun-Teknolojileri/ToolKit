@@ -15,6 +15,7 @@
 #include "RenderSystem.h"
 #include "Shader.h"
 #include "Stats.h"
+#include "TKOpenGL.h"
 
 namespace ToolKit
 {
@@ -55,7 +56,23 @@ namespace ToolKit
                        GenerateGradientCubemap(renderer);
 
                        // Create irradiance map from cubemap and set
-                       GenerateIrradianceCubemap(renderer);
+                       bool generateIrradianceCache = true;
+                       if (HdriPtr hdri = GetHdri())
+                       {
+                         if (!hdri->_diffuseBakeFile.empty())
+                         {
+
+                           glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Load Baked Data");
+                           hdri->LoadIrradianceCaches(renderer);
+                           generateIrradianceCache = false;
+                           glPopDebugGroup();
+                         }
+                       }
+
+                       if (generateIrradianceCache)
+                       {
+                         GenerateIrradianceCubemap(renderer);
+                       }
 
                        renderer->SetFramebuffer(nullptr, GraphicBitFields::None);
                        m_frameBuffer    = nullptr;
@@ -94,7 +111,30 @@ namespace ToolKit
     SetNameVal("Gradient Sky");
   }
 
-  void GradientSky::ParameterEventConstructor() { Super::ParameterEventConstructor(); }
+  void GradientSky::ParameterEventConstructor()
+  {
+    Super::ParameterEventConstructor();
+
+    GradientSkyWeakPtr self = Self<GradientSky>();
+    ReGenerateIrradianceMap_Define(
+        [self]() -> void
+        {
+          GetRenderSystem()->AddRenderTask({[self](Renderer* renderer) -> void
+                                            {
+                                              if (self.expired())
+                                              {
+                                                return;
+                                              }
+
+                                              GradientSkyPtr gradientSky = self.lock();
+                                              gradientSky->GenerateIrradianceCubemap(renderer);
+                                            }});
+        },
+        SkyCategory.Name,
+        SkyCategory.Priority,
+        true,
+        true);
+  }
 
   void GradientSky::GenerateGradientCubemap(Renderer* renderer)
   {
@@ -158,7 +198,11 @@ namespace ToolKit
 
     CubeMapPtr newCubemap = MakeNewPtr<CubeMap>();
     newCubemap->Consume(cubemap);
-    GetHdri()->m_cubemap = newCubemap;
+
+    HdriPtr self    = GetHdri();
+    self->m_cubemap = newCubemap;
+    self->m_width   = newCubemap->m_width;
+    self->m_height  = newCubemap->m_height;
   }
 
   void GradientSky::GenerateIrradianceCubemap(Renderer* renderer)
